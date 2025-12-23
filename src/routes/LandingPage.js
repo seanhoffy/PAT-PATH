@@ -192,18 +192,6 @@ const LandingPage = () => {
                         >
                             Try the Model
                         </Button>
-                        <Button 
-                            variant="outlined" 
-                            color="inherit" 
-                            onClick={() => handleDevNotice('/login')}
-                            sx={{
-                                fontSize: { xs: "0.875rem", sm: "1rem" },
-                                px: { xs: 2, sm: 3 },
-                                py: { xs: 1, sm: 1.5 },
-                            }}
-                        >
-                            Login
-                        </Button>
                     </Box>
                 </Box>
 
@@ -298,14 +286,28 @@ const LandingPage = () => {
                 }}>
                     What Does PATpath Offer?
                 </Typography>
+                <Paper elevation={0} sx={{ 
+                    p: { xs: 2, md: 3 },
+                    mb: 3,
+                    backgroundColor: 'white',
+                    borderRadius: 2,
+                    border: '2px solid rgba(2, 62, 116, 0.3)',
+                    textAlign: 'center',
+                }}>
+                    <Typography variant="h5" fontWeight="bold" sx={{ color: '#023e74' }}>
+                        Make evidence-based projections of the potential demand for
+                        psilocybin assisted therapy.
+                    </Typography>
+                </Paper>
                 <Grid container spacing={3}>
                     {/* 1. Customizable Inputs */}
                     <Grid item xs={12} sm={6} md={6}>
-                        <Paper elevation={3} sx={{ 
+                        <Paper elevation={0} sx={{ 
                             p: 1,
                             height: '100%',
                             backgroundColor: 'white',
                             borderRadius: 2,
+                            border: '2px solid rgba(2, 62, 116, 0.3)',
                         }}>
                             <FilterAlt color="primary" fontSize="large" />
                             <Typography variant="h5" fontWeight="bold" sx={{ color: '#023e74' }}>
@@ -319,11 +321,12 @@ const LandingPage = () => {
 
                     {/* 2. PDF Report Generation */}
                     <Grid item xs={12} sm={6} md={6}>
-                        <Paper elevation={3} sx={{ 
+                        <Paper elevation={0} sx={{ 
                             p: 1,
                             height: '100%',
                             backgroundColor: 'white',
                             borderRadius: 2,
+                            border: '2px solid rgba(2, 62, 116, 0.3)',
                         }}>
                             <Download color="primary" fontSize="large" />
                             <Typography variant="h5" fontWeight="bold" sx={{ color: '#023e74' }}>
@@ -337,11 +340,12 @@ const LandingPage = () => {
 
                     {/* 3. Data Transparency */}
                     <Grid item xs={12} sm={6} md={6}>
-                        <Paper elevation={3} sx={{ 
+                        <Paper elevation={0} sx={{ 
                             p: 1,
                             height: '100%',
                             backgroundColor: 'white',
                             borderRadius: 2,
+                            border: '2px solid rgba(2, 62, 116, 0.3)',
                         }}>
                             <MenuBook color="primary" fontSize="large" />
                             <Typography variant="h5" fontWeight="bold" sx={{ color: '#023e74' }}>
@@ -355,11 +359,12 @@ const LandingPage = () => {
 
                     {/* 4. Real-time Calculations */}
                     <Grid item xs={12} sm={6} md={6}>
-                        <Paper elevation={3} sx={{ 
+                        <Paper elevation={0} sx={{ 
                             p: 1,
                             height: '100%',
                             backgroundColor: 'white',
                             borderRadius: 2,
+                            border: '2px solid rgba(2, 62, 116, 0.3)',
                         }}>
                             <Calculate color="primary" fontSize="large" />
                             <Typography variant="h5" fontWeight="bold" sx={{ color: '#023e74' }}>
@@ -436,26 +441,6 @@ const LandingPage = () => {
                     </Grid>
                 </Grid>
 
-                <Box
-                    sx={{
-                        mt: 2,
-                        mb: -2,
-                        p: { xs: 2, md: 3 },
-                        backgroundColor: 'white',
-                        borderRadius: 2,
-                        color: '#023e74',
-                        textAlign: 'center',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: 2
-                    }}
-                >
-                    <Typography variant="h5" fontWeight="bold">
-                        Make evidence-based projections of the potential demand for
-                        psilocybin assisted therapy.
-                    </Typography>
-                </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: { xs: 3, md: 4 } }}>
                     <Button
                         variant="contained"
@@ -469,7 +454,7 @@ const LandingPage = () => {
                             fontSize: '1.1rem',
                             borderRadius: 2,
                             boxShadow: 3,
-                            border: '2px solid #023e74',
+                            border: '2px solid rgba(2, 62, 116, 0.3)',
                             '&:hover': {
                                 backgroundColor: '#f0f4fa',
                                 color: '#023e74',

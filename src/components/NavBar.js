@@ -5,19 +5,23 @@ import { auth } from '../firebase';
 import { useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
-
-const handleLogout = async () => {
-    try {
-        await signOut(auth);
-        alert("You have been logged out.");
-    } catch (error) {
-        console.error("Logout error:", error.message);
-    }
-};
+import { clearUserFormState } from '../utils/firebaseHelpers';
 
 const NavBar = () => {
     const [user, loading] = useAuthState(auth);
     const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        try {
+            if (user?.uid) {
+                await clearUserFormState(user.uid);
+            }
+            await signOut(auth);
+            alert("You have been logged out.");
+        } catch (error) {
+            console.error("Logout error:", error.message);
+        }
+    };
 
     useEffect(() => {
         if (loading) return;
@@ -45,8 +49,24 @@ const NavBar = () => {
                     </Typography>
                 </ButtonBase>
                 <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>
-                    <Button color="inherit" onClick={() => navigate("/researchpaper")} sx={{ color: '#000000' }}>ABOUT</Button>
+                    <Button color="inherit" onClick={() => navigate("/home")} sx={{ color: '#000000' }}>HOME</Button>
+                    <Button color="inherit" onClick={() => navigate("/about")} sx={{ color: '#000000' }}>ABOUT US</Button>
+                    <Button color="inherit" onClick={() => navigate("/researchpaper")} sx={{ color: '#000000' }}>MOTIVATION</Button>
+                    <Button color="inherit" onClick={() => navigate("/terminology")} sx={{ color: '#000000' }}>TERMINOLOGY</Button>
                     <Button color="inherit" onClick={() => navigate("/history")} sx={{ color: '#000000' }}>HISTORY</Button>
+                    <Button
+                        color="inherit"
+                        sx={{ color: '#000000' }}
+                        onClick={() =>
+                            window.open(
+                                'https://www.surveymonkey.com/r/3GCVNNL',
+                                '_blank',
+                                'noopener,noreferrer'
+                            )
+                        }
+                    >
+                        CONTACT US
+                    </Button>
                     <Button color="inherit" onClick={handleLogout} sx={{ color: '#000000' }}>Logout</Button>
                 </Box>
             </Toolbar>

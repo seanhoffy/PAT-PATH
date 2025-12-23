@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { NumericFormat } from 'react-number-format';
 import {
     Container,
@@ -28,19 +29,46 @@ import { COLORS } from '../constants/colors';
 import { CALCULATION_CONSTANTS } from '../constants/calculations';
 import { calculateAllResults, formatResultsForModel, scrollToBottom } from '../utils/calculations';
 import { isStringField, validateFormData } from '../utils/formValidation';
-import { fetchUserModel, updateUserModel, addSavedModel } from '../utils/firebaseHelpers';
+import { fetchUserModel, updateUserModel, addSavedModel, fetchUserFormState, saveUserFormState } from '../utils/firebaseHelpers';
 import BetaNotice from './BetaNotice';
 
 const InputsForm = () => {
+    const navigate = useNavigate();
     const [model, setModel] = useState([]);
     const [user] = useAuthState(auth);
     const [doubleCountingOpen, setDoubleCountingOpen] = useState(false);
     const [disclaimerOpen, setDisclaimerOpen] = useState(false);
     const [disclaimerChecked, setDisclaimerChecked] = useState(false);
     const [formDataTemp, setFormDataTemp] = useState(null);
-    const [formData, setFormData] = useState(FORM_DEFAULTS);
+    const [formData, setFormData] = useState({
+        MDD: null,
+        TRD_P: null,
+        TRD: 0,
+        manic_P: null,
+        suicide_P: null,
+        diabetes_P: null,
+        stroke_P: null,
+        heart_attack_P: null,
+        blood_pressure_P: null,
+        epilepsy_P: null,
+        personality_P: null,
+        hepatic_P: null,
+        psycological_P: FORM_DEFAULTS.psycological_P,
+        health_P: FORM_DEFAULTS.health_P,
+        comorbid_hepatic_P: FORM_DEFAULTS.comorbid_hepatic_P,
+        modelTitle: "",
+        geographicArea: "",
+        motivation: "",
+        additionalComments: "",
+    });
 
     const [results, setResults] = useState(null);
+    const [actualPercents, setActualPercents] = useState({
+        trialMDD: 100,
+        realMDD: 100,
+        trialTRD: 100,
+        realTRD: 100,
+    });
     const [savingModel, setSavingModel] = useState(false);
 
     // Fetch user model on mount
@@ -52,9 +80,42 @@ const InputsForm = () => {
                     setModel(userModel);
                 }
             };
+            const loadFormState = async () => {
+                const { currentForm, currentResults, currentActualPercents } = await fetchUserFormState(user.uid);
+                if (currentForm) {
+                    setFormData(currentForm);
+                }
+                if (currentResults) {
+                    setResults(currentResults);
+                }
+                if (currentActualPercents) {
+                    setActualPercents(currentActualPercents);
+                }
+            };
             loadModel();
+            loadFormState();
         }
     }, [user]);
+
+    // Persist form and results on edits (debounced)
+    const saveTimerRef = useRef(null);
+    useEffect(() => {
+        if (!user?.uid) return;
+        if (!formData) return;
+
+        if (saveTimerRef.current) {
+            clearTimeout(saveTimerRef.current);
+        }
+        saveTimerRef.current = setTimeout(() => {
+            saveUserFormState(user.uid, formData, results ?? null, actualPercents ?? null);
+        }, 800);
+
+        return () => {
+            if (saveTimerRef.current) {
+                clearTimeout(saveTimerRef.current);
+            }
+        };
+    }, [user?.uid, formData, results, actualPercents]);
 
     // Update model in Firestore when it changes
     const updateModelInFirestore = useCallback(async () => {
@@ -76,14 +137,25 @@ const InputsForm = () => {
             if (isStringField(name)) {
                 newValue = value;
             } else {
-                newValue = value === '' ? 0 : parseFloat(value);
+                // For required numerical fields, empty string becomes null
+                // Allow 0 as a valid value
+                if (value === '' || value === null || value === undefined) {
+                    newValue = null;
+                } else {
+                    newValue = parseFloat(value);
+                }
             }
 
             const newData = { ...prev, [name]: newValue };
 
             // Auto-calculate TRD when MDD or TRD_P changes
             if (name === 'MDD' || name === 'TRD_P') {
-                newData.TRD = newData.MDD * (newData.TRD_P / CALCULATION_CONSTANTS.PERCENTAGE_DIVISOR);
+                // Only calculate if both MDD and TRD_P are not null
+                if (newData.MDD !== null && newData.TRD_P !== null) {
+                    newData.TRD = newData.MDD * (newData.TRD_P / CALCULATION_CONSTANTS.PERCENTAGE_DIVISOR);
+                } else {
+                    newData.TRD = 0;
+                }
             }
 
             return newData;
@@ -117,12 +189,15 @@ const InputsForm = () => {
         const calculatedResults = calculateAllResults(formDataTemp);
         setResults(calculatedResults);
         setModel(formatResultsForModel(calculatedResults));
+        if (user?.uid) {
+            saveUserFormState(user.uid, formDataTemp, calculatedResults, actualPercents ?? null);
+        }
         handleDisclaimerClose();
         scrollToBottom();
     };
 
-    const handleDownload = async () => {
-        const blob = await pdf(<MyDocument formData={formData} results={results} />).toBlob();
+    const handleDownload = async (actualSummary) => {
+        const blob = await pdf(<MyDocument formData={formData} results={results} actual={actualSummary} />).toBlob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -135,7 +210,7 @@ const InputsForm = () => {
         URL.revokeObjectURL(url);
     };
 
-    const handleSaveModel = async () => {
+    const handleSaveModel = async (actualSummary) => {
         if (!user?.uid) {
             alert('Please log in to save models.');
             return;
@@ -152,7 +227,10 @@ const InputsForm = () => {
             geographicArea: formData.geographicArea || '',
             motivation: formData.motivation || '',
             inputs: formData,
-            outputs: results,
+            outputs: {
+                ...results,
+                actual: actualSummary || null,
+            },
         };
 
         const response = await addSavedModel(user.uid, payload);
@@ -169,6 +247,23 @@ const InputsForm = () => {
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <BetaNotice />
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: -2.5, mb: 0.5 }}>
+                <Button
+                    onClick={() => navigate('/history')}
+                    sx={{
+                        color: 'white',
+                        textDecoration: 'underline',
+                        textTransform: 'none',
+                        fontSize: '1rem',
+                        '&:hover': {
+                            textDecoration: 'underline',
+                            backgroundColor: 'transparent',
+                        },
+                    }}
+                >
+                    See Past Model History
+                </Button>
+            </Box>
             <form onSubmit={handleSubmit}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                     <Paper elevation={2} sx={{ p: 3 }}>
@@ -180,34 +275,37 @@ const InputsForm = () => {
                             />
                         </Box>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            Tell us the about yourself and your motivaiton for using this model
+                            Tell us about yourself and your motivation for using this model
                         </Typography>
                         <Grid container spacing={3} alignItems="center" sx={{ mb: -2.2 }}>
                             <Grid item xs={3}>
                                 <TextField
                                     fullWidth
-                                    label="Model Title*"
+                                    label="Model Title"
                                     variant="outlined"
                                     name="modelTitle"
                                     value={formData.modelTitle}
+                                    required
                                     onChange={handleInputChange}></TextField>
                             </Grid>
                             <Grid item xs={3}>
                                 <TextField
                                     fullWidth
-                                    label="Geographic Area*"
+                                    label="Geographic Area"
                                     variant="outlined"
                                     name="geographicArea"
                                     value={formData.geographicArea}
+                                    required
                                     onChange={handleInputChange}></TextField>
                             </Grid>
                             <Grid item xs={3}>
                                 <TextField
                                     fullWidth
-                                    label="Motivation*"
+                                    label="Motivation"
                                     variant="outlined"
                                     name="motivation"
                                     value={formData.motivation}
+                                    required
                                     onChange={handleInputChange}></TextField>
                             </Grid>
                             <Grid item xs={3}>
@@ -237,49 +335,59 @@ const InputsForm = () => {
                             />
                         </Box>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            Enter the number of people with Major Depressive Disorder (MDD) in your location and the percentage with Treatement-Resistant Depression (TRD)
+                            Enter the number of people with Major Depressive Disorder (MDD) in your location and the percentage with Treatment-Resistant Depression (TRD)
                         </Typography>
                         <Grid container spacing={3} alignItems="center">
-                            <Grid item>
+                            <Grid item xs={4}>
                                 <NumericFormat
                                     customInput={TextField}
-                                    sx={{ width: "425px" }}
+                                    fullWidth
                                     label="Patients with MDD"
                                     name="MDD"
                                     thousandSeparator=","
-                                    value={formData.MDD}
+                                    value={formData.MDD ?? undefined}
+                                    required
+                                    placeholder="Enter number"
                                     //onChange={handleInputChange}
                                     onValueChange={(values) => {
-                                        const updatedMDD = values.value;
+                                        // Convert empty string to null, otherwise parse as number
+                                        const updatedMDD = values.value === '' ? null : parseFloat(values.value);
                                         setFormData((prev) => {
                                             const newData = { ...prev, MDD: updatedMDD };
                                             // Auto-calculate TRD when MDD changes
-                                            newData.TRD = updatedMDD * (newData.TRD_P / CALCULATION_CONSTANTS.PERCENTAGE_DIVISOR);
+                                            // Only calculate if both MDD and TRD_P are not null
+                                            if (updatedMDD !== null && newData.TRD_P !== null) {
+                                                newData.TRD = updatedMDD * (newData.TRD_P / CALCULATION_CONSTANTS.PERCENTAGE_DIVISOR);
+                                            } else {
+                                                newData.TRD = 0;
+                                            }
                                             return newData;
                                         });
                                     }}
                                     variant="outlined"
                                 />
                             </Grid>
-                            <Grid item>
+                            <Grid item xs={4}>
                                 <TextField
-                                    sx={{ width: "206px" }}  // Smaller width for percentage field
+                                    fullWidth
                                     label="Percentage With TRD"
                                     name="TRD_P"
                                     type="number"
-                                    value={formData.TRD_P}
+                                    value={formData.TRD_P ?? ''}
                                     onChange={handleInputChange}
+                                    required
+                                    placeholder="Enter percentage"
                                     variant="outlined"
                                     InputProps={{
                                         endAdornment: <InputAdornment position="end">%</InputAdornment>,
                                     }}
                                 />
                             </Grid>
-                            <Grid item>
+                            <Grid item xs={4}>
                                 <NumericFormat
                                     customInput={TextField}
-                                    sx={{ width: "425px" }}
-                                    label="Patients with TRD: 2+ Treatment Failures"
+                                    fullWidth
+                                    label="Patients with TRD: 2+ Treatment Failures (Calculated)"
                                     name="TRD"
                                     thousandSeparator=","
                                     value={formData.TRD}
@@ -307,11 +415,13 @@ const InputsForm = () => {
                                 <Grid item xs={12} sm={6} md={4} key={key}>
                                     <TextField
                                         fullWidth
-                                        label={`${label}`}
+                                        label={label}
                                         name={key}
                                         type="number"
+                                        required
+                                        placeholder="Enter percentage"
                                         InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
-                                        value={formData[key]}
+                                        value={formData[key] ?? ''}
                                         onChange={handleInputChange}
                                         variant="outlined"
                                     />
@@ -383,6 +493,8 @@ const InputsForm = () => {
             <ResultsDisplay
                 results={results}
                 formData={formData}
+                actualPercents={actualPercents}
+                setActualPercents={setActualPercents}
                 onDownload={handleDownload}
                 onSave={handleSaveModel}
                 saving={savingModel}

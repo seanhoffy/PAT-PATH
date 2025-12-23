@@ -136,3 +136,59 @@ export const fetchUserProfile = async (userId) => {
     }
 };
 
+/**
+ * Fetch persisted form/results state for a user
+ */
+export const fetchUserFormState = async (userId) => {
+    if (!userId) return { currentForm: null, currentResults: null, currentActualPercents: null };
+
+    try {
+        const docRef = doc(db, 'users', userId);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) return { currentForm: null, currentResults: null, currentActualPercents: null };
+        const data = docSnap.data();
+        return {
+            currentForm: data.currentForm ?? null,
+            currentResults: data.currentResults ?? null,
+            currentActualPercents: data.currentActualPercents ?? null,
+        };
+    } catch (error) {
+        console.error('Error fetching user form state:', error);
+        return { currentForm: null, currentResults: null, currentActualPercents: null };
+    }
+};
+
+/**
+ * Save persisted form/results state for a user
+ */
+export const saveUserFormState = async (userId, currentForm, currentResults, currentActualPercents) => {
+    if (!userId) return;
+    try {
+        const docRef = doc(db, 'users', userId);
+        await updateDoc(docRef, {
+            currentForm: currentForm ?? null,
+            currentResults: currentResults ?? null,
+            currentActualPercents: currentActualPercents ?? null,
+        });
+    } catch (error) {
+        console.error('Error saving user form state:', error);
+    }
+};
+
+/**
+ * Clear persisted form/results state for a user
+ */
+export const clearUserFormState = async (userId) => {
+    if (!userId) return;
+    try {
+        const docRef = doc(db, 'users', userId);
+        await updateDoc(docRef, {
+            currentForm: null,
+            currentResults: null,
+            currentActualPercents: null,
+        });
+    } catch (error) {
+        console.error('Error clearing user form state:', error);
+    }
+};
+

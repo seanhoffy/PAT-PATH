@@ -132,6 +132,31 @@ const HistoryPage = () => {
                                     {model.outputs?.comorbid?.MDD ? parseInt(model.outputs.comorbid.MDD).toLocaleString() : '—'} / {model.outputs?.comorbid?.TRD ? parseInt(model.outputs.comorbid.TRD).toLocaleString() : '—'}
                                 </Typography>
                             </Grid>
+
+                            {/* Actual demand percentages */}
+                            <Grid item xs={12}>
+                                <Typography variant="body2" fontWeight="bold">Actual Demand Inputs (Percent)</Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    MDD Trial: {model.outputs?.actual?.percents?.trialMDD ?? '—'}% &nbsp;|&nbsp; MDD Real: {model.outputs?.actual?.percents?.realMDD ?? '—'}%
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    TRD Trial: {model.outputs?.actual?.percents?.trialTRD ?? '—'}% &nbsp;|&nbsp; TRD Real: {model.outputs?.actual?.percents?.realTRD ?? '—'}%
+                                </Typography>
+                            </Grid>
+
+                            {/* Actual demand outputs */}
+                            <Grid item xs={12}>
+                                <Typography variant="body2" fontWeight="bold">Actual Demand (MDD)</Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Trial: {model.outputs?.actual?.MDD?.trial != null ? parseInt(model.outputs.actual.MDD.trial).toLocaleString() : '—'} &nbsp;/&nbsp; Real: {model.outputs?.actual?.MDD?.real != null ? parseInt(model.outputs.actual.MDD.real).toLocaleString() : '—'}
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Typography variant="body2" fontWeight="bold">Actual Demand (TRD)</Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Trial: {model.outputs?.actual?.TRD?.trial != null ? parseInt(model.outputs.actual.TRD.trial).toLocaleString() : '—'} &nbsp;/&nbsp; Real: {model.outputs?.actual?.TRD?.real != null ? parseInt(model.outputs.actual.TRD.real).toLocaleString() : '—'}
+                                </Typography>
+                            </Grid>
                         </Grid>
                     </Grid>
                 </Grid>

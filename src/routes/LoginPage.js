@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../firebase";
+import { auth, requestPasswordReset } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { Box, Card, CardHeader, CardContent, TextField, Button, CardActions, Avatar, Grid } from "@mui/material";
+import { Box, Card, CardHeader, CardContent, TextField, Button, CardActions, Avatar, Grid, Dialog, DialogTitle, DialogContent, DialogActions, Typography } from "@mui/material";
 import SimpleNavBar from '../components/SimpleNavBar';
 import ThemeProvider from '../components/common/ThemeProvider';
 import { COLORS } from '../constants/colors';
@@ -11,6 +11,10 @@ import { COLORS } from '../constants/colors';
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [resetOpen, setResetOpen] = useState(false);
+    const [resetEmail, setResetEmail] = useState("");
+    const [resetLoading, setResetLoading] = useState(false);
+    const [resetMessage, setResetMessage] = useState("");
     const [user, loading] = useAuthState(auth);
     const navigate = useNavigate();
 
@@ -19,6 +23,36 @@ export default function LoginPage() {
             await signInWithEmailAndPassword(auth, email, password);
         } catch (error) {
             alert("Invalid login");
+        }
+    };
+
+    const handleOpenReset = () => {
+        setResetEmail(email);
+        setResetMessage("");
+        setResetOpen(true);
+    };
+
+    const handleCloseReset = () => {
+        setResetOpen(false);
+        setResetLoading(false);
+        setResetMessage("");
+    };
+
+    const handleSendReset = async () => {
+        if (!resetEmail || !resetEmail.includes("@")) {
+            setResetMessage("Please enter a valid email address.");
+            return;
+        }
+        try {
+            setResetLoading(true);
+            await requestPasswordReset(resetEmail);
+            setResetMessage("If an account exists for this email, a reset link has been sent.");
+            setResetLoading(false);
+            setResetOpen(false);
+            alert("Password reset email sent (if the account exists).");
+        } catch (error) {
+            setResetLoading(false);
+            setResetMessage(error?.message || "Could not send reset email.");
         }
     };
 
@@ -98,11 +132,57 @@ export default function LoginPage() {
                                     Create Account
                                 </Button>
                             </CardActions>
+                            <Box sx={{ mb: -1.5, mt: 0, width: '100%', textAlign: 'center' }}>
+                                <Button
+                                    variant="text"
+                                    sx={{ textTransform: 'none', color: COLORS.primary }}
+                                    onClick={handleOpenReset}
+                                >
+                                    Forgot password?
+                                </Button>
+                            </Box>
                         </Grid>
                         <br />
                     </Card>
                 </Grid>
             </Box>
+
+            {/* Password Reset Dialog */}
+            <Dialog open={resetOpen} onClose={handleCloseReset} maxWidth="xs" fullWidth>
+                <DialogTitle sx={{ fontWeight: 'bold' }}>Reset Password</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" sx={{ mb: 2, color: '#555' }}>
+                        We’ll email you a reset link if the account exists. Please also check spam/junk folders.
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        label="Email"
+                        type="email"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        autoFocus
+                        sx={{ mt: 1 }}
+                    />
+                    {resetMessage && (
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
+                            {resetMessage}
+                        </Typography>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseReset} disabled={resetLoading}>
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleSendReset}
+                        disabled={resetLoading}
+                        sx={{ backgroundColor: COLORS.primary }}
+                    >
+                        {resetLoading ? 'Sending…' : 'Send reset link'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </ThemeProvider>
     );
 }

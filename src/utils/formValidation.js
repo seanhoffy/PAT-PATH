@@ -1,4 +1,4 @@
-import { STRING_FIELD_NAMES } from '../constants/formFields';
+import { STRING_FIELD_NAMES, EXCLUSION_CRITERIA_FIELDS } from '../constants/formFields';
 
 /**
  * Check if a field name is a string field
@@ -11,6 +11,7 @@ export const isStringField = (fieldName) => {
  * Validate form data before submission
  */
 export const validateFormData = (formData) => {
+    // Validate required text fields
     if (!formData.modelTitle || formData.modelTitle.trim() === '') {
         return { isValid: false, message: 'Please fill out all required fields.' };
     }
@@ -20,6 +21,22 @@ export const validateFormData = (formData) => {
     if (!formData.motivation || formData.motivation.trim() === '') {
         return { isValid: false, message: 'Please fill out all required fields.' };
     }
+
+    // Validate required numerical fields (allow 0 as valid, but not null/undefined)
+    if (formData.MDD === null || formData.MDD === undefined) {
+        return { isValid: false, message: 'Please fill out all required fields.' };
+    }
+    if (formData.TRD_P === null || formData.TRD_P === undefined) {
+        return { isValid: false, message: 'Please fill out all required fields.' };
+    }
+
+    // Validate all exclusion criteria fields
+    for (const [key] of EXCLUSION_CRITERIA_FIELDS) {
+        if (formData[key] === null || formData[key] === undefined) {
+            return { isValid: false, message: 'Please fill out all required fields.' };
+        }
+    }
+
     return { isValid: true };
 };
 

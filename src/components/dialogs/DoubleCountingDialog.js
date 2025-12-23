@@ -18,13 +18,13 @@ const DoubleCountingDialog = ({ open, onClose, formData, onInputChange }) => {
             <DialogTitle>Adjust Exclusion Criteria for Double Counting</DialogTitle>
             <DialogContent>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                    These inputs allow you flexibility to adjust for double counting if needed as some exclusion criteria overlap. The default values come from the same study in the "about" section and should only be changed if you have access to contradictory data or an expert in this field
+                    These inputs allow you flexibility to adjust for double counting if needed as some exclusion criteria overlap. The default values come from the same study in the "about" section and should only be changed if you have access to better or more recent data on overlapping disorders and you are an expert in this field.
                 </Typography>
                 <Typography variant="body2">
                     Psychological Problems: Percentage of MDD subjects with a mental disorder and/or a suicide attempt in the past year.
                 </Typography>
                 <Typography variant="body2">
-                    Health Conditions: Percentage of MDD subjects with diabetes, stroke, heart attack in the last year, and/or high blood pressure (140+/90+ and treatement-resistant)
+                    Health Conditions: Percentage of MDD subjects with diabetes, stroke, heart attack in the last year, and/or high blood pressure (140+/90+ and treatment-resistant).
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 4 }}>
                     Lower Hepatic Impairment: Percentage of MDD subjects with this condition.

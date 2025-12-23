@@ -5,6 +5,8 @@ import Register from "./routes/Register";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import PDFPage from "./routes/research_paper";
 import HistoryPage from "./routes/HistoryPage";
+import TerminologyPage from "./routes/TerminologyPage";
+import AboutUsPage from "./routes/AboutUsPage";
 
 
 function App() {
@@ -17,6 +19,8 @@ function App() {
         <Route path="/home" element={<HomePage />} />
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/researchpaper" element={<PDFPage />} />
+        <Route path="/terminology" element={<TerminologyPage />} />
+        <Route path="/about" element={<AboutUsPage />} />
       </Routes>
     </Router>
   );

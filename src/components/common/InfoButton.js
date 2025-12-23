@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
+import { COLORS } from '../../constants/colors';
 
 const InfoButton = ({ dialogTitle, dialogContent }) => {
     const [open, setOpen] = useState(false);
@@ -10,8 +11,18 @@ const InfoButton = ({ dialogTitle, dialogContent }) => {
 
     return (
         <>
-            <IconButton onClick={handleOpen}>
-                <InfoIcon />
+            <IconButton
+                onClick={handleOpen}
+                sx={{
+                    color: COLORS.primary,
+                    '&:hover': {
+                        color: COLORS.primaryHover,
+                        backgroundColor: 'rgba(2, 62, 116, 0.08)',
+                    },
+                    padding: 0.75,
+                }}
+            >
+                <InfoIcon fontSize="medium" />
             </IconButton>
             <Dialog
                 open={open}

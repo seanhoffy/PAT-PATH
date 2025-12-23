@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
 });
 
 // PDF Document Component
-const MyDocument = ({ formData, results }) => {
+const MyDocument = ({ formData, results, actual }) => {
     if (!formData) {
         return (
             <Document>
@@ -285,6 +285,78 @@ const MyDocument = ({ formData, results }) => {
                             <Text style={styles.value}>{parseInt(results.real.TRD).toLocaleString()}</Text>
                         </View>
                     </View>
+
+                    {/* Actual demand estimates, if provided */}
+                    {actual && (
+                        <>
+                            <Text style={styles.subtitle}>Actual Demand Estimates</Text>
+                            <View style={styles.resultsGrid}>
+                                <View style={styles.resultItem}>
+                                    <Text style={styles.label}>MDD – Trial %:</Text>
+                                    <Text style={styles.value}>
+                                        {actual.percents?.trialMDD != null ? `${actual.percents.trialMDD}%` : 'N/A'}
+                                    </Text>
+                                </View>
+                                <View style={styles.resultItem}>
+                                    <Text style={styles.label}>MDD – Real World %:</Text>
+                                    <Text style={styles.value}>
+                                        {actual.percents?.realMDD != null ? `${actual.percents.realMDD}%` : 'N/A'}
+                                    </Text>
+                                </View>
+                            </View>
+                            <View style={styles.resultsGrid}>
+                                <View style={styles.resultItem}>
+                                    <Text style={styles.label}>TRD – Trial %:</Text>
+                                    <Text style={styles.value}>
+                                        {actual.percents?.trialTRD != null ? `${actual.percents.trialTRD}%` : 'N/A'}
+                                    </Text>
+                                </View>
+                                <View style={styles.resultItem}>
+                                    <Text style={styles.label}>TRD – Real World %:</Text>
+                                    <Text style={styles.value}>
+                                        {actual.percents?.realTRD != null ? `${actual.percents.realTRD}%` : 'N/A'}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            <View style={styles.resultsGrid}>
+                                <View style={styles.resultItem}>
+                                    <Text style={styles.label}>Actual MDD – Trial:</Text>
+                                    <Text style={styles.value}>
+                                        {actual.MDD?.trial != null
+                                            ? actual.MDD.trial.toLocaleString()
+                                            : 'N/A'}
+                                    </Text>
+                                </View>
+                                <View style={styles.resultItem}>
+                                    <Text style={styles.label}>Actual MDD – Real World:</Text>
+                                    <Text style={styles.value}>
+                                        {actual.MDD?.real != null
+                                            ? actual.MDD.real.toLocaleString()
+                                            : 'N/A'}
+                                    </Text>
+                                </View>
+                            </View>
+                            <View style={styles.resultsGrid}>
+                                <View style={styles.resultItem}>
+                                    <Text style={styles.label}>Actual TRD – Trial:</Text>
+                                    <Text style={styles.value}>
+                                        {actual.TRD?.trial != null
+                                            ? actual.TRD.trial.toLocaleString()
+                                            : 'N/A'}
+                                    </Text>
+                                </View>
+                                <View style={styles.resultItem}>
+                                    <Text style={styles.label}>Actual TRD – Real World:</Text>
+                                    <Text style={styles.value}>
+                                        {actual.TRD?.real != null
+                                            ? actual.TRD.real.toLocaleString()
+                                            : 'N/A'}
+                                    </Text>
+                                </View>
+                            </View>
+                        </>
+                    )}
                 </View>
             </Page>
         </Document>
