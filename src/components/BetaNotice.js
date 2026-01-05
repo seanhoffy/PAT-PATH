@@ -7,7 +7,7 @@ const BetaNotice = () => (
             backgroundColor: '#d6bf6a',
             color: '#1f1f1f',
             borderRadius: 2,
-            p: { xs: 2.5, md: 3 },
+            p: { xs: 2, md: 2.5 },
             mb: 3,
             border: '1px solid #b79f4f',
         }}
@@ -15,11 +15,11 @@ const BetaNotice = () => (
         <Typography
             variant="h5"
             fontWeight="bold"
-            sx={{ textAlign: 'center', mb: 2, color: '#1f1f1f' }}
+            sx={{ textAlign: 'center', mb: 1, color: '#1f1f1f' }}
         >
             Beta Testing Notice
         </Typography>
-        <Typography variant="body1" sx={{ mb: 1.5 }}>
+        <Typography variant="body1" sx={{ mb: .5 }}>
             This tool is currently in beta testing. As we continue to refine its functionality, results may not always be fully accurate.
         </Typography>
         <Typography variant="body1">

@@ -8,12 +8,12 @@ import {
     DialogContent,
     DialogActions,
 } from "@mui/material";
-import {
-    FilterAlt,
-    Download,
-    MenuBook,
-    Calculate,
-} from "@mui/icons-material";
+// import {
+//     FilterAlt,
+//     Download,
+//     MenuBook,
+//     Calculate,
+// } from "@mui/icons-material";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
@@ -107,6 +107,7 @@ const LandingPage = () => {
                         >
                             University of California, Berkeley.<br />
                             Collaborative for the Economics of Psychedelics.<br />
+                            <br />
                             <em>We crunch the numbers that bring psychedelics to life.</em>
                         </Typography>
                     </Box>
@@ -138,7 +139,7 @@ const LandingPage = () => {
                             fontSize: { xs: "1.75rem", sm: "2.25rem", md: "2.75rem", lg: "3rem" },
                         }}
                     >
-                        Psilocybin Treatment for Depression.
+                        Psilocybin Treatment for Depression
                     </Typography>
                     <Typography
                         variant="h6"
@@ -171,10 +172,10 @@ const LandingPage = () => {
                             rel="noopener noreferrer"
                             style={{ color: "#023e74", textDecoration: "underline", fontWeight: 600 }}
                         >
-                            Rab et al, 2024
+                            Marseille, Rab, Raison
                         </a>
-                        , the CEP psilocybin-assisted therapy (PSIL-AT) demand model
-                        provides estimates of the potential demand for PSIL-AT. It identifies eligible
+                        , the CEP psilocybin-assisted therapy (PAT) demand model
+                        provides estimates of the potential demand for PAT. It identifies eligible
                         individuals among those with major depressive disorder (MDD) and those with 
                         treatment-resistant depression (TRD). It applies validated inclusion and exclusion 
                         criteria from peer-reviewed research to accurately project treatment needs.
@@ -190,7 +191,7 @@ const LandingPage = () => {
                                 py: { xs: 1, sm: 1.5 },
                             }}
                         >
-                            Try the Model
+                            Use the Model
                         </Button>
                     </Box>
                 </Box>
@@ -238,6 +239,7 @@ const LandingPage = () => {
                         >
                             University of California, Berkeley.<br />
                             Collaborative for the Economics of Psychedelics.<br />
+                            <br />
                             <em>We crunch the numbers that</em><br />
                             <em>brings psychedelics to life.</em>
                         </Typography>
@@ -284,19 +286,18 @@ const LandingPage = () => {
                     color: '#023e74',
                     fontSize: { xs: "2rem", sm: "2.25rem", md: "2.5rem" }
                 }}>
-                    What Does PATpath Offer?
+                    What Does PATpath Do?
                 </Typography>
                 <Paper elevation={0} sx={{ 
                     p: { xs: 2, md: 3 },
                     mb: 3,
-                    backgroundColor: 'white',
+                    backgroundColor: '#023e74',
                     borderRadius: 2,
-                    border: '2px solid rgba(2, 62, 116, 0.3)',
                     textAlign: 'center',
                 }}>
-                    <Typography variant="h5" fontWeight="bold" sx={{ color: '#023e74' }}>
+                    <Typography variant="h5" fontWeight="bold" sx={{ color: 'white', fontSize: { xs: '1.5rem', sm: '1.6rem', md: '1.75rem' } }}>
                         Make evidence-based projections of the potential demand for
-                        psilocybin assisted therapy.
+                        psilocybin-assisted therapy.
                     </Typography>
                 </Paper>
                 <Grid container spacing={3}>
@@ -305,15 +306,14 @@ const LandingPage = () => {
                         <Paper elevation={0} sx={{ 
                             p: 1,
                             height: '100%',
-                            backgroundColor: 'white',
+                            backgroundColor: '#023e74',
                             borderRadius: 2,
-                            border: '2px solid rgba(2, 62, 116, 0.3)',
                         }}>
-                            <FilterAlt color="primary" fontSize="large" />
-                            <Typography variant="h5" fontWeight="bold" sx={{ color: '#023e74' }}>
+                            {/* <FilterAlt sx={{ color: 'white' }} fontSize="large" /> */}
+                            <Typography variant="h5" fontWeight="bold" sx={{ color: 'white' }}>
                                 Customizable Inputs
                             </Typography>
-                            <Typography variant="h6" sx={{ color: '#023e74', mb: -1.5 }}>
+                            <Typography variant="h6" sx={{ color: 'white', mb: -1.5 }}>
                                 Choose population data and inclusion and exclusion criteria.
                             </Typography>
                         </Paper>
@@ -324,15 +324,14 @@ const LandingPage = () => {
                         <Paper elevation={0} sx={{ 
                             p: 1,
                             height: '100%',
-                            backgroundColor: 'white',
+                            backgroundColor: '#023e74',
                             borderRadius: 2,
-                            border: '2px solid rgba(2, 62, 116, 0.3)',
                         }}>
-                            <Download color="primary" fontSize="large" />
-                            <Typography variant="h5" fontWeight="bold" sx={{ color: '#023e74' }}>
+                            {/* <Download sx={{ color: 'white' }} fontSize="large" /> */}
+                            <Typography variant="h5" fontWeight="bold" sx={{ color: 'white' }}>
                                 PDF Report Generation
                             </Typography>
-                            <Typography variant="h6" sx={{ color: '#023e74', mb: -1.5 }}>
+                            <Typography variant="h6" sx={{ color: 'white', mb: -1.5 }}>
                                 Download publication-ready reports for your use case.
                             </Typography>
                         </Paper>
@@ -343,15 +342,14 @@ const LandingPage = () => {
                         <Paper elevation={0} sx={{ 
                             p: 1,
                             height: '100%',
-                            backgroundColor: 'white',
+                            backgroundColor: '#023e74',
                             borderRadius: 2,
-                            border: '2px solid rgba(2, 62, 116, 0.3)',
                         }}>
-                            <MenuBook color="primary" fontSize="large" />
-                            <Typography variant="h5" fontWeight="bold" sx={{ color: '#023e74' }}>
+                            {/* <MenuBook sx={{ color: 'white' }} fontSize="large" /> */}
+                            <Typography variant="h5" fontWeight="bold" sx={{ color: 'white' }}>
                                 Data Transparency
                             </Typography>
-                            <Typography variant="h6"sx={{ color: '#023e74', mb: -1.5 }}>
+                            <Typography variant="h6"sx={{ color: 'white', mb: -1.5 }}>
                                 Use default data inputs based on peer-reviewed source and authoritative population estimates.
                             </Typography>
                         </Paper>
@@ -362,15 +360,14 @@ const LandingPage = () => {
                         <Paper elevation={0} sx={{ 
                             p: 1,
                             height: '100%',
-                            backgroundColor: 'white',
+                            backgroundColor: '#023e74',
                             borderRadius: 2,
-                            border: '2px solid rgba(2, 62, 116, 0.3)',
                         }}>
-                            <Calculate color="primary" fontSize="large" />
-                            <Typography variant="h5" fontWeight="bold" sx={{ color: '#023e74' }}>
+                            {/* <Calculate sx={{ color: 'white' }} fontSize="large" /> */}
+                            <Typography variant="h5" fontWeight="bold" sx={{ color: 'white' }}>
                                 Real-time Calculations
                             </Typography>
-                            <Typography variant="h6" sx={{ color: '#023e74', mb: -1.5 }}>
+                            <Typography variant="h6" sx={{ color: 'white', mb: -1.5 }}>
                                 Instantly see how inclusion/exclusion criteria affect treatment demand for your population.
                             </Typography>
                         </Paper>
@@ -391,7 +388,7 @@ const LandingPage = () => {
                     mb: 3,
                     fontSize: { xs: "2rem", sm: "2.25rem", md: "2.5rem" }
                 }}>
-                    Who Should Use PATpath?
+                    Intended Users
                 </Typography>
                 
                 <Grid container spacing={3} sx={{ alignItems: 'stretch' }}>
@@ -430,7 +427,8 @@ const LandingPage = () => {
                                 Policymakers & Healthcare Systems
                             </Typography>
                             <Typography variant="h6" sx={{ color: '#023e74', mb: 0 }}>
-                                • Assess potential needs for psilocybin-assisted therapy                           </Typography>
+                                • Assess potential needs for psilocybin-assisted therapy.                          
+                            </Typography>
                             <Typography variant="h6" sx={{ color: '#023e74', mb: 0 }}>
                                 • Plan resource allocation using region-specific insights.
                             </Typography>
@@ -463,7 +461,7 @@ const LandingPage = () => {
                             }
                         }}
                     >
-                        Try the Model
+                        Use the Model
                     </Button>
                 </Box>
             </Box>

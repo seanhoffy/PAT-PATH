@@ -44,15 +44,15 @@ const InputsForm = () => {
         MDD: null,
         TRD_P: null,
         TRD: 0,
-        manic_P: null,
-        suicide_P: null,
-        diabetes_P: null,
-        stroke_P: null,
-        heart_attack_P: null,
-        blood_pressure_P: null,
-        epilepsy_P: null,
-        personality_P: null,
-        hepatic_P: null,
+        manic_P: FORM_DEFAULTS.manic_P,
+        suicide_P: FORM_DEFAULTS.suicide_P,
+        diabetes_P: FORM_DEFAULTS.diabetes_P,
+        stroke_P: FORM_DEFAULTS.stroke_P,
+        heart_attack_P: FORM_DEFAULTS.heart_attack_P,
+        blood_pressure_P: FORM_DEFAULTS.blood_pressure_P,
+        epilepsy_P: FORM_DEFAULTS.epilepsy_P,
+        personality_P: FORM_DEFAULTS.personality_P,
+        hepatic_P: FORM_DEFAULTS.hepatic_P,
         psycological_P: FORM_DEFAULTS.psycological_P,
         health_P: FORM_DEFAULTS.health_P,
         comorbid_hepatic_P: FORM_DEFAULTS.comorbid_hepatic_P,
@@ -82,6 +82,7 @@ const InputsForm = () => {
             };
             const loadFormState = async () => {
                 const { currentForm, currentResults, currentActualPercents } = await fetchUserFormState(user.uid);
+                // Only set formData if currentForm exists (saved state), otherwise use initial state with defaults
                 if (currentForm) {
                     setFormData(currentForm);
                 }
@@ -247,6 +248,13 @@ const InputsForm = () => {
     return (
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <BetaNotice />
+            <Paper elevation={0} sx={{ mb: 3, mt: 2, p: 2.5, backgroundColor: 'white', borderRadius: 2 }}>
+                <Typography variant="body1" sx={{ color: '#023e74', lineHeight: 1.7 }}>
+                    To generate a demand estimate for psilocybin-assisted therapy in your population, you will need to provide 11 numerical input values and context about your model. 
+                    Running the model will take as little as five minutes if you are comfortable with default values for population characteristics, 
+                    or if you have prepared input values previously. Otherwise, completing all inputs typically takes about 10 minutes.
+                </Typography>
+            </Paper>
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: -2.5, mb: 0.5 }}>
                 <Button
                     onClick={() => navigate('/history')}
@@ -254,7 +262,7 @@ const InputsForm = () => {
                         color: 'white',
                         textDecoration: 'underline',
                         textTransform: 'none',
-                        fontSize: '1rem',
+                        fontSize: '1.35rem',
                         '&:hover': {
                             textDecoration: 'underline',
                             backgroundColor: 'transparent',
@@ -407,8 +415,11 @@ const InputsForm = () => {
                                 dialogContent={INFO_DIALOGS.exclusionCriteria.content}
                             />
                         </Box>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: .5 }}>
                             Enter the percentage of Major Depressive Disorder patients that have these listed conditions in your area
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold" sx={{ mb: 2 }}>
+                            These estimates apply to the US as a whole, if you have better estimates that apply to your population of interest you can override them.
                         </Typography>
                         <Grid container spacing={3}>
                             {EXCLUSION_CRITERIA_FIELDS.map(([key, label]) => (

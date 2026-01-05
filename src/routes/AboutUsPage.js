@@ -5,10 +5,34 @@ import ThemeProvider from '../components/common/ThemeProvider';
 import { COLORS } from '../constants/colors';
 
 const TEAM_MEMBERS = [
-    { name: 'Elliot Marseille', role: 'Co-Investigator', initials: 'EM' },
-    { name: 'Jim Khan', role: 'Co-Investigator', initials: 'JK' },
-    { name: 'Martin Guerrero', role: 'Researcher', initials: 'MG' },
-    { name: 'Sean Hoffmeister', role: 'Developer', initials: 'SH' },
+    {
+        name: 'Elliot Marseille',
+        role: 'DrPH, MPP',
+        initials: 'EM',
+        image: '/elliot-marseille.jpg',
+        bio: 'Elliot Marseille, DrPH, MPP, is a health economist whose work sits at the intersection of psychedelic science, public health, and policy. He directs the Collaborative for the Economics of Psychedelics at UC Berkeley, where he and collaborators develop rigorous, decision-relevant analyses of psychedelic-assisted therapies—spanning cost-effectiveness, access, pricing, and implementation. The work of CEP is designed to inform payers, regulators, and health systems on coverage and scale-up.\n\nRecent projects and publications examine the cost-effectiveness and epidemic impact of MDMA-assisted therapy for PTSD, psilocybin for depression, pricing of MDMA, feasibility of introducing psychedelic therapies to low and middle income countries, and the system-level efficiencies possible with group-based delivery models. Partners have included federal agencies, leading academic centers, and nonprofits.\n\nDr. Marseille\'s career is grounded in three decades of HIV/AIDS and global health economics, leading studies for CDC, the World Bank, the Gates Foundation, and ministries of health across Africa and Asia. He has published over 80 peer-reviewed articles in 40+ years of public health research.'
+    },
+    {
+        name: 'James G. Kahn',
+        role: 'MD, MPH',
+        initials: 'JK',
+        image: '/james-kahn.jpg',
+        bio: 'James G. Kahn, MD, MPH, is emeritus professor at the UCSF Philip R. Lee Institute for Health Policy Studies. He has 30 years\' experience in the empirical and modeled assessment of the cost, effects and cost-effectiveness of global health interventions, programs and policies, with more than 85 publications in this area, including a focus on global mental health. Dr. Kahn was a founding faculty member of UC Berkeley\'s Collaborative for the Economics of Psychedelics and continues to serve as a senior advisor.\n\nHe has taught four courses in health economics at UCSF including global health economics and decision and cost-effectiveness analysis. He started and directs the UCSF Global Health Economics Consortium (GHECon). He has mentored dozens of post- and pre-doctoral students and faculty over the past 25 years.'
+    },
+    {
+        name: 'Martin Guerrero',
+        role: 'Researcher',
+        initials: 'MG',
+        image: '/martin-guerrero.jpg',
+        bio: 'Short bio placeholder for Martin Guerrero. This will describe their background, role on the project, and interest in psilocybin-assisted therapy and health economics.'
+    },
+    {
+        name: 'Sean Hoffmeister',
+        role: 'Developer',
+        initials: 'SH',
+        image: '/sean-hoffmeister.png',
+        bio: 'Sean Hoffmeister graduated from UCLA with an undergraduate computer science degree and a 3.9 GPA, and is now attending UCLA for his Master\'s of Science in computer science. He worked as an engineering intern at Amazon Web Services and is ready to start a long career in software after graduation.\n\nHe has worked on a lot of projects in this space, developing web applications for many distinct purposes using many different frameworks, whether at school, work, or to learn.'
+    },
 ];
 
 const AboutUsPage = () => {
@@ -68,21 +92,32 @@ const AboutUsPage = () => {
                                         <Paper
                                             elevation={1}
                                             sx={{
-                                                p: 2,
+                                                p: 3,
                                                 borderRadius: 2,
                                                 textAlign: 'center',
                                                 height: '100%',
                                             }}
                                         >
-                                            {/* Placeholder for profile image */}
                                             <Avatar
+                                                src={process.env.PUBLIC_URL + member.image}
+                                                alt={member.name}
                                                 sx={{
-                                                    width: 72,
-                                                    height: 72,
+                                                    width: 120,
+                                                    height: 120,
                                                     mx: 'auto',
-                                                    mb: 1.5,
+                                                    mb: 2,
                                                     bgcolor: COLORS.primary,
                                                     fontWeight: 'bold',
+                                                    overflow: 'hidden',
+                                                    '& img': {
+                                                        objectFit: 'cover',
+                                                        ...(member.name === 'Sean Hoffmeister' && {
+                                                            transform: 'scale(1.15)',
+                                                        }),
+                                                        ...((member.name === 'James G. Kahn' || member.name === 'Elliot Marseille') && {
+                                                            objectPosition: 'center 25%',
+                                                        }),
+                                                    },
                                                 }}
                                             >
                                                 {member.initials}
@@ -96,17 +131,15 @@ const AboutUsPage = () => {
                                             </Typography>
                                             <Typography
                                                 variant="subtitle2"
-                                                sx={{ color: '#666', mb: 1.5 }}
+                                                sx={{ color: '#666', mb: 2 }}
                                             >
                                                 {member.role}
                                             </Typography>
                                             <Typography
                                                 variant="body2"
-                                                sx={{ color: '#444', lineHeight: 1.6 }}
+                                                sx={{ color: '#444', lineHeight: 1.7, textAlign: 'left', whiteSpace: 'pre-line' }}
                                             >
-                                                Short bio placeholder for {member.name}. This will describe their
-                                                background, role on the project, and interest in psilocybin-assisted
-                                                therapy and health economics.
+                                                {member.bio}
                                             </Typography>
                                         </Paper>
                                     </Grid>
@@ -131,24 +164,43 @@ const AboutUsPage = () => {
                                     gap: 3,
                                 }}
                             >
-                                {/* CEP Logo */}
+                                {/* CEP Logo and Tagline */}
                                 <Box
-                                    component="img"
-                                    src={process.env.PUBLIC_URL + '/cepLogo2.png'}
-                                    alt="CEP Logo"
                                     sx={{
-                                        width: { xs: 160, md: 200 },
-                                        height: 'auto',
-                                        objectFit: 'contain',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
                                     }}
-                                />
+                                >
+                                    <Box
+                                        component="img"
+                                        src={process.env.PUBLIC_URL + '/cepLogo2.png'}
+                                        alt="CEP Logo"
+                                        sx={{
+                                            width: { xs: 160, md: 200 },
+                                            height: 'auto',
+                                            objectFit: 'contain',
+                                        }}
+                                    />
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            fontStyle: 'italic',
+                                            color: '#666',
+                                            mt: 1,
+                                            textAlign: 'center',
+                                        }}
+                                    >
+                                        We crunch the numbers that bring psychedelics to life.
+                                    </Typography>
+                                </Box>
                                 {/* Placeholder description */}
                                 <Typography
                                     variant="body1"
                                     sx={{ color: '#333', lineHeight: 1.7 }}
                                 >
                                     Placeholder for a description of the UC Berkeley Collaborative for the
-                                    Economics of Psychedelics (CEP). This section will describe CEP’s mission,
+                                    Economics of Psychedelics (CEP). This section will describe CEP's mission,
                                     research focus, and role in developing and supporting the PATpath model.
                                 </Typography>
                             </Box>
