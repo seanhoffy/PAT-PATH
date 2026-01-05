@@ -199,9 +199,8 @@ const AboutUsPage = () => {
                                     variant="body1"
                                     sx={{ color: '#333', lineHeight: 1.7 }}
                                 >
-                                    Placeholder for a description of the UC Berkeley Collaborative for the
-                                    Economics of Psychedelics (CEP). This section will describe CEP's mission,
-                                    research focus, and role in developing and supporting the PATpath model.
+                                    CEP is a network of health economists dedicated to achieving the potential of psychedelic therapies for high-priority mental health conditions. Through the application of policy-relevant economic analyses, CEP seeks to enhance clinical outcomes, increase efficiency of service delivery, and increase access to these promising therapies for everyone who can benefit. 
+
                                 </Typography>
                             </Box>
                         </Paper>
