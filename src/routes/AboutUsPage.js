@@ -7,31 +7,31 @@ import { COLORS } from '../constants/colors';
 const TEAM_MEMBERS = [
     {
         name: 'Elliot Marseille',
-        role: 'DrPH, MPP',
+        role: 'Project Co-Lead',
         initials: 'EM',
         image: '/elliot-marseille.jpg',
         bio: 'Elliot Marseille, DrPH, MPP, is a health economist whose work sits at the intersection of psychedelic science, public health, and policy. He directs the Collaborative for the Economics of Psychedelics at UC Berkeley, where he and collaborators develop rigorous, decision-relevant analyses of psychedelic-assisted therapies—spanning cost-effectiveness, access, pricing, and implementation. The work of CEP is designed to inform payers, regulators, and health systems on coverage and scale-up.\n\nRecent projects and publications examine the cost-effectiveness and epidemic impact of MDMA-assisted therapy for PTSD, psilocybin for depression, pricing of MDMA, feasibility of introducing psychedelic therapies to low and middle income countries, and the system-level efficiencies possible with group-based delivery models. Partners have included federal agencies, leading academic centers, and nonprofits.\n\nDr. Marseille\'s career is grounded in three decades of HIV/AIDS and global health economics, leading studies for CDC, the World Bank, the Gates Foundation, and ministries of health across Africa and Asia. He has published over 80 peer-reviewed articles in 40+ years of public health research.'
     },
     {
         name: 'James G. Kahn',
-        role: 'MD, MPH',
+        role: 'Project Co-Lead',
         initials: 'JK',
         image: '/james-kahn.jpg',
         bio: 'James G. Kahn, MD, MPH, is emeritus professor at the UCSF Philip R. Lee Institute for Health Policy Studies. He has 30 years\' experience in the empirical and modeled assessment of the cost, effects and cost-effectiveness of global health interventions, programs and policies, with more than 85 publications in this area, including a focus on global mental health. Dr. Kahn was a founding faculty member of UC Berkeley\'s Collaborative for the Economics of Psychedelics and continues to serve as a senior advisor.\n\nHe has taught four courses in health economics at UCSF including global health economics and decision and cost-effectiveness analysis. He started and directs the UCSF Global Health Economics Consortium (GHECon). He has mentored dozens of post- and pre-doctoral students and faculty over the past 25 years.'
     },
     {
-        name: 'Martin Guerrero',
-        role: 'Researcher',
+        name: 'Martín Guerrero',
+        role: 'Research Consultant',
         initials: 'MG',
         image: '/martin-guerrero.jpg',
-        bio: 'Short bio placeholder for Martin Guerrero. This will describe their background, role on the project, and interest in psilocybin-assisted therapy and health economics.'
+        bio: 'Martín Guerrero, MBA, CFA, is a graduate student in the Psychoactive Pharmaceutical Investigations program at the University of Wisconsin–Madison. His research interests center on the practical implementation of psychedelic-assisted therapies, including the development of clinical infrastructure and the economic case for insurance coverage.\n\nAs a project manager, Martín supports CEP\'s work by contributing to the development of open-source cost-effectiveness tools. He brings 20 years of private-sector experience in finance, banking, investing, and entrepreneurship, most recently cofounding a nationally distributed CBD consumer products company navigating health-adjacent markets and evolving regulatory frameworks. He also serves as a reviewer of psychedelic research grant applications to the Arizona Biomedical Research Center.'
     },
     {
         name: 'Sean Hoffmeister',
         role: 'Developer',
         initials: 'SH',
         image: '/sean-hoffmeister.png',
-        bio: 'Sean Hoffmeister graduated from UCLA with an undergraduate computer science degree and a 3.9 GPA, and is now attending UCLA for his Master\'s of Science in computer science. He worked as an engineering intern at Amazon Web Services and is ready to start a long career in software after graduation.\n\nHe has worked on a lot of projects in this space, developing web applications for many distinct purposes using many different frameworks, whether at school, work, or to learn.'
+        bio: 'Sean Hoffmeister, BS, MS, graduated from UCLA with an undergraduate computer science degree and a 3.9 GPA, and is now attending UCLA for his Master\'s of Science in computer science. He worked as an engineering intern at Amazon Web Services and is ready to start a long career in software after graduation.\n\nHe has worked on a lot of projects in this space, developing web applications for many distinct purposes using many different frameworks, whether at school, work, or to learn.'
     },
 ];
 
