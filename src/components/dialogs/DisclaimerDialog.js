@@ -33,7 +33,7 @@ const DisclaimerDialog = ({ open, onClose, onProceed, disclaimerChecked, onDiscl
                     }}
                 >
                     <Typography variant="body1" fontWeight="bold" sx={{ color: '#333' }}>
-                        CEP does not take responsibility for user-provided inputs or the resulting model outputs. The relevance and accuracy of results depend on entering appropriate inputs and interpreting the outputs with professional judgment.
+                        CEP does not take responsibility for user-provided inputs or the resulting model outputs. The relevance and accuracy of results depend on entering appropriate inputs and properly interpreting the outputs.
                     </Typography>
                 </Box>
                 <FormControlLabel
@@ -44,15 +44,15 @@ const DisclaimerDialog = ({ open, onClose, onProceed, disclaimerChecked, onDiscl
                             color="primary"
                         />
                     }
-                    label="I understand what each input to this model does and have read the information provided from the info buttons in each subsection."
+                    label="I understand."
                     sx={{
                         display: 'flex',
-                        alignItems: 'flex-start',
+                        alignItems: 'center',
                         marginLeft: 0,
                         '.MuiFormControlLabel-label': {
-                            fontSize: '0.9rem',
+                            fontSize: '1.1rem',
                             lineHeight: 1.4,
-                            marginLeft: 1,
+                            marginLeft: -0.8,
                         },
                     }}
                 />

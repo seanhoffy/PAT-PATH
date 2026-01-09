@@ -147,7 +147,7 @@ const EditModelDialog = ({ open, onClose, model, onSave }) => {
                                 <TextField
                                     fullWidth
                                     size="small"
-                                    label="Motivation"
+                                    label="Scenario"
                                     variant="outlined"
                                     name="motivation"
                                     value={formData.motivation || ''}

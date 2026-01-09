@@ -21,7 +21,7 @@ const TEAM_MEMBERS = [
     },
     {
         name: 'Martín Guerrero',
-        role: 'Research Consultant',
+        role: 'Project Manager',
         initials: 'MG',
         image: '/martin-guerrero.jpg',
         bio: 'Martín Guerrero, MBA, CFA, is a graduate student in the Psychoactive Pharmaceutical Investigations program at the University of Wisconsin–Madison. His research interests center on the practical implementation of psychedelic-assisted therapies, including the development of clinical infrastructure and the economic case for insurance coverage.\n\nAs a project manager, Martín supports CEP\'s work by contributing to the development of open-source cost-effectiveness tools. He brings 20 years of private-sector experience in finance, banking, investing, and entrepreneurship, most recently cofounding a nationally distributed CBD consumer products company navigating health-adjacent markets and evolving regulatory frameworks. He also serves as a reviewer of psychedelic research grant applications to the Arizona Biomedical Research Center.'
@@ -31,7 +31,7 @@ const TEAM_MEMBERS = [
         role: 'Developer',
         initials: 'SH',
         image: '/sean-hoffmeister.png',
-        bio: 'Sean Hoffmeister, BS, MS, graduated from UCLA with an undergraduate computer science degree and a 3.9 GPA, and is now attending UCLA for his Master\'s of Science in computer science. He worked as an engineering intern at Amazon Web Services and is ready to start a long career in software after graduation.\n\nHe has worked on a lot of projects in this space, developing web applications for many distinct purposes using many different frameworks, whether at school, work, or to learn.'
+        bio: 'Sean Hoffmeister, BS, MS, graduated from UCLA with an undergraduate computer science degree and a 3.9 GPA, and is now attending UCLA for his Master\'s of Science in computer science. He worked as an engineering intern at Amazon Web Services this past summerand is ready to start a long career in software after graduation.\n\nHe has worked on many projects in this space, developing web applications for distinct purposes using different frameworks. He loves to code whether at school, work, or to learn. This project has been a great opportunity to develop his skills and gain experience in the field of computer science.'
     },
 ];
 
@@ -149,13 +149,6 @@ const AboutUsPage = () => {
                             <Divider sx={{ my: 3 }} />
 
                             {/* CEP Section */}
-                            <Typography
-                                variant="h5"
-                                fontWeight="bold"
-                                sx={{ mb: 2, color: COLORS.primary }}
-                            >
-                                CEP – UC Berkeley Collaborative for the Economics of Psychedelics
-                            </Typography>
                             <Box
                                 sx={{
                                     display: 'flex',
@@ -194,14 +187,23 @@ const AboutUsPage = () => {
                                         We crunch the numbers that bring psychedelics to life.
                                     </Typography>
                                 </Box>
-                                {/* Placeholder description */}
-                                <Typography
-                                    variant="body1"
-                                    sx={{ color: '#333', lineHeight: 1.7 }}
-                                >
-                                    CEP is a network of health economists dedicated to achieving the potential of psychedelic therapies for high-priority mental health conditions. Through the application of policy-relevant economic analyses, CEP seeks to enhance clinical outcomes, increase efficiency of service delivery, and increase access to these promising therapies for everyone who can benefit. 
+                                {/* Title and Description */}
+                                <Box sx={{ flex: 1 }}>
+                                    <Typography
+                                        variant="h6"
+                                        fontWeight="bold"
+                                        sx={{ mb: 2, color: COLORS.primary, textAlign: 'center' }}
+                                    >
+                                        CEP – UC Berkeley Collaborative for the Economics of Psychedelics
+                                    </Typography>
+                                    <Typography
+                                        variant="body1"
+                                        sx={{ color: '#333', lineHeight: 1.7, fontSize: '0.9rem' }}
+                                    >
+                                        CEP is a network of health economists dedicated to achieving the potential of psychedelic therapies for high-priority mental health conditions. Through the application of policy-relevant economic analyses, CEP seeks to enhance clinical outcomes, increase efficiency of service delivery, and increase access to these promising therapies for everyone who can benefit. 
 
-                                </Typography>
+                                    </Typography>
+                                </Box>
                             </Box>
                         </Paper>
                     </Container>

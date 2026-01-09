@@ -172,7 +172,7 @@ const LandingPage = () => {
                             rel="noopener noreferrer"
                             style={{ color: "#023e74", textDecoration: "underline", fontWeight: 600 }}
                         >
-                            Marseille, Rab, Raison
+                            Rab, Raison, Marseille (2024)
                         </a>
                         , the CEP psilocybin-assisted therapy (PAT) demand model
                         provides estimates of the potential demand for PAT. It identifies eligible

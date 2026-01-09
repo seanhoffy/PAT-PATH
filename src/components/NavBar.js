@@ -162,7 +162,7 @@ const NavBar = () => {
                 </ButtonBase>
                 <ButtonBase onClick={() => navigate('/home')} sx={{ textTransform: 'none' }}>
                     <Typography variant="h5" component="div" sx={{ color: '#000000', ml: 0.5 }}>
-                        PATpath.org
+                        PATpath
                     </Typography>
                 </ButtonBase>
                 <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>

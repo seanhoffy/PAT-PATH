@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import React, { useState } from 'react';
+import { IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import { COLORS } from '../../constants/colors';
 
@@ -8,6 +8,20 @@ const InfoButton = ({ dialogTitle, dialogContent }) => {
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+
+    const renderParagraph = (text) => {
+        const colonIndex = text.indexOf(':');
+        if (colonIndex !== -1) {
+            const subheading = text.substring(0, colonIndex);
+            const rest = text.substring(colonIndex + 1);
+            return (
+                <Typography component="p" sx={{ mb: 1.5 }}>
+                    <strong>{subheading}:</strong>{rest}
+                </Typography>
+            );
+        }
+        return <Typography component="p" sx={{ mb: 1.5 }}>{text}</Typography>;
+    };
 
     return (
         <>
@@ -30,14 +44,16 @@ const InfoButton = ({ dialogTitle, dialogContent }) => {
                 maxWidth="md"
                 fullWidth
             >
-                <DialogTitle>{dialogTitle}</DialogTitle>
+                <DialogTitle sx={{ fontWeight: 'bold' }}>{dialogTitle}</DialogTitle>
                 <DialogContent>
                     {Array.isArray(dialogContent) ? (
                         dialogContent.map((paragraph, index) => (
-                            <p key={index}>{paragraph}</p>
+                            <React.Fragment key={index}>
+                                {renderParagraph(paragraph)}
+                            </React.Fragment>
                         ))
                     ) : (
-                        <p>{dialogContent}</p>
+                        renderParagraph(dialogContent)
                     )}
                 </DialogContent>
                 <DialogActions>

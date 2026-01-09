@@ -8,8 +8,8 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     section: {
-        marginBottom: 10,
-        padding: 10,
+        marginBottom: 6,
+        padding: 8,
         borderBottom: "1px solid #000",
     },
     title: {
@@ -45,10 +45,10 @@ const styles = StyleSheet.create({
         borderRight: 'none', // No right border for the last cell
     },
     sectionTitle: {
-        fontSize: 14,
+        fontSize: 18,
         fontWeight: 'bold',
-        marginTop: 15,
-        marginBottom: 8,
+        marginTop: 10,
+        marginBottom: 6,
         color: '#023e74'
     },
     inputGrid: {
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
         marginBottom: 20
     },
     subtitle: {
-        fontSize: 18,
+        fontSize: 14,
         fontWeight: 'bold',
         marginBottom: 10
     },
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
 });
 
 // PDF Document Component
-const MyDocument = ({ formData, results, actual }) => {
+const MyDocument = ({ formData, results, actual, modelCreatedOn, calculatedAt }) => {
     if (!formData) {
         return (
             <Document>
@@ -167,7 +167,7 @@ const MyDocument = ({ formData, results, actual }) => {
                         </View>
                         <View style={styles.infoRow}>
                             <View style={styles.infoColumn}>
-                                <Text style={styles.generalInfoLabel}>Motivation:</Text>
+                                <Text style={styles.generalInfoLabel}>Scenario:</Text>
                                 <Text style={styles.generalInfoValue}>{formData.motivation || "N/A"}</Text>
                             </View>
                             <View style={styles.infoColumn}>
@@ -175,12 +175,20 @@ const MyDocument = ({ formData, results, actual }) => {
                                 <Text style={styles.generalInfoValue}>{formData.additionalComments || "N/A"}</Text>
                             </View>
                         </View>
+                        {(modelCreatedOn || calculatedAt) && (
+                            <View style={styles.infoRow}>
+                                <View style={styles.infoColumn}>
+                                    <Text style={styles.generalInfoLabel}>Model Created On:</Text>
+                                    <Text style={styles.generalInfoValue}>{modelCreatedOn || calculatedAt}</Text>
+                                </View>
+                            </View>
+                        )}
                     </View>
                 </View>
 
                 {/* Prevalence Data */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Prevalence Data</Text>
+                    <Text style={styles.sectionTitle}>Prevalence</Text>
                     <View style={styles.inputGrid}>
                         <View style={styles.inputItem}>
                             <Text style={styles.label}>Total MDD Population:</Text>
@@ -262,7 +270,7 @@ const MyDocument = ({ formData, results, actual }) => {
                 {/* Results Section */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Results</Text>
-                    <Text style={styles.subtitle}>Trial Exclusion Criteria Results</Text>
+                    <Text style={styles.subtitle}>Trial Exclusion Criteria</Text>
                     <View style={styles.resultsGrid}>
                         <View style={styles.resultItem}>
                             <Text style={styles.label}>MDD Population:</Text>
@@ -274,7 +282,7 @@ const MyDocument = ({ formData, results, actual }) => {
                         </View>
                     </View>
 
-                    <Text style={styles.subtitle}>Real World Exclusion Criteria Results</Text>
+                    <Text style={styles.subtitle}>Real World Exclusion Criteria</Text>
                     <View style={styles.resultsGrid}>
                         <View style={styles.resultItem}>
                             <Text style={styles.label}>MDD Population:</Text>
@@ -289,7 +297,7 @@ const MyDocument = ({ formData, results, actual }) => {
                     {/* Actual demand estimates, if provided */}
                     {actual && (
                         <>
-                            <Text style={styles.subtitle}>Actual Demand Estimates</Text>
+                            <Text style={styles.subtitle}>Calculated Demand Estimates</Text>
                             <View style={styles.resultsGrid}>
                                 <View style={styles.resultItem}>
                                     <Text style={styles.label}>MDD – Trial %:</Text>
@@ -321,7 +329,7 @@ const MyDocument = ({ formData, results, actual }) => {
 
                             <View style={styles.resultsGrid}>
                                 <View style={styles.resultItem}>
-                                    <Text style={styles.label}>Actual MDD – Trial:</Text>
+                                    <Text style={styles.label}>Calculated MDD – Trial:</Text>
                                     <Text style={styles.value}>
                                         {actual.MDD?.trial != null
                                             ? actual.MDD.trial.toLocaleString()
@@ -329,7 +337,7 @@ const MyDocument = ({ formData, results, actual }) => {
                                     </Text>
                                 </View>
                                 <View style={styles.resultItem}>
-                                    <Text style={styles.label}>Actual MDD – Real World:</Text>
+                                    <Text style={styles.label}>Calculated MDD – Real World:</Text>
                                     <Text style={styles.value}>
                                         {actual.MDD?.real != null
                                             ? actual.MDD.real.toLocaleString()
@@ -339,7 +347,7 @@ const MyDocument = ({ formData, results, actual }) => {
                             </View>
                             <View style={styles.resultsGrid}>
                                 <View style={styles.resultItem}>
-                                    <Text style={styles.label}>Actual TRD – Trial:</Text>
+                                    <Text style={styles.label}>Calculated TRD – Trial:</Text>
                                     <Text style={styles.value}>
                                         {actual.TRD?.trial != null
                                             ? actual.TRD.trial.toLocaleString()
@@ -347,7 +355,7 @@ const MyDocument = ({ formData, results, actual }) => {
                                     </Text>
                                 </View>
                                 <View style={styles.resultItem}>
-                                    <Text style={styles.label}>Actual TRD – Real World:</Text>
+                                    <Text style={styles.label}>Calculated TRD – Real World:</Text>
                                     <Text style={styles.value}>
                                         {actual.TRD?.real != null
                                             ? actual.TRD.real.toLocaleString()

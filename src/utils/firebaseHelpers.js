@@ -283,28 +283,29 @@ export const fetchUserProfile = async (userId) => {
  * Fetch persisted form/results state for a user
  */
 export const fetchUserFormState = async (userId) => {
-    if (!userId) return { currentForm: null, currentResults: null, currentActualPercents: null };
+    if (!userId) return { currentForm: null, currentResults: null, currentActualPercents: null, currentModelCreatedOn: null };
 
     try {
         const docRef = doc(db, 'users', userId);
         const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) return { currentForm: null, currentResults: null, currentActualPercents: null };
+        if (!docSnap.exists()) return { currentForm: null, currentResults: null, currentActualPercents: null, currentModelCreatedOn: null };
         const data = docSnap.data();
         return {
             currentForm: data.currentForm ?? null,
             currentResults: data.currentResults ?? null,
             currentActualPercents: data.currentActualPercents ?? null,
+            currentModelCreatedOn: data.currentModelCreatedOn ?? null,
         };
     } catch (error) {
         console.error('Error fetching user form state:', error);
-        return { currentForm: null, currentResults: null, currentActualPercents: null };
+        return { currentForm: null, currentResults: null, currentActualPercents: null, currentModelCreatedOn: null };
     }
 };
 
 /**
  * Save persisted form/results state for a user
  */
-export const saveUserFormState = async (userId, currentForm, currentResults, currentActualPercents) => {
+export const saveUserFormState = async (userId, currentForm, currentResults, currentActualPercents, currentModelCreatedOn) => {
     if (!userId) return;
     try {
         const docRef = doc(db, 'users', userId);
@@ -312,6 +313,7 @@ export const saveUserFormState = async (userId, currentForm, currentResults, cur
             currentForm: currentForm ?? null,
             currentResults: currentResults ?? null,
             currentActualPercents: currentActualPercents ?? null,
+            currentModelCreatedOn: currentModelCreatedOn ?? null,
         });
     } catch (error) {
         console.error('Error saving user form state:', error);

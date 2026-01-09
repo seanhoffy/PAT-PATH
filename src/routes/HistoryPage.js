@@ -78,9 +78,11 @@ const HistoryPage = () => {
                 comorbid: model.outputs?.comorbid || {},
             };
             const actual = model.outputs?.actual || null;
+            const modelCreatedOn = model.modelCreatedOn || model.calculatedAt || null;
+            const calculatedAt = model.calculatedAt || null; // For backward compatibility
 
             // Generate PDF
-            const blob = await pdf(<MyDocument formData={formData} results={results} actual={actual} />).toBlob();
+            const blob = await pdf(<MyDocument formData={formData} results={results} actual={actual} modelCreatedOn={modelCreatedOn} calculatedAt={calculatedAt} />).toBlob();
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -172,6 +174,7 @@ const HistoryPage = () => {
                     ...newResults,
                     actual: actualSummary,
                 },
+                modelCreatedOn: editingModel.modelCreatedOn || editingModel.calculatedAt || null, // Preserve original calculation datetime
             };
 
             // Update the model in Firestore
@@ -215,7 +218,6 @@ const HistoryPage = () => {
     };
 
     const renderModelCard = (model) => {
-        const created = model.createdAt ? new Date(model.createdAt).toLocaleString() : '';
         return (
             <Paper
                 key={model.id}
@@ -231,11 +233,16 @@ const HistoryPage = () => {
                     <Box>
                         <Typography variant="h6" sx={{ mb: 0.25 }}>{model.title}</Typography>
                         <Typography variant="body2" color="text.secondary">
-                            {model.geographicArea || 'No area specified'} — {created}
+                            Geographic Area: {model.geographicArea || 'No area specified'}
                         </Typography>
+                        {(model.modelCreatedOn || model.calculatedAt) && (
+                            <Typography variant="body2" color="text.secondary">
+                                Model Created On: {model.modelCreatedOn || model.calculatedAt}
+                            </Typography>
+                        )}
                         {model.motivation && (
                             <Typography variant="body2" color="text.secondary">
-                                Motivation: {model.motivation}
+                                Scenario: {model.motivation}
                             </Typography>
                         )}
                     </Box>
@@ -326,7 +333,7 @@ const HistoryPage = () => {
 
                             {/* Actual demand percentages */}
                             <Grid item xs={12}>
-                                <Typography variant="body2" fontWeight="bold">Actual Demand Inputs (Percent)</Typography>
+                                <Typography variant="body2" fontWeight="bold">Calculated Demand Inputs (Percent)</Typography>
                                 <Typography variant="body2" color="text.secondary">
                                     MDD Trial: {model.outputs?.actual?.percents?.trialMDD ?? '—'}% &nbsp;|&nbsp; MDD Real: {model.outputs?.actual?.percents?.realMDD ?? '—'}%
                                 </Typography>
@@ -337,13 +344,13 @@ const HistoryPage = () => {
 
                             {/* Actual demand outputs */}
                             <Grid item xs={12}>
-                                <Typography variant="body2" fontWeight="bold">Actual Demand (MDD)</Typography>
+                                <Typography variant="body2" fontWeight="bold">Calculated Demand (MDD)</Typography>
                                 <Typography variant="body2" color="text.secondary">
                                     Trial: {model.outputs?.actual?.MDD?.trial != null ? parseInt(model.outputs.actual.MDD.trial).toLocaleString() : '—'} &nbsp;/&nbsp; Real: {model.outputs?.actual?.MDD?.real != null ? parseInt(model.outputs.actual.MDD.real).toLocaleString() : '—'}
                                 </Typography>
                             </Grid>
                             <Grid item xs={12}>
-                                <Typography variant="body2" fontWeight="bold">Actual Demand (TRD)</Typography>
+                                <Typography variant="body2" fontWeight="bold">Calculated Demand (TRD)</Typography>
                                 <Typography variant="body2" color="text.secondary">
                                     Trial: {model.outputs?.actual?.TRD?.trial != null ? parseInt(model.outputs.actual.TRD.trial).toLocaleString() : '—'} &nbsp;/&nbsp; Real: {model.outputs?.actual?.TRD?.real != null ? parseInt(model.outputs.actual.TRD.real).toLocaleString() : '—'}
                                 </Typography>

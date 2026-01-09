@@ -11,7 +11,7 @@ import {
     Box,
 } from '@mui/material';
 
-const ResultsDisplay = ({ results, formData, onDownload, onSave, saving, actualPercents, setActualPercents }) => {
+const ResultsDisplay = ({ results, formData, onDownload, onSave, saving, actualPercents, setActualPercents, modelCreatedOn }) => {
 
     if (!results) return null;
 
@@ -64,8 +64,13 @@ const ResultsDisplay = ({ results, formData, onDownload, onSave, saving, actualP
             <Grid container spacing={3} sx={{ mb: 2 }}>
                 <Grid item xs={12} sm={4}>
                     <Typography variant="h4" sx={{ mt: 2, mb: 2 }}>
-                        {formData.modelTitle} Results
+                        Results for {formData.modelTitle}
                     </Typography>
+                    {modelCreatedOn && (
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                            Model Created On: {modelCreatedOn}
+                        </Typography>
+                    )}
                 </Grid>
                 <Grid item xs={12} sm={4}>
                     <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
@@ -137,11 +142,11 @@ const ResultsDisplay = ({ results, formData, onDownload, onSave, saving, actualP
             </Typography>
             <Box sx={{ borderBottom: '1px solid #e0e0e0', mb: 3 }} />
 
-            {/* Actual demand adjustment */}
+            {/* Calculated demand adjustment */}
             <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1.5 }}>
                     Estimate what share of eligible individuals will translate potential psilocybin
-                    demand into actual treatment uptake.
+                    demand into calculated treatment uptake.
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     Adjust the percentages below to approximate the proportion of trial-eligible and
@@ -207,7 +212,7 @@ const ResultsDisplay = ({ results, formData, onDownload, onSave, saving, actualP
                     </Grid>
                 </Grid>
 
-                {/* Actual outputs column headers */}
+                {/* Calculated outputs column headers */}
                 <Grid container spacing={3} sx={{ mb: 1.5 }}>
                     <Grid item xs={12} sm={4}>
                         <Typography variant="h6" sx={{ mt: 1, mb: 1 }}>
@@ -216,12 +221,12 @@ const ResultsDisplay = ({ results, formData, onDownload, onSave, saving, actualP
                     </Grid>
                     <Grid item xs={12} sm={4}>
                         <Typography variant="h6" sx={{ mt: 1, mb: 1 }}>
-                            Actual Psilocybin Demand Based on Trial Exclusion Criteria
+                        Calculated Psilocybin Demand Based on Trial Exclusion Criteria
                         </Typography>
                     </Grid>
                     <Grid item xs={12} sm={4}>
                         <Typography variant="h6" sx={{ mt: 1, mb: 1 }}>
-                            Actual Psilocybin Demand Based on {formData.geographicArea} (Real World) Exclusion Criteria
+                        Calculated Psilocybin Demand Based on {formData.geographicArea} (Real World) Exclusion Criteria
                         </Typography>
                     </Grid>
                 </Grid>

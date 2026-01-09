@@ -30,6 +30,7 @@ import { CALCULATION_CONSTANTS } from '../constants/calculations';
 import { calculateAllResults, formatResultsForModel, scrollToBottom } from '../utils/calculations';
 import { isStringField, validateFormData } from '../utils/formValidation';
 import { fetchUserModel, updateUserModel, addSavedModel, fetchUserFormState, saveUserFormState } from '../utils/firebaseHelpers';
+import { getPSTDateTime } from '../utils/dateTimeHelpers';
 import BetaNotice from './BetaNotice';
 
 const InputsForm = () => {
@@ -63,6 +64,7 @@ const InputsForm = () => {
     });
 
     const [results, setResults] = useState(null);
+    const [modelCreatedOn, setModelCreatedOn] = useState(null);
     const [actualPercents, setActualPercents] = useState({
         trialMDD: 100,
         realMDD: 100,
@@ -81,7 +83,7 @@ const InputsForm = () => {
                 }
             };
             const loadFormState = async () => {
-                const { currentForm, currentResults, currentActualPercents } = await fetchUserFormState(user.uid);
+                const { currentForm, currentResults, currentActualPercents, currentModelCreatedOn } = await fetchUserFormState(user.uid);
                 // Only set formData if currentForm exists (saved state), otherwise use initial state with defaults
                 if (currentForm) {
                     setFormData(currentForm);
@@ -91,6 +93,9 @@ const InputsForm = () => {
                 }
                 if (currentActualPercents) {
                     setActualPercents(currentActualPercents);
+                }
+                if (currentModelCreatedOn) {
+                    setModelCreatedOn(currentModelCreatedOn);
                 }
             };
             loadModel();
@@ -108,7 +113,7 @@ const InputsForm = () => {
             clearTimeout(saveTimerRef.current);
         }
         saveTimerRef.current = setTimeout(() => {
-            saveUserFormState(user.uid, formData, results ?? null, actualPercents ?? null);
+            saveUserFormState(user.uid, formData, results ?? null, actualPercents ?? null, modelCreatedOn ?? null);
         }, 800);
 
         return () => {
@@ -116,7 +121,7 @@ const InputsForm = () => {
                 clearTimeout(saveTimerRef.current);
             }
         };
-    }, [user?.uid, formData, results, actualPercents]);
+    }, [user?.uid, formData, results, actualPercents, modelCreatedOn]);
 
     // Update model in Firestore when it changes
     const updateModelInFirestore = useCallback(async () => {
@@ -188,17 +193,19 @@ const InputsForm = () => {
         }
 
         const calculatedResults = calculateAllResults(formDataTemp);
+        const calculationDateTime = getPSTDateTime();
         setResults(calculatedResults);
+        setModelCreatedOn(calculationDateTime);
         setModel(formatResultsForModel(calculatedResults));
         if (user?.uid) {
-            saveUserFormState(user.uid, formDataTemp, calculatedResults, actualPercents ?? null);
+            saveUserFormState(user.uid, formDataTemp, calculatedResults, actualPercents ?? null, calculationDateTime);
         }
         handleDisclaimerClose();
         scrollToBottom();
     };
 
     const handleDownload = async (actualSummary) => {
-        const blob = await pdf(<MyDocument formData={formData} results={results} actual={actualSummary} />).toBlob();
+        const blob = await pdf(<MyDocument formData={formData} results={results} actual={actualSummary} modelCreatedOn={modelCreatedOn} />).toBlob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -232,6 +239,7 @@ const InputsForm = () => {
                 ...results,
                 actual: actualSummary || null,
             },
+            modelCreatedOn: modelCreatedOn || null,
         };
 
         const response = await addSavedModel(user.uid, payload);
@@ -249,10 +257,10 @@ const InputsForm = () => {
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <BetaNotice />
             <Paper elevation={0} sx={{ mb: 3, mt: 2, p: 2.5, backgroundColor: 'white', borderRadius: 2 }}>
-                <Typography variant="body1" sx={{ color: '#023e74', lineHeight: 1.7 }}>
+                <Typography variant="body1" sx={{ color: '#023e74', lineHeight: 1.7, fontSize: '1.15rem' }}>
                     To generate a demand estimate for psilocybin-assisted therapy in your population, you will need to provide 11 numerical input values and context about your model. 
                     Running the model will take as little as five minutes if you are comfortable with default values for population characteristics, 
-                    or if you have prepared input values previously. Otherwise, completing all inputs typically takes about 10 minutes.
+                    or if you have prepared input values previously.
                 </Typography>
             </Paper>
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: -2.5, mb: 0.5 }}>
@@ -269,7 +277,7 @@ const InputsForm = () => {
                         },
                     }}
                 >
-                    See Past Model History
+                    See Your Model History
                 </Button>
             </Box>
             <form onSubmit={handleSubmit}>
@@ -283,7 +291,7 @@ const InputsForm = () => {
                             />
                         </Box>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            Tell us about yourself and your motivation for using this model
+                            Tell us about yourself and the scenario for using this model
                         </Typography>
                         <Grid container spacing={3} alignItems="center" sx={{ mb: -2.2 }}>
                             <Grid item xs={3}>
@@ -309,7 +317,7 @@ const InputsForm = () => {
                             <Grid item xs={3}>
                                 <TextField
                                     fullWidth
-                                    label="Motivation"
+                                    label="Scenario"
                                     variant="outlined"
                                     name="motivation"
                                     value={formData.motivation}
@@ -418,8 +426,8 @@ const InputsForm = () => {
                         <Typography variant="body2" color="text.secondary" sx={{ mb: .5 }}>
                             Enter the percentage of Major Depressive Disorder patients that have these listed conditions in your area
                         </Typography>
-                        <Typography variant="body2" fontWeight="bold" sx={{ mb: 2 }}>
-                            These estimates apply to the US as a whole, if you have better estimates that apply to your population of interest you can override them.
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            These estimates apply to the US as a whole, if you have better estimates that apply to your population you can override them.
                         </Typography>
                         <Grid container spacing={3}>
                             {EXCLUSION_CRITERIA_FIELDS.map(([key, label]) => (
@@ -509,6 +517,7 @@ const InputsForm = () => {
                 onDownload={handleDownload}
                 onSave={handleSaveModel}
                 saving={savingModel}
+                modelCreatedOn={modelCreatedOn}
             />
         </Container >
     );
