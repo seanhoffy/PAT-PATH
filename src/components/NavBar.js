@@ -1,4 +1,4 @@
-import { AppBar, Toolbar, Typography, Box, Button, ButtonBase } from '@mui/material';
+import { AppBar, Toolbar, Typography, Box, Button, ButtonBase, Dialog, DialogTitle, DialogContent, DialogActions, Link } from '@mui/material';
 // import logo from '../logo.svg'; // Remove this line
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
@@ -13,6 +13,7 @@ const NavBar = () => {
     const navigate = useNavigate();
     const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
     const [savingBeforeLogout, setSavingBeforeLogout] = useState(false);
+    const [contactDialogOpen, setContactDialogOpen] = useState(false);
 
     const performLogout = async () => {
         try {
@@ -174,13 +175,7 @@ const NavBar = () => {
                     <Button
                         color="inherit"
                         sx={{ color: '#000000' }}
-                        onClick={() =>
-                            window.open(
-                                'https://www.surveymonkey.com/r/3GCVNNL',
-                                '_blank',
-                                'noopener,noreferrer'
-                            )
-                        }
+                        onClick={() => setContactDialogOpen(true)}
                     >
                         CONTACT US
                     </Button>
@@ -194,6 +189,39 @@ const NavBar = () => {
                 onLogoutWithoutSaving={handleLogoutWithoutSaving}
                 saving={savingBeforeLogout}
             />
+            <Dialog
+                open={contactDialogOpen}
+                onClose={() => setContactDialogOpen(false)}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle sx={{ fontWeight: 'bold' }}>Contact Us</DialogTitle>
+                <DialogContent>
+                    <Typography component="p" sx={{ mb: 2 }}>
+                        <strong>Elliot Marseille, DrPH, MPP</strong>
+                    </Typography>
+                    <Typography component="p" sx={{ mb: 2 }}>
+                        <Link href="mailto:emarseille1@berkeley.edu" color="primary">
+                            emarseille1@berkeley.edu
+                        </Link>
+                    </Typography>
+                    <Typography component="p" sx={{ mb: 1 }}>
+                        <Link 
+                            href="https://cghdde.berkeley.edu/projects/collaborative-economics-psychedelics-cep" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            color="primary"
+                        >
+                            CEP Website
+                        </Link>
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setContactDialogOpen(false)} variant="contained">
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </AppBar>
     )
 }
