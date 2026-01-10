@@ -344,14 +344,14 @@ const InputsForm = () => {
                     {/* Prevalence Section */}
                     <Paper elevation={2} sx={{ p: 3 }}>
                         <Box display="flex" alignItems="center" justifyContent="center" gap={0}>
-                            <Typography variant="h5">Prevalence in Your Geographic Location</Typography>
+                            <Typography variant="h5">Prevalence in Your Population</Typography>
                             <InfoButton
                                 dialogTitle={INFO_DIALOGS.prevalence.title}
                                 dialogContent={INFO_DIALOGS.prevalence.content}
                             />
                         </Box>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            Enter the number of people with Major Depressive Disorder (MDD) in your location and the percentage with Treatment-Resistant Depression (TRD)
+                            Enter the number of people with Major Depressive Disorder (MDD) in the population of interest and the percentage with Treatment-Resistant Depression (TRD)
                         </Typography>
                         <Grid container spacing={3} alignItems="center">
                             <Grid item xs={4}>
@@ -417,14 +417,14 @@ const InputsForm = () => {
                     {/* Real World Exclusion Criteria */}
                     <Paper elevation={2} sx={{ p: 3 }}>
                         <Box display="flex" alignItems="center" justifyContent="center" gap={0}>
-                            <Typography variant="h5">Exclusion Criteria in Your Geographic Location</Typography>
+                            <Typography variant="h5">Exclusion Criteria in Your Population</Typography>
                             <InfoButton
                                 dialogTitle={INFO_DIALOGS.exclusionCriteria.title}
                                 dialogContent={INFO_DIALOGS.exclusionCriteria.content}
                             />
                         </Box>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: .5 }}>
-                            Enter the percentage of Major Depressive Disorder patients that have these listed conditions in your area
+                        Enter the percentage of people with Major Depressive Disorder (MDD) in the population you are analyzing who have the listed conditions. 
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                             These estimates apply to the US as a whole, if you have better estimates that apply to your population you can override them.
