@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { NumericFormat } from 'react-number-format';
 import {
     Container,
@@ -29,49 +29,63 @@ import { COLORS } from '../constants/colors';
 import { CALCULATION_CONSTANTS } from '../constants/calculations';
 import { calculateAllResults, formatResultsForModel, scrollToBottom } from '../utils/calculations';
 import { isStringField, validateFormData } from '../utils/formValidation';
-import { fetchUserModel, updateUserModel, addSavedModel, fetchUserFormState, saveUserFormState } from '../utils/firebaseHelpers';
+import { fetchUserModel, updateUserModel, addSavedModel, updateSavedModel, fetchUserFormState, saveUserFormState, clearUserFormState } from '../utils/firebaseHelpers';
 import { getPSTDateTime } from '../utils/dateTimeHelpers';
 import BetaNotice from './BetaNotice';
 
+const buildInitialFormData = () => ({
+    MDD: null,
+    TRD_P: null,
+    TRD: 0,
+    manic_P: FORM_DEFAULTS.manic_P,
+    suicide_P: FORM_DEFAULTS.suicide_P,
+    diabetes_P: FORM_DEFAULTS.diabetes_P,
+    stroke_P: FORM_DEFAULTS.stroke_P,
+    heart_attack_P: FORM_DEFAULTS.heart_attack_P,
+    blood_pressure_P: FORM_DEFAULTS.blood_pressure_P,
+    epilepsy_P: FORM_DEFAULTS.epilepsy_P,
+    personality_P: FORM_DEFAULTS.personality_P,
+    hepatic_P: FORM_DEFAULTS.hepatic_P,
+    psycological_P: FORM_DEFAULTS.psycological_P,
+    health_P: FORM_DEFAULTS.health_P,
+    comorbid_hepatic_P: FORM_DEFAULTS.comorbid_hepatic_P,
+    modelTitle: "",
+    geographicArea: "",
+    motivation: "",
+    additionalComments: "",
+});
+
+const buildInitialActualPercents = () => ({
+    trialMDD: 100,
+    realMDD: 100,
+    trialTRD: 100,
+    realTRD: 100,
+});
+
 const InputsForm = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [model, setModel] = useState([]);
     const [user] = useAuthState(auth);
     const [doubleCountingOpen, setDoubleCountingOpen] = useState(false);
     const [disclaimerOpen, setDisclaimerOpen] = useState(false);
     const [disclaimerChecked, setDisclaimerChecked] = useState(false);
     const [formDataTemp, setFormDataTemp] = useState(null);
-    const [formData, setFormData] = useState({
-        MDD: null,
-        TRD_P: null,
-        TRD: 0,
-        manic_P: FORM_DEFAULTS.manic_P,
-        suicide_P: FORM_DEFAULTS.suicide_P,
-        diabetes_P: FORM_DEFAULTS.diabetes_P,
-        stroke_P: FORM_DEFAULTS.stroke_P,
-        heart_attack_P: FORM_DEFAULTS.heart_attack_P,
-        blood_pressure_P: FORM_DEFAULTS.blood_pressure_P,
-        epilepsy_P: FORM_DEFAULTS.epilepsy_P,
-        personality_P: FORM_DEFAULTS.personality_P,
-        hepatic_P: FORM_DEFAULTS.hepatic_P,
-        psycological_P: FORM_DEFAULTS.psycological_P,
-        health_P: FORM_DEFAULTS.health_P,
-        comorbid_hepatic_P: FORM_DEFAULTS.comorbid_hepatic_P,
-        modelTitle: "",
-        geographicArea: "",
-        motivation: "",
-        additionalComments: "",
-    });
+    const [formData, setFormData] = useState(buildInitialFormData);
 
     const [results, setResults] = useState(null);
     const [modelCreatedOn, setModelCreatedOn] = useState(null);
-    const [actualPercents, setActualPercents] = useState({
-        trialMDD: 100,
-        realMDD: 100,
-        trialTRD: 100,
-        realTRD: 100,
-    });
+    const [actualPercents, setActualPercents] = useState(buildInitialActualPercents);
     const [savingModel, setSavingModel] = useState(false);
+    const [funnelState, setFunnelState] = useState(null);
+    const [funnelDerived, setFunnelDerived] = useState(null);
+    const [restoredFunnelState, setRestoredFunnelState] = useState(null);
+    const [editingModelId, setEditingModelId] = useState(null);
+
+    const handleFunnelStateChange = useCallback((nextFunnelState, derived) => {
+        setFunnelState(nextFunnelState);
+        setFunnelDerived(derived);
+    }, []);
 
     // Fetch user model on mount
     useEffect(() => {
@@ -83,7 +97,11 @@ const InputsForm = () => {
                 }
             };
             const loadFormState = async () => {
-                const { currentForm, currentResults, currentActualPercents, currentModelCreatedOn } = await fetchUserFormState(user.uid);
+                // Skip: an "Edit" navigation from History is hydrating the form
+                // from a specific saved model instead (see the effect below).
+                if (location.state?.editModel) return;
+
+                const { currentForm, currentResults, currentActualPercents, currentModelCreatedOn, currentFunnelState, currentEditingModelId } = await fetchUserFormState(user.uid);
                 // Only set formData if currentForm exists (saved state), otherwise use initial state with defaults
                 if (currentForm) {
                     setFormData(currentForm);
@@ -97,11 +115,39 @@ const InputsForm = () => {
                 if (currentModelCreatedOn) {
                     setModelCreatedOn(currentModelCreatedOn);
                 }
+                if (currentFunnelState) {
+                    setRestoredFunnelState(currentFunnelState);
+                }
+                if (currentEditingModelId) {
+                    setEditingModelId(currentEditingModelId);
+                }
             };
             loadModel();
             loadFormState();
         }
+        // location.state is intentionally excluded: this effect must only run
+        // once per mount/user-change, not each time navigate('.', {state:{}})
+        // below clears the edit-navigation state (which would otherwise
+        // re-trigger loadFormState and clobber the just-hydrated edit values).
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
+
+    // Hydrate the form from a saved model when arriving via History's "Edit" button
+    useEffect(() => {
+        const editModel = location.state?.editModel;
+        if (!editModel) return;
+
+        setFormData(editModel.inputs || buildInitialFormData());
+        setResults(editModel.outputs || null);
+        setActualPercents(editModel.outputs?.actual?.percents || buildInitialActualPercents());
+        setModelCreatedOn(editModel.modelCreatedOn || editModel.calculatedAt || null);
+        setRestoredFunnelState(editModel.funnel || null);
+        setEditingModelId(editModel.id);
+
+        // Clear the navigation state so refreshing this page doesn't re-trigger it
+        navigate('.', { replace: true, state: {} });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.state]);
 
     // Persist form and results on edits (debounced)
     const saveTimerRef = useRef(null);
@@ -113,7 +159,7 @@ const InputsForm = () => {
             clearTimeout(saveTimerRef.current);
         }
         saveTimerRef.current = setTimeout(() => {
-            saveUserFormState(user.uid, formData, results ?? null, actualPercents ?? null, modelCreatedOn ?? null);
+            saveUserFormState(user.uid, formData, results ?? null, actualPercents ?? null, modelCreatedOn ?? null, funnelState ?? null, editingModelId ?? null);
         }, 800);
 
         return () => {
@@ -121,7 +167,7 @@ const InputsForm = () => {
                 clearTimeout(saveTimerRef.current);
             }
         };
-    }, [user?.uid, formData, results, actualPercents, modelCreatedOn]);
+    }, [user?.uid, formData, results, actualPercents, modelCreatedOn, funnelState, editingModelId]);
 
     // Update model in Firestore when it changes
     const updateModelInFirestore = useCallback(async () => {
@@ -198,14 +244,22 @@ const InputsForm = () => {
         setModelCreatedOn(calculationDateTime);
         setModel(formatResultsForModel(calculatedResults));
         if (user?.uid) {
-            saveUserFormState(user.uid, formDataTemp, calculatedResults, actualPercents ?? null, calculationDateTime);
+            saveUserFormState(user.uid, formDataTemp, calculatedResults, actualPercents ?? null, calculationDateTime, funnelState ?? null, editingModelId ?? null);
         }
         handleDisclaimerClose();
         scrollToBottom();
     };
 
     const handleDownload = async (actualSummary) => {
-        const blob = await pdf(<MyDocument formData={formData} results={results} actual={actualSummary} modelCreatedOn={modelCreatedOn} />).toBlob();
+        const blob = await pdf(
+            <MyDocument
+                formData={formData}
+                results={results}
+                actual={actualSummary}
+                modelCreatedOn={modelCreatedOn}
+                funnelState={funnelState}
+            />
+        ).toBlob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -218,6 +272,19 @@ const InputsForm = () => {
         URL.revokeObjectURL(url);
     };
 
+    const buildSavePayload = (actualSummary) => ({
+        title: formData.modelTitle || 'Untitled model',
+        geographicArea: formData.geographicArea || '',
+        motivation: formData.motivation || '',
+        inputs: formData,
+        outputs: {
+            ...results,
+            actual: actualSummary || null,
+        },
+        modelCreatedOn: modelCreatedOn || null,
+        funnel: funnelState ? { ...funnelState, effectiveDemand: funnelDerived?.displayedEffectiveDemand ?? null } : null,
+    });
+
     const handleSaveModel = async (actualSummary) => {
         if (!user?.uid) {
             alert('Please log in to save models.');
@@ -229,20 +296,7 @@ const InputsForm = () => {
         }
 
         setSavingModel(true);
-
-        const payload = {
-            title: formData.modelTitle || 'Untitled model',
-            geographicArea: formData.geographicArea || '',
-            motivation: formData.motivation || '',
-            inputs: formData,
-            outputs: {
-                ...results,
-                actual: actualSummary || null,
-            },
-            modelCreatedOn: modelCreatedOn || null,
-        };
-
-        const response = await addSavedModel(user.uid, payload);
+        const response = await addSavedModel(user.uid, buildSavePayload(actualSummary));
         setSavingModel(false);
 
         if (!response.success) {
@@ -250,7 +304,51 @@ const InputsForm = () => {
             return;
         }
 
+        // This is now a distinct new saved entry, not the one (if any) we were editing.
+        setEditingModelId(null);
         alert('Model saved to your history.');
+    };
+
+    const handleUpdateModel = async (actualSummary) => {
+        if (!user?.uid || !editingModelId) return;
+        if (!results) {
+            alert('Please run the model before saving.');
+            return;
+        }
+        if (!window.confirm(`This will overwrite the saved model "${formData.modelTitle || 'Untitled model'}" with the current values. Continue?`)) {
+            return;
+        }
+
+        setSavingModel(true);
+        const response = await updateSavedModel(user.uid, editingModelId, buildSavePayload(actualSummary));
+        setSavingModel(false);
+
+        if (!response.success) {
+            alert(response.message || 'Could not update model.');
+            return;
+        }
+
+        alert('Model updated.');
+    };
+
+    const handleReset = () => {
+        if (!window.confirm('Reset the form? This clears your current working draft and cannot be undone.')) {
+            return;
+        }
+
+        setFormData(buildInitialFormData());
+        setResults(null);
+        setModelCreatedOn(null);
+        setActualPercents(buildInitialActualPercents());
+        setEditingModelId(null);
+        setRestoredFunnelState(null);
+        setFunnelState(null);
+        setFunnelDerived(null);
+        setModel([]);
+
+        if (user?.uid) {
+            clearUserFormState(user.uid);
+        }
     };
 
     return (
@@ -263,7 +361,7 @@ const InputsForm = () => {
                     or if you have prepared input values previously.
                 </Typography>
             </Paper>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: -2.5, mb: 0.5 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: -2.5, mb: 0.5, gap: 2 }}>
                 <Button
                     onClick={() => navigate('/history')}
                     sx={{
@@ -279,7 +377,29 @@ const InputsForm = () => {
                 >
                     See Your Model History
                 </Button>
+                <Button
+                    onClick={handleReset}
+                    sx={{
+                        color: 'white',
+                        textDecoration: 'underline',
+                        textTransform: 'none',
+                        fontSize: '1.35rem',
+                        '&:hover': {
+                            textDecoration: 'underline',
+                            backgroundColor: 'transparent',
+                        },
+                    }}
+                >
+                    Reset
+                </Button>
             </Box>
+            {editingModelId && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                    <Typography variant="body2" sx={{ color: 'white', fontStyle: 'italic' }}>
+                        Editing a saved model — updates will overwrite it, or use "Save as New" to create a copy.
+                    </Typography>
+                </Box>
+            )}
             <form onSubmit={handleSubmit}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                     <Paper elevation={2} sx={{ p: 3 }}>
@@ -518,6 +638,10 @@ const InputsForm = () => {
                 onSave={handleSaveModel}
                 saving={savingModel}
                 modelCreatedOn={modelCreatedOn}
+                onFunnelStateChange={handleFunnelStateChange}
+                initialFunnelState={restoredFunnelState}
+                editingModelId={editingModelId}
+                onUpdate={handleUpdateModel}
             />
         </Container >
     );

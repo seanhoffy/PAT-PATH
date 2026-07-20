@@ -13,15 +13,21 @@ import {
 } from '@mui/material';
 import NavBar from '../components/NavBar';
 import ThemeProvider from '../components/common/ThemeProvider';
-import EditModelDialog from '../components/dialogs/EditModelDialog';
 import MyDocument from '../components/pdf/pdf.js';
 import { pdf } from '@react-pdf/renderer';
 import { auth } from '../firebase';
-import { fetchSavedModels, deleteSavedModel, fetchUserProfile, updateSavedModel } from '../utils/firebaseHelpers';
-import { calculateAllResults } from '../utils/calculations';
-import { CALCULATION_CONSTANTS } from '../constants/calculations';
+import { fetchSavedModels, deleteSavedModel, fetchUserProfile } from '../utils/firebaseHelpers';
 import { COLORS } from '../constants/colors';
 import { EXCLUSION_CRITERIA_FIELDS, DOUBLE_COUNTING_FIELDS } from '../constants/formFields';
+import { deriveFunnelDisplay, cellValuesFromActualSummary, stage6TierLabel } from '../utils/funnelCalculations';
+import FunnelRowsTable from '../components/funnel/FunnelRowsTable';
+import {
+    AWARENESS_INTEREST_CONTEXTS,
+    GEOGRAPHIC_ACCESS_CONTEXTS,
+    FUNNEL_INPUT_CELLS,
+} from '../constants/funnelDefaults';
+
+const labelFromList = (list, key) => list.find((item) => item.key === key)?.label || key;
 
 const HistoryPage = () => {
     const [user, loading] = useAuthState(auth);
@@ -29,8 +35,6 @@ const HistoryPage = () => {
     const [savedModels, setSavedModels] = useState([]);
     const [profile, setProfile] = useState(null);
     const [loadingModels, setLoadingModels] = useState(true);
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
-    const [editingModel, setEditingModel] = useState(null);
 
     const loadData = useCallback(async () => {
         if (!user?.uid) return;
@@ -64,8 +68,7 @@ const HistoryPage = () => {
     };
 
     const handleEdit = (model) => {
-        setEditingModel(model);
-        setEditDialogOpen(true);
+        navigate('/home', { state: { editModel: model } });
     };
 
     const handleDownloadPDF = async (model) => {
@@ -82,7 +85,7 @@ const HistoryPage = () => {
             const calculatedAt = model.calculatedAt || null; // For backward compatibility
 
             // Generate PDF
-            const blob = await pdf(<MyDocument formData={formData} results={results} actual={actual} modelCreatedOn={modelCreatedOn} calculatedAt={calculatedAt} />).toBlob();
+            const blob = await pdf(<MyDocument formData={formData} results={results} actual={actual} modelCreatedOn={modelCreatedOn} calculatedAt={calculatedAt} funnelState={model.funnel || null} />).toBlob();
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -98,100 +101,6 @@ const HistoryPage = () => {
         } catch (error) {
             console.error('Error generating PDF:', error);
             alert('Failed to generate PDF.');
-        }
-    };
-
-    const handleSaveEdit = async (formData, actualPercents) => {
-        if (!user?.uid || !editingModel) return;
-
-        try {
-            // Merge formData with original model inputs: if a field is blank/null, preserve original value
-            const originalInputs = editingModel.inputs || {};
-            const mergedFormData = { ...originalInputs };
-            
-            // Only update fields that have non-blank values
-            Object.keys(formData).forEach(key => {
-                const value = formData[key];
-                // For string fields, update if not empty string
-                if (typeof value === 'string' && value.trim() !== '') {
-                    mergedFormData[key] = value;
-                }
-                // For numeric fields, update if not null/undefined/empty string
-                else if (value !== null && value !== undefined && value !== '') {
-                    mergedFormData[key] = value;
-                }
-                // Otherwise, keep original value (already in mergedFormData from spread)
-            });
-
-            // Recalculate TRD if MDD or TRD_P changed
-            if (mergedFormData.MDD !== null && mergedFormData.TRD_P !== null) {
-                mergedFormData.TRD = mergedFormData.MDD * (mergedFormData.TRD_P / CALCULATION_CONSTANTS.PERCENTAGE_DIVISOR);
-            } else {
-                mergedFormData.TRD = 0;
-            }
-
-            // Recalculate results with merged form data
-            const newResults = calculateAllResults(mergedFormData);
-
-            // Calculate actual demand values
-            const baseTrialMDD = Number(newResults.trial.MDD) || 0;
-            const baseRealMDD = Number(newResults.real.MDD) || 0;
-            const baseTrialTRD = Number(newResults.trial.TRD) || 0;
-            const baseRealTRD = Number(newResults.real.TRD) || 0;
-
-            const actualTrialMDD = Math.round(
-                baseTrialMDD * ((Number(actualPercents.trialMDD) || 0) / 100)
-            );
-            const actualRealMDD = Math.round(
-                baseRealMDD * ((Number(actualPercents.realMDD) || 0) / 100)
-            );
-            const actualTrialTRD = Math.round(
-                baseTrialTRD * ((Number(actualPercents.trialTRD) || 0) / 100)
-            );
-            const actualRealTRD = Math.round(
-                baseRealTRD * ((Number(actualPercents.realTRD) || 0) / 100)
-            );
-
-            const actualSummary = {
-                percents: actualPercents,
-                MDD: {
-                    trial: actualTrialMDD,
-                    real: actualRealMDD,
-                },
-                TRD: {
-                    trial: actualTrialTRD,
-                    real: actualRealTRD,
-                },
-            };
-
-            // Construct updated model payload
-            const updatedModel = {
-                title: mergedFormData.modelTitle || 'Untitled model',
-                geographicArea: mergedFormData.geographicArea || '',
-                motivation: mergedFormData.motivation || '',
-                inputs: mergedFormData,
-                outputs: {
-                    ...newResults,
-                    actual: actualSummary,
-                },
-                modelCreatedOn: editingModel.modelCreatedOn || editingModel.calculatedAt || null, // Preserve original calculation datetime
-            };
-
-            // Update the model in Firestore
-            const res = await updateSavedModel(user.uid, editingModel.id, updatedModel);
-            if (!res.success) {
-                alert(res.message || 'Failed to update model.');
-                return;
-            }
-
-            // Reload saved models
-            await loadData();
-            setEditDialogOpen(false);
-            setEditingModel(null);
-            alert('Model updated successfully.');
-        } catch (error) {
-            console.error('Error updating model:', error);
-            alert('Failed to update model.');
         }
     };
 
@@ -218,6 +127,10 @@ const HistoryPage = () => {
     };
 
     const renderModelCard = (model) => {
+        const funnelDisplay = model.funnel
+            ? deriveFunnelDisplay(model.funnel, cellValuesFromActualSummary(model.outputs?.actual))
+            : null;
+
         return (
             <Paper
                 key={model.id}
@@ -244,6 +157,16 @@ const HistoryPage = () => {
                             <Typography variant="body2" color="text.secondary">
                                 Scenario: {model.motivation}
                             </Typography>
+                        )}
+                        {model.funnel && (
+                            <>
+                                <Typography variant="body2" color="text.secondary">
+                                    Population context: {model.funnel.contexts?.awarenessInterest} / {model.funnel.contexts?.geographicAccess}
+                                </Typography>
+                                <Typography variant="body2" fontWeight="bold">
+                                    Effective Demand: {model.funnel.effectiveDemand != null ? `${Number(model.funnel.effectiveDemand).toLocaleString()}/yr` : '—'}
+                                </Typography>
+                            </>
                         )}
                     </Box>
                     <Stack direction="row" spacing={1}>
@@ -358,6 +281,48 @@ const HistoryPage = () => {
                         </Grid>
                     </Grid>
                 </Grid>
+
+                {funnelDisplay && (
+                    <>
+                        <Divider sx={{ my: 2 }} />
+                        <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1 }}>Stages 4-9</Typography>
+                        <Grid container spacing={2} sx={{ mb: 1 }}>
+                            <Grid item xs={12} sm={4}>
+                                <Typography variant="body2" color="text.secondary">
+                                    Awareness / Interest context: {labelFromList(AWARENESS_INTEREST_CONTEXTS, model.funnel.contexts?.awarenessInterest)}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Geographic Access context: {labelFromList(GEOGRAPHIC_ACCESS_CONTEXTS, model.funnel.contexts?.geographicAccess)}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Funnel input population: {labelFromList(FUNNEL_INPUT_CELLS, model.funnel.funnelInputSelection)}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Stage 6 selected tier: {stage6TierLabel(model.funnel.stage6)}
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                                <Typography variant="body2" color="text.secondary">
+                                    Stage 8 — facilitators / throughput / multiplier: {model.funnel.stage8?.facilitators} / {model.funnel.stage8?.throughput} / {model.funnel.stage8?.multiplier}x
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Estimated annual capacity: {Number(funnelDisplay.capacityN).toLocaleString()}/yr
+                                </Typography>
+                                <Typography variant="body2" fontWeight="bold">
+                                    Effective Demand: {Number(funnelDisplay.displayedEffectiveDemand).toLocaleString()}/yr
+                                    {model.funnel.stage8?.capacityCapApplied ? ' (capacity cap applied)' : ''}
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                                <Typography variant="body2" color="text.secondary">Scenario Explorer — effective demand</Typography>
+                                <Typography variant="body2" color="text.secondary">Conservative: {Number(funnelDisplay.scenario.conservative.effectiveDemand).toLocaleString()}/yr</Typography>
+                                <Typography variant="body2" color="text.secondary">Moderate: {Number(funnelDisplay.scenario.moderate.effectiveDemand).toLocaleString()}/yr</Typography>
+                                <Typography variant="body2" color="text.secondary">Optimistic: {Number(funnelDisplay.scenario.optimistic.effectiveDemand).toLocaleString()}/yr</Typography>
+                            </Grid>
+                        </Grid>
+                        <FunnelRowsTable rows={funnelDisplay.funnelRows} />
+                    </>
+                )}
             </Paper>
         );
     };
@@ -405,15 +370,6 @@ const HistoryPage = () => {
                         </Stack>
                     )}
                 </Container>
-                <EditModelDialog
-                    open={editDialogOpen}
-                    onClose={() => {
-                        setEditDialogOpen(false);
-                        setEditingModel(null);
-                    }}
-                    model={editingModel}
-                    onSave={handleSaveEdit}
-                />
             </div>
         </ThemeProvider>
     );

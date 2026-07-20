@@ -10,8 +10,9 @@ import {
     InputAdornment,
     Box,
 } from '@mui/material';
+import FunnelSection from '../funnel/FunnelSection';
 
-const ResultsDisplay = ({ results, formData, onDownload, onSave, saving, actualPercents, setActualPercents, modelCreatedOn }) => {
+const ResultsDisplay = ({ results, formData, onDownload, onSave, onUpdate, saving, actualPercents, setActualPercents, modelCreatedOn, onFunnelStateChange, initialFunnelState, editingModelId }) => {
 
     if (!results) return null;
 
@@ -60,7 +61,7 @@ const ResultsDisplay = ({ results, formData, onDownload, onSave, saving, actualP
     };
 
     return (
-        <Paper elevation={2} sx={{ mt: 4, p: 3 }}>
+        <Paper id="results-section" elevation={2} sx={{ mt: 4, p: 3 }}>
             <Grid container spacing={3} sx={{ mb: 2 }}>
                 <Grid item xs={12} sm={4}>
                     <Typography variant="h4" sx={{ mt: 2, mb: 2 }}>
@@ -284,7 +285,19 @@ const ResultsDisplay = ({ results, formData, onDownload, onSave, saving, actualP
                     </Grid>
                 </Grid>
             </Box>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+
+            <FunnelSection
+                cellValues={{
+                    trialMDD: actualTrialMDD,
+                    realMDD: actualRealMDD,
+                    trialTRD: actualTrialTRD,
+                    realTRD: actualRealTRD,
+                }}
+                onFunnelStateChange={onFunnelStateChange}
+                initialState={initialFunnelState}
+            />
+
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 4 }}>
                 <Button
                     color="primary"
                     type="submit"
@@ -294,15 +307,38 @@ const ResultsDisplay = ({ results, formData, onDownload, onSave, saving, actualP
                 >
                     Download PDF
                 </Button>
-                <Button
-                    color="primary"
-                    variant="outlined"
-                    size="large"
-                    onClick={() => onSave(actualSummary)}
-                    disabled={saving}
-                >
-                    {saving ? 'Saving...' : 'Save to History'}
-                </Button>
+                {editingModelId ? (
+                    <>
+                        <Button
+                            color="primary"
+                            variant="contained"
+                            size="large"
+                            onClick={() => onUpdate(actualSummary)}
+                            disabled={saving}
+                        >
+                            {saving ? 'Updating...' : 'Update Model'}
+                        </Button>
+                        <Button
+                            color="primary"
+                            variant="outlined"
+                            size="large"
+                            onClick={() => onSave(actualSummary)}
+                            disabled={saving}
+                        >
+                            {saving ? 'Saving...' : 'Save as New'}
+                        </Button>
+                    </>
+                ) : (
+                    <Button
+                        color="primary"
+                        variant="outlined"
+                        size="large"
+                        onClick={() => onSave(actualSummary)}
+                        disabled={saving}
+                    >
+                        {saving ? 'Saving...' : 'Save to History'}
+                    </Button>
+                )}
             </Stack>
         </Paper>
     );

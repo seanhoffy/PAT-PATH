@@ -1,4 +1,6 @@
 import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
+import { deriveFunnelDisplay, cellValuesFromActualSummary, getStage6Value, stage6TierLabel } from '../../utils/funnelCalculations';
+import { STAGE9_METHODOLOGICAL_CAVEAT, STAGE9_OREGON_COMPARATOR_CAPTION } from '../../constants/funnelDefaults';
 
 // Define styles for the PDF
 const styles = StyleSheet.create({
@@ -130,10 +132,155 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#000'
     },
+    funnelTable: {
+        marginTop: 4,
+        marginBottom: 6,
+    },
+    funnelTableRow: {
+        flexDirection: 'row',
+        borderBottom: '1px solid #ddd',
+        paddingVertical: 3,
+    },
+    funnelTableHeaderRow: {
+        flexDirection: 'row',
+        borderBottom: '1px solid #000',
+        paddingVertical: 3,
+    },
+    funnelTableCell: {
+        flex: 1,
+        fontSize: 9,
+        paddingHorizontal: 2,
+    },
+    funnelTableHeaderCell: {
+        flex: 1,
+        fontSize: 9,
+        fontWeight: 'bold',
+        paddingHorizontal: 2,
+    },
+    funnelBarRow: {
+        marginBottom: 6,
+    },
+    funnelBarLabelRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 2,
+    },
+    funnelBarLabel: {
+        fontSize: 9,
+    },
+    funnelBarValue: {
+        fontSize: 9,
+        fontWeight: 'bold',
+    },
+    funnelBarTrack: {
+        height: 10,
+        backgroundColor: '#eef1f5',
+        borderRadius: 2,
+    },
+    funnelBarFill: {
+        height: 10,
+        backgroundColor: '#023e74',
+        borderRadius: 2,
+    },
+    calloutBox: {
+        borderLeft: '3px solid #023e74',
+        backgroundColor: '#f7f9fc',
+        padding: 8,
+        marginBottom: 8,
+    },
+    calloutText: {
+        fontSize: 9,
+        color: '#333',
+    },
 });
 
+// Native react-pdf reconstruction of the funnel plot (a chart of
+// proportionally-decreasing horizontal bars), since @react-pdf/renderer
+// cannot render a live Recharts/SVG/canvas element. Bar widths are
+// proportional to each row's N relative to the first row's N.
+const FunnelBarChart = ({ rows }) => {
+    const maxN = Number(rows?.[0]?.n) || 1;
+    return (
+        <View>
+            {rows.map((row) => (
+                <View key={row.key} style={styles.funnelBarRow}>
+                    <View style={styles.funnelBarLabelRow}>
+                        <Text style={styles.funnelBarLabel}>{row.stage}</Text>
+                        <Text style={styles.funnelBarValue}>
+                            {Number(row.n).toLocaleString()}{row.pctOfPrior !== null ? ` (${row.pctOfPrior}% of prior)` : ''}
+                        </Text>
+                    </View>
+                    <View style={styles.funnelBarTrack}>
+                        <View style={[styles.funnelBarFill, { width: `${Math.min(100, (Number(row.n) / maxN) * 100)}%` }]} />
+                    </View>
+                </View>
+            ))}
+        </View>
+    );
+};
+
+const FunnelRecapTable = ({ rows }) => (
+    <View style={styles.funnelTable}>
+        <View style={styles.funnelTableHeaderRow}>
+            <Text style={styles.funnelTableHeaderCell}>Stage</Text>
+            <Text style={styles.funnelTableHeaderCell}>Type</Text>
+            <Text style={styles.funnelTableHeaderCell}>Rate</Text>
+            <Text style={styles.funnelTableHeaderCell}>N</Text>
+        </View>
+        {rows.map((row) => (
+            <View key={row.key} style={styles.funnelTableRow}>
+                <Text style={styles.funnelTableCell}>{row.stage}</Text>
+                <Text style={styles.funnelTableCell}>{row.type === 'base' ? '—' : row.type}</Text>
+                <Text style={styles.funnelTableCell}>{row.rate !== null && row.rate !== undefined ? `${row.rate}%` : '—'}</Text>
+                <Text style={styles.funnelTableCell}>{Number(row.n).toLocaleString()}</Text>
+            </View>
+        ))}
+    </View>
+);
+
+const ScenarioExplorerPdfTable = ({ startN, scenario }) => {
+    const stageRows = [
+        { label: 'D. Aware', rowKey: 'D' },
+        { label: 'E. Interested | Aware', rowKey: 'E' },
+        { label: 'F. Can afford', rowKey: 'F' },
+        { label: 'G. Can access provider', rowKey: 'G' },
+    ];
+    const findRow = (column, rowKey) => scenario[column].rows.find((r) => r.key === rowKey);
+
+    return (
+        <View style={styles.funnelTable}>
+            <View style={styles.funnelTableHeaderRow}>
+                <Text style={styles.funnelTableHeaderCell}>Stage</Text>
+                <Text style={styles.funnelTableHeaderCell}>Conservative</Text>
+                <Text style={styles.funnelTableHeaderCell}>Moderate</Text>
+                <Text style={styles.funnelTableHeaderCell}>Optimistic</Text>
+            </View>
+            <View style={styles.funnelTableRow}>
+                <Text style={styles.funnelTableCell}>C. Stage 3 output (selected cell)</Text>
+                <Text style={styles.funnelTableCell}>{Number(startN).toLocaleString()}</Text>
+                <Text style={styles.funnelTableCell}>{Number(startN).toLocaleString()}</Text>
+                <Text style={styles.funnelTableCell}>{Number(startN).toLocaleString()}</Text>
+            </View>
+            {stageRows.map(({ label, rowKey }) => (
+                <View key={rowKey} style={styles.funnelTableRow}>
+                    <Text style={styles.funnelTableCell}>{label}</Text>
+                    <Text style={styles.funnelTableCell}>{findRow('conservative', rowKey)?.rate ?? '—'}%</Text>
+                    <Text style={styles.funnelTableCell}>{findRow('moderate', rowKey)?.rate ?? '—'}%</Text>
+                    <Text style={styles.funnelTableCell}>{findRow('optimistic', rowKey)?.rate ?? '—'}%</Text>
+                </View>
+            ))}
+            <View style={styles.funnelTableRow}>
+                <Text style={[styles.funnelTableCell, { fontWeight: 'bold' }]}>= Effective demand (funnel)</Text>
+                <Text style={[styles.funnelTableCell, { fontWeight: 'bold' }]}>{Number(scenario.conservative.effectiveDemand).toLocaleString()}</Text>
+                <Text style={[styles.funnelTableCell, { fontWeight: 'bold' }]}>{Number(scenario.moderate.effectiveDemand).toLocaleString()}</Text>
+                <Text style={[styles.funnelTableCell, { fontWeight: 'bold' }]}>{Number(scenario.optimistic.effectiveDemand).toLocaleString()}</Text>
+            </View>
+        </View>
+    );
+};
+
 // PDF Document Component
-const MyDocument = ({ formData, results, actual, modelCreatedOn, calculatedAt }) => {
+const MyDocument = ({ formData, results, actual, modelCreatedOn, calculatedAt, funnelState }) => {
     if (!formData) {
         return (
             <Document>
@@ -143,6 +290,8 @@ const MyDocument = ({ formData, results, actual, modelCreatedOn, calculatedAt })
             </Document>
         );
     }
+
+    const funnelDisplay = funnelState ? deriveFunnelDisplay(funnelState, cellValuesFromActualSummary(actual)) : null;
 
     return (
         <Document>
@@ -366,6 +515,87 @@ const MyDocument = ({ formData, results, actual, modelCreatedOn, calculatedAt })
                         </>
                     )}
                 </View>
+
+                {/* Stages 4-9 */}
+                {funnelDisplay && (
+                    <>
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>Stages 4-9 Inputs</Text>
+                            <View style={styles.inputGrid}>
+                                <View style={styles.inputItem}>
+                                    <Text style={styles.label}>Awareness / Interest context:</Text>
+                                    <Text style={styles.value}>{funnelState.contexts.awarenessInterest}</Text>
+                                </View>
+                                <View style={styles.inputItem}>
+                                    <Text style={styles.label}>Geographic Access context:</Text>
+                                    <Text style={styles.value}>{funnelState.contexts.geographicAccess}</Text>
+                                </View>
+                                <View style={styles.inputItem}>
+                                    <Text style={styles.label}>Funnel input population (Stage 3 cell):</Text>
+                                    <Text style={styles.value}>{funnelState.funnelInputSelection}</Text>
+                                </View>
+                                <View style={styles.inputItem}>
+                                    <Text style={styles.label}>Stage 4 — Aware (%):</Text>
+                                    <Text style={styles.value}>{funnelState.stage4.value}%</Text>
+                                </View>
+                                <View style={styles.inputItem}>
+                                    <Text style={styles.label}>Stage 5 — Interested | Aware (%):</Text>
+                                    <Text style={styles.value}>{funnelState.stage5.value}%</Text>
+                                </View>
+                                <View style={styles.inputItem}>
+                                    <Text style={styles.label}>Stage 6 — Can afford (selected row / %):</Text>
+                                    <Text style={styles.value}>{stage6TierLabel(funnelState.stage6)} / {getStage6Value(funnelState.stage6)}%</Text>
+                                </View>
+                                <View style={styles.inputItem}>
+                                    <Text style={styles.label}>Stage 7 — Can access provider (%):</Text>
+                                    <Text style={styles.value}>{funnelState.stage7.value}%</Text>
+                                </View>
+                                <View style={styles.inputItem}>
+                                    <Text style={styles.label}>Stage 8 — Facilitators / throughput / multiplier:</Text>
+                                    <Text style={styles.value}>
+                                        {funnelState.stage8.facilitators} / {funnelState.stage8.throughput} / {funnelState.stage8.multiplier}x
+                                    </Text>
+                                </View>
+                                <View style={styles.inputItem}>
+                                    <Text style={styles.label}>Stage 8 — Estimated annual capacity:</Text>
+                                    <Text style={styles.value}>{Number(funnelDisplay.capacityN).toLocaleString()}/yr</Text>
+                                </View>
+                                <View style={styles.inputItem}>
+                                    <Text style={styles.label}>Capacity cap applied:</Text>
+                                    <Text style={styles.value}>{funnelState.stage8.capacityCapApplied ? 'Yes' : 'No'}</Text>
+                                </View>
+                            </View>
+                        </View>
+
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>Inputs Recap</Text>
+                            <FunnelRecapTable rows={funnelDisplay.funnelRows} />
+                            <Text style={[styles.value, { fontWeight: 'bold' }]}>
+                                Effective demand: {Number(funnelDisplay.displayedEffectiveDemand).toLocaleString()}/yr
+                                {funnelState.stage8.capacityCapApplied ? ' (capacity cap applied)' : ''}
+                            </Text>
+                        </View>
+
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>Scenario Explorer (Conservative / Moderate / Optimistic)</Text>
+                            <ScenarioExplorerPdfTable startN={funnelDisplay.funnelInputN} scenario={funnelDisplay.scenario} />
+                        </View>
+
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>Funnel Plot (Moderate column)</Text>
+                            <FunnelBarChart rows={funnelDisplay.scenario.moderate.rows} />
+                        </View>
+
+                        <View style={styles.section}>
+                            <View style={styles.calloutBox}>
+                                <Text style={styles.calloutText}>{STAGE9_METHODOLOGICAL_CAVEAT}</Text>
+                            </View>
+                            <View style={styles.calloutBox}>
+                                <Text style={styles.calloutText}>{STAGE9_OREGON_COMPARATOR_CAPTION}</Text>
+                            </View>
+                        </View>
+                    </>
+                )}
             </Page>
         </Document>
     );

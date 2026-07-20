@@ -97,14 +97,22 @@ export const formatResultsForModel = (results) => {
 };
 
 /**
- * Scroll to bottom of page with smooth behavior
+ * Scroll to the top of the results section (the 2x2 grid) with smooth
+ * behavior. Named scrollToBottom historically because the results section
+ * used to be the end of the page; the Stages 4-9 funnel now extends well
+ * below it, so scrolling to actual document bottom would skip past results.
  */
 export const scrollToBottom = () => {
     setTimeout(() => {
-        window.scrollTo({
-            top: document.documentElement.scrollHeight,
-            behavior: 'smooth',
-        });
+        const resultsSection = document.getElementById('results-section');
+        if (resultsSection) {
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            window.scrollTo({
+                top: document.documentElement.scrollHeight,
+                behavior: 'smooth',
+            });
+        }
     }, CALCULATION_CONSTANTS.SCROLL_DELAY_MS);
 };
 

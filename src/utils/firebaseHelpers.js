@@ -94,7 +94,7 @@ const normalizeObject = (obj) => {
  * Check if a model is a duplicate of an existing saved model
  * Compares inputs and outputs, excluding metadata (title, geographicArea, motivation, additionalComments)
  */
-export const isModelDuplicate = async (userId, currentFormData, currentResults) => {
+export const isModelDuplicate = async (userId, currentFormData, currentResults, currentFunnel) => {
     if (!userId || !currentFormData || !currentResults) return false;
 
     try {
@@ -103,7 +103,7 @@ export const isModelDuplicate = async (userId, currentFormData, currentResults) 
 
         // Fields to exclude from comparison (metadata fields)
         const metadataFields = ['modelTitle', 'geographicArea', 'motivation', 'additionalComments'];
-        
+
         // Extract comparable input fields (exclude metadata)
         const currentInputs = { ...currentFormData };
         metadataFields.forEach(field => delete currentInputs[field]);
@@ -115,6 +115,7 @@ export const isModelDuplicate = async (userId, currentFormData, currentResults) 
         // Normalize current data for comparison
         const normalizedCurrentInputs = normalizeObject(currentInputs);
         const normalizedCurrentOutputs = normalizeObject(currentOutputs);
+        const normalizedCurrentFunnel = normalizeObject(currentFunnel || null);
 
         // Compare each saved model
         for (const savedModel of savedModels) {
@@ -132,16 +133,21 @@ export const isModelDuplicate = async (userId, currentFormData, currentResults) 
             // Normalize saved data for comparison
             const normalizedSavedInputs = normalizeObject(comparableSavedInputs);
             const normalizedSavedOutputs = normalizeObject(comparableSavedOutputs);
+            const normalizedSavedFunnel = normalizeObject(savedModel.funnel || null);
 
             // Compare inputs (deep comparison with normalized data)
             const inputsMatch = JSON.stringify(normalizedCurrentInputs) === JSON.stringify(normalizedSavedInputs);
-            
+
             if (!inputsMatch) continue;
 
             // Compare outputs (deep comparison of trial, real, and comorbid)
             const outputsMatch = JSON.stringify(normalizedCurrentOutputs) === JSON.stringify(normalizedSavedOutputs);
+            if (!outputsMatch) continue;
 
-            if (outputsMatch) {
+            // Compare Stages 4-9 funnel state
+            const funnelMatch = JSON.stringify(normalizedCurrentFunnel) === JSON.stringify(normalizedSavedFunnel);
+
+            if (funnelMatch) {
                 return true;
             }
         }
@@ -174,7 +180,7 @@ export const addSavedModel = async (userId, modelPayload) => {
         }
 
         // Check for duplicates
-        const isDuplicate = await isModelDuplicate(userId, modelPayload.inputs, modelPayload.outputs);
+        const isDuplicate = await isModelDuplicate(userId, modelPayload.inputs, modelPayload.outputs, modelPayload.funnel);
         if (isDuplicate) {
             return { success: false, isDuplicate: true, message: 'This model was already saved.' };
         }
@@ -283,29 +289,32 @@ export const fetchUserProfile = async (userId) => {
  * Fetch persisted form/results state for a user
  */
 export const fetchUserFormState = async (userId) => {
-    if (!userId) return { currentForm: null, currentResults: null, currentActualPercents: null, currentModelCreatedOn: null };
+    const empty = { currentForm: null, currentResults: null, currentActualPercents: null, currentModelCreatedOn: null, currentFunnelState: null, currentEditingModelId: null };
+    if (!userId) return empty;
 
     try {
         const docRef = doc(db, 'users', userId);
         const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) return { currentForm: null, currentResults: null, currentActualPercents: null, currentModelCreatedOn: null };
+        if (!docSnap.exists()) return empty;
         const data = docSnap.data();
         return {
             currentForm: data.currentForm ?? null,
             currentResults: data.currentResults ?? null,
             currentActualPercents: data.currentActualPercents ?? null,
             currentModelCreatedOn: data.currentModelCreatedOn ?? null,
+            currentFunnelState: data.currentFunnelState ?? null,
+            currentEditingModelId: data.currentEditingModelId ?? null,
         };
     } catch (error) {
         console.error('Error fetching user form state:', error);
-        return { currentForm: null, currentResults: null, currentActualPercents: null, currentModelCreatedOn: null };
+        return empty;
     }
 };
 
 /**
  * Save persisted form/results state for a user
  */
-export const saveUserFormState = async (userId, currentForm, currentResults, currentActualPercents, currentModelCreatedOn) => {
+export const saveUserFormState = async (userId, currentForm, currentResults, currentActualPercents, currentModelCreatedOn, currentFunnelState, currentEditingModelId) => {
     if (!userId) return;
     try {
         const docRef = doc(db, 'users', userId);
@@ -314,6 +323,8 @@ export const saveUserFormState = async (userId, currentForm, currentResults, cur
             currentResults: currentResults ?? null,
             currentActualPercents: currentActualPercents ?? null,
             currentModelCreatedOn: currentModelCreatedOn ?? null,
+            currentFunnelState: currentFunnelState ?? null,
+            currentEditingModelId: currentEditingModelId ?? null,
         });
     } catch (error) {
         console.error('Error saving user form state:', error);
@@ -331,6 +342,8 @@ export const clearUserFormState = async (userId) => {
             currentForm: null,
             currentResults: null,
             currentActualPercents: null,
+            currentFunnelState: null,
+            currentEditingModelId: null,
         });
     } catch (error) {
         console.error('Error clearing user form state:', error);

@@ -1,0 +1,81 @@
+import { Paper, Box, Typography, TextField, InputAdornment, Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import ProbabilityTypeTag from './ProbabilityTypeTag';
+import Callout from './Callout';
+import {
+    STAGE4_LABEL,
+    STAGE4_CONTEXT_DEFAULTS,
+    STAGE4_REFERENCE_ROW,
+    STAGE4_HELPER_TEXT,
+    STAGE4_ADJUSTMENT_CAPTION,
+    STAGE4_SOURCES,
+    DEFAULT_AWARENESS_INTEREST_CONTEXT,
+    PROBABILITY_TYPES,
+} from '../../constants/funnelDefaults';
+
+const CONTEXT_ROW_LABELS = {
+    progressiveUrban: 'Progressive / Urban',
+    moderateMixed: 'Moderate / Mixed',
+    conservativeRural: 'Conservative / Rural',
+};
+
+// Stage 4 — Awareness ("Who knows this therapy exists?"). Independent.
+const StageAwareness = ({ value, awarenessInterestContext, onChange }) => {
+    const showAdjustmentCaption = awarenessInterestContext !== DEFAULT_AWARENESS_INTEREST_CONTEXT;
+
+    return (
+        <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+            <Box display="flex" alignItems="center" sx={{ mb: 1 }}>
+                <Typography variant="h5">Stage 4 — Awareness</Typography>
+                <ProbabilityTypeTag type={PROBABILITY_TYPES.INDEPENDENT} />
+            </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                “Who knows this therapy exists?”
+            </Typography>
+
+            <TextField
+                label={STAGE4_LABEL}
+                type="number"
+                value={value}
+                onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
+                InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
+                sx={{ mb: 2, minWidth: 320 }}
+            />
+
+            <Callout>{STAGE4_HELPER_TEXT}</Callout>
+            {showAdjustmentCaption && <Callout>{STAGE4_ADJUSTMENT_CAPTION}</Callout>}
+
+            <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 2, mb: 1 }}>
+                Context-driven defaults
+            </Typography>
+            <Table size="small">
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Context</TableCell>
+                        <TableCell>Aware</TableCell>
+                        <TableCell>Rationale anchor</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {Object.entries(STAGE4_CONTEXT_DEFAULTS).map(([key, row]) => (
+                        <TableRow key={key} selected={key === awarenessInterestContext}>
+                            <TableCell>{CONTEXT_ROW_LABELS[key]}{key === DEFAULT_AWARENESS_INTEREST_CONTEXT ? ' (default)' : ''}</TableCell>
+                            <TableCell>{row.range}</TableCell>
+                            <TableCell>{row.rationale}</TableCell>
+                        </TableRow>
+                    ))}
+                    <TableRow>
+                        <TableCell>{STAGE4_REFERENCE_ROW.label}</TableCell>
+                        <TableCell>{STAGE4_REFERENCE_ROW.range}</TableCell>
+                        <TableCell>{STAGE4_REFERENCE_ROW.rationale}</TableCell>
+                    </TableRow>
+                </TableBody>
+            </Table>
+
+            <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 2 }}>
+                Sources: {STAGE4_SOURCES.join(' ')}
+            </Typography>
+        </Paper>
+    );
+};
+
+export default StageAwareness;

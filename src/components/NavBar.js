@@ -5,7 +5,8 @@ import { auth } from '../firebase';
 import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
-import { clearUserFormState, fetchUserFormState, addSavedModel } from '../utils/firebaseHelpers';
+import { clearUserFormState, fetchUserFormState, addSavedModel, updateSavedModel } from '../utils/firebaseHelpers';
+import { deriveFunnelDisplay, cellValuesFromActualSummary } from '../utils/funnelCalculations';
 import LogoutSaveDialog from './dialogs/LogoutSaveDialog';
 
 const NavBar = () => {
@@ -47,7 +48,7 @@ const NavBar = () => {
 
         try {
             // Fetch current form state and results from Firestore
-            const { currentForm, currentResults, currentActualPercents } = await fetchUserFormState(user.uid);
+            const { currentForm, currentResults, currentActualPercents, currentFunnelState, currentEditingModelId } = await fetchUserFormState(user.uid);
 
             // Check if results exist
             if (!currentResults) {
@@ -97,6 +98,16 @@ const NavBar = () => {
                 },
             };
 
+            // Construct funnel payload the same way buildSavePayload does in
+            // inputs_and_outputs.js, so saves from this flow aren't missing
+            // Stages 4-9 data relative to the in-page Save/Update buttons.
+            const funnel = currentFunnelState
+                ? {
+                    ...currentFunnelState,
+                    effectiveDemand: deriveFunnelDisplay(currentFunnelState, cellValuesFromActualSummary(actualSummary))?.displayedEffectiveDemand ?? null,
+                }
+                : null;
+
             // Construct model payload
             const payload = {
                 title: currentForm?.modelTitle || 'Untitled model',
@@ -107,10 +118,14 @@ const NavBar = () => {
                     ...currentResults,
                     actual: actualSummary || null,
                 },
+                funnel,
             };
 
-            // Try to save the model
-            const response = await addSavedModel(user.uid, payload);
+            // If an edit is in progress (matches the in-page "Update Model" behavior),
+            // update that saved model in place instead of always creating a new copy.
+            const response = currentEditingModelId
+                ? await updateSavedModel(user.uid, currentEditingModelId, payload)
+                : await addSavedModel(user.uid, payload);
             setSavingBeforeLogout(false);
 
             // Check response
