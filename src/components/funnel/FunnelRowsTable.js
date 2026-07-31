@@ -1,5 +1,6 @@
-import { Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import { Table, TableBody, TableRow, TableCell } from '@mui/material';
 import ProbabilityTypeTag from './ProbabilityTypeTag';
+import TableHeaderRow from './TableHeaderRow';
 import { PROBABILITY_TYPES } from '../../constants/funnelDefaults';
 
 const TYPE_MAP = {
@@ -12,14 +13,7 @@ const TYPE_MAP = {
 // so both render identically off the same data shape.
 const FunnelRowsTable = ({ rows }) => (
     <Table size="small">
-        <TableHead>
-            <TableRow>
-                <TableCell>Stage</TableCell>
-                <TableCell>Probability type</TableCell>
-                <TableCell>Value entered</TableCell>
-                <TableCell>N passing this gate</TableCell>
-            </TableRow>
-        </TableHead>
+        <TableHeaderRow columns={['Stage', 'Probability type', 'Value entered', 'N passing this gate']} />
         <TableBody>
             {rows.map((row) => (
                 <TableRow key={row.key}>

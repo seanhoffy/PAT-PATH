@@ -1,6 +1,7 @@
-import { Paper, Box, Typography, TextField, InputAdornment, Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import { Paper, Box, Typography, TextField, InputAdornment, Table, TableBody, TableRow, TableCell } from '@mui/material';
 import ProbabilityTypeTag from './ProbabilityTypeTag';
 import Callout from './Callout';
+import TableHeaderRow from './TableHeaderRow';
 import {
     STAGE4_LABEL,
     STAGE4_CONTEXT_DEFAULTS,
@@ -48,13 +49,7 @@ const StageAwareness = ({ value, awarenessInterestContext, onChange }) => {
                 Context-driven defaults
             </Typography>
             <Table size="small">
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Context</TableCell>
-                        <TableCell>Aware</TableCell>
-                        <TableCell>Rationale anchor</TableCell>
-                    </TableRow>
-                </TableHead>
+                <TableHeaderRow columns={['Context', 'Aware', 'Rationale anchor']} />
                 <TableBody>
                     {Object.entries(STAGE4_CONTEXT_DEFAULTS).map(([key, row]) => (
                         <TableRow key={key} selected={key === awarenessInterestContext}>

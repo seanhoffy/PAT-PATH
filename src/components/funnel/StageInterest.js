@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Paper, Box, Typography, TextField, InputAdornment, Table, TableHead, TableBody, TableRow, TableCell, Collapse, Link } from '@mui/material';
+import { Paper, Box, Typography, TextField, InputAdornment, Table, TableBody, TableRow, TableCell, Collapse, Link } from '@mui/material';
 import ProbabilityTypeTag from './ProbabilityTypeTag';
 import Callout from './Callout';
+import TableHeaderRow from './TableHeaderRow';
 import {
     STAGE5_LABEL,
     STAGE4_5_COMBINED_TABLE,
@@ -26,14 +27,16 @@ const StageInterest = ({ value, onChange }) => {
                 “Among those who know about it, who would actually consider it?”
             </Typography>
 
+            <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                {STAGE5_LABEL}
+            </Typography>
             <TextField
-                label={STAGE5_LABEL}
                 type="number"
                 value={value}
                 onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
                 InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
+                inputProps={{ 'aria-label': STAGE5_LABEL }}
                 sx={{ mb: 2, minWidth: 320 }}
-                multiline
             />
 
             <Callout>{STAGE5_CAVEAT}</Callout>
@@ -49,15 +52,7 @@ const StageInterest = ({ value, onChange }) => {
                 Combined Stage 4 + 5 (read-only)
             </Typography>
             <Table size="small">
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Context</TableCell>
-                        <TableCell>Aware</TableCell>
-                        <TableCell>Interest | Aware</TableCell>
-                        <TableCell>Combined</TableCell>
-                        <TableCell>Rationale</TableCell>
-                    </TableRow>
-                </TableHead>
+                <TableHeaderRow columns={['Context', 'Aware', 'Interest | Aware', 'Combined', 'Rationale']} />
                 <TableBody>
                     {STAGE4_5_COMBINED_TABLE.map((row) => (
                         <TableRow key={row.context} selected={!!row.isDefault}>

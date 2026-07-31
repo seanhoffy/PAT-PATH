@@ -199,19 +199,3 @@ export const deriveFunnelDisplay = (funnelState, cellValues) => {
         scenario,
     };
 };
-
-/**
- * Illustrative-only comparison (Total Adults x prevalence % x eligibility %).
- * Never wired into the real funnel math — the real funnel always starts from
- * the selected Stage-3 2x2 cell, per CC-1. Returns null if no total-adults
- * figure has been entered (the comparison is opt-in).
- */
-export const computeIllustrativeComparison = (totalAdults, prevalencePct, eligiblePct) => {
-    const total = Number(totalAdults) || 0;
-    if (!total) return null;
-
-    const withMDD = Math.round(total * ((Number(prevalencePct) || 0) / 100));
-    const clinicallyEligible = Math.round(withMDD * ((Number(eligiblePct) || 0) / 100));
-
-    return { totalAdults: total, withMDD, clinicallyEligible };
-};

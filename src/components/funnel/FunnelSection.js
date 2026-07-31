@@ -13,7 +13,7 @@ import ScenarioExplorerTable from './ScenarioExplorerTable';
 import FunnelPlot from './FunnelPlot';
 import Callout from './Callout';
 import { useFunnelReducer, getModeratePercents } from './useFunnelReducer';
-import { deriveFunnelDisplay, computeIllustrativeComparison, buildFunnelRows } from '../../utils/funnelCalculations';
+import { deriveFunnelDisplay, buildFunnelRows } from '../../utils/funnelCalculations';
 import { STAGE9_METHODOLOGICAL_CAVEAT, STAGE9_OREGON_COMPARATOR_CAPTION } from '../../constants/funnelDefaults';
 
 // Top-level container for Stages 4-9. Owns the reducer and composes every
@@ -43,12 +43,6 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
         () => buildFunnelRows(funnelInputN, moderatePercents).rows,
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [funnelInputN, moderatePercents.stage4, moderatePercents.stage5, moderatePercents.stage6, moderatePercents.stage7]
-    );
-
-    const illustrativeComparison = computeIllustrativeComparison(
-        state.illustrative.totalAdults,
-        state.illustrative.prevalencePct,
-        state.illustrative.eligiblePct
     );
 
     useEffect(() => {
@@ -121,8 +115,11 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
                 onRemoveCap={() => dispatch({ type: 'REMOVE_CAPACITY_CAP' })}
             />
 
-            <Typography variant="h4" sx={{ mt: 4, mb: 2 }}>
+            <Typography variant="h5" sx={{ mt: 4 }}>
                 Stage 9 — Effective Demand
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                “Your realistic annual utilization estimate.”
             </Typography>
             <Callout title="Methodological caveat">{STAGE9_METHODOLOGICAL_CAVEAT}</Callout>
 
@@ -130,9 +127,6 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
                 funnelRows={funnelRows}
                 displayedEffectiveDemand={displayedEffectiveDemand}
                 capacityCapApplied={state.stage8.capacityCapApplied}
-                illustrative={state.illustrative}
-                illustrativeComparison={illustrativeComparison}
-                onIllustrativeTotalAdultsChange={(value) => dispatch({ type: 'SET_ILLUSTRATIVE_FIELD', field: 'totalAdults', value })}
             />
 
             <ScenarioExplorerTable

@@ -272,15 +272,6 @@ export const STAGE9_METHODOLOGICAL_CAVEAT = "Multiplying six to seven uncertain 
 
 export const STAGE9_RECAP_HELPER_TEXT = 'To change a value, return to the corresponding stage above.';
 
-// Illustrative-only comparison (NOT wired into the real funnel math, which always
-// starts from the selected Stage-3 2x2 cell per CC-1). Shown only if the user
-// opts in by entering a Total Adults figure, purely for reference against the
-// spec's worked examples.
-export const ILLUSTRATIVE_TOTAL_ADULTS_LABEL = 'Total adults in your population (optional, for comparison only)';
-export const ILLUSTRATIVE_MDD_PREVALENCE_DEFAULT = 7; // % — NIMH prevalence
-export const ILLUSTRATIVE_CLINICALLY_ELIGIBLE_DEFAULT = 56; // % — Rab et al. 2024 mid-range
-export const ILLUSTRATIVE_COMPARISON_NOTE = "For reference only — not used in your funnel calculation. Your actual funnel starts from the Stage 3 output you selected above.";
-
 export const STAGE9_OREGON_COMPARATOR_CAPTION = "The funnel estimate of ~4,500/yr aligns reasonably with Oregon's observed ~4,000/yr. Oregon's high prices and limited access likely constrain actual demand below what broader availability would produce. As a benchmark, effective demand in most plausible scenarios falls between 0.05% and 0.3% of total adults (~1–4% of the prevalence pool).";
 
 // Worked Example A — hypothetical 500,000-adult urban/suburban population.

@@ -1,6 +1,7 @@
-import { Paper, Box, Typography, TextField, InputAdornment, Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import { Paper, Box, Typography, TextField, InputAdornment, Table, TableBody, TableRow, TableCell } from '@mui/material';
 import ProbabilityTypeTag from './ProbabilityTypeTag';
 import Callout from './Callout';
+import TableHeaderRow from './TableHeaderRow';
 import {
     STAGE7_LABEL,
     STAGE7_CONTEXT_DEFAULTS,
@@ -32,12 +33,15 @@ const StageGeographic = ({ value, geographicAccessContext, onChange }) => (
             “Who can physically reach a provider?”
         </Typography>
 
+        <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+            {STAGE7_LABEL}
+        </Typography>
         <TextField
-            label={STAGE7_LABEL}
             type="number"
             value={value}
             onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
             InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
+            inputProps={{ 'aria-label': STAGE7_LABEL }}
             sx={{ mb: 2, minWidth: 320 }}
         />
 
@@ -48,13 +52,7 @@ const StageGeographic = ({ value, geographicAccessContext, onChange }) => (
             Geographic Accessibility table
         </Typography>
         <Table size="small">
-            <TableHead>
-                <TableRow>
-                    <TableCell>Setting</TableCell>
-                    <TableCell>Default</TableCell>
-                    <TableCell>Basis</TableCell>
-                </TableRow>
-            </TableHead>
+            <TableHeaderRow columns={['Setting', 'Default', 'Basis']} />
             <TableBody>
                 {Object.entries(STAGE7_CONTEXT_DEFAULTS).map(([key, row]) => (
                     <TableRow key={key} selected={key === geographicAccessContext}>

@@ -11,8 +11,6 @@ import {
     STAGE8_FACILITATORS_DEFAULT,
     STAGE8_THROUGHPUT_DEFAULT,
     STAGE8_MULTIPLIER_DEFAULT,
-    ILLUSTRATIVE_MDD_PREVALENCE_DEFAULT,
-    ILLUSTRATIVE_CLINICALLY_ELIGIBLE_DEFAULT,
 } from '../../constants/funnelDefaults';
 // Re-exported so existing imports of these two helpers from this module keep
 // working; the canonical definitions live in funnelCalculations.js (shared
@@ -46,11 +44,6 @@ export const initialFunnelState = () => ({
         throughput: STAGE8_THROUGHPUT_DEFAULT,
         multiplier: STAGE8_MULTIPLIER_DEFAULT,
         capacityCapApplied: false,
-    },
-    illustrative: {
-        totalAdults: '',
-        prevalencePct: ILLUSTRATIVE_MDD_PREVALENCE_DEFAULT,
-        eligiblePct: ILLUSTRATIVE_CLINICALLY_ELIGIBLE_DEFAULT,
     },
     scenario: {
         moderateOverrides: {},
@@ -137,9 +130,6 @@ export const funnelReducer = (state, action) => {
 
         case 'REMOVE_CAPACITY_CAP':
             return { ...state, stage8: { ...state.stage8, capacityCapApplied: false } };
-
-        case 'SET_ILLUSTRATIVE_FIELD':
-            return { ...state, illustrative: { ...state.illustrative, [action.field]: action.value } };
 
         case 'SET_SCENARIO_CELL': {
             const { column, stage, value } = action; // column: 'conservative' | 'moderate' | 'optimistic'

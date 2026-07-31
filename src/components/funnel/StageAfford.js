@@ -1,9 +1,10 @@
 import {
-    Paper, Box, Typography, Radio, RadioGroup, Table, TableHead, TableBody, TableRow, TableCell,
+    Paper, Box, Typography, Radio, RadioGroup, Table, TableBody, TableRow, TableCell,
     TextField, InputAdornment,
 } from '@mui/material';
 import ProbabilityTypeTag from './ProbabilityTypeTag';
 import Callout from './Callout';
+import TableHeaderRow from './TableHeaderRow';
 import {
     STAGE6_TABLE_A_ROWS,
     STAGE6_TABLE_A_DENOMINATOR,
@@ -37,16 +38,7 @@ const StageAfford = ({ stage6, onSelectRow, onRowValueChange, onUserDefinedChang
             </Typography>
             <RadioGroup value={selectedRow} onChange={(e) => onSelectRow(e.target.value)}>
                 <Table size="small">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell />
-                            <TableCell>Price point</TableCell>
-                            <TableCell>Context</TableCell>
-                            <TableCell>%</TableCell>
-                            <TableCell>What this % represents</TableCell>
-                            <TableCell>Source</TableCell>
-                        </TableRow>
-                    </TableHead>
+                    <TableHeaderRow columns={['', 'Price point', 'Context', '%', 'What this % represents', 'Source']} />
                     <TableBody>
                         {STAGE6_TABLE_A_ROWS.map((row) => (
                             <TableRow key={row.key} selected={selectedRow === row.key}>
@@ -120,15 +112,7 @@ const StageAfford = ({ stage6, onSelectRow, onRowValueChange, onUserDefinedChang
                 Table B — Coverage / Subsidy Pathways (informational only, does not feed the funnel)
             </Typography>
             <Table size="small">
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Pathway</TableCell>
-                        <TableCell>Context</TableCell>
-                        <TableCell>Best est.</TableCell>
-                        <TableCell>What this % represents</TableCell>
-                        <TableCell>Source</TableCell>
-                    </TableRow>
-                </TableHead>
+                <TableHeaderRow columns={['Pathway', 'Context', 'Best est.', 'What this % represents', 'Source']} />
                 <TableBody>
                     {STAGE6_TABLE_B_ROWS.map((row) => (
                         <TableRow key={row.pathway}>

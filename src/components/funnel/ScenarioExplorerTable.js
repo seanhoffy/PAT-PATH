@@ -1,4 +1,5 @@
-import { Paper, Typography, Table, TableHead, TableBody, TableRow, TableCell, TextField, Button, Box } from '@mui/material';
+import { Paper, Typography, Table, TableBody, TableRow, TableCell, TextField, Button, Box } from '@mui/material';
+import TableHeaderRow from './TableHeaderRow';
 
 const STAGE_ROWS = [
     { rowKey: 'D', label: 'D. Aware', stageKey: 'stage4' },
@@ -26,14 +27,7 @@ const ScenarioExplorerTable = ({ startN, moderatePercents, scenarioInputs, scena
                 <Button variant="outlined" onClick={onReset}>Reset to defaults</Button>
             </Box>
             <Table size="small">
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Stage</TableCell>
-                        <TableCell>Conservative</TableCell>
-                        <TableCell>Moderate</TableCell>
-                        <TableCell>Optimistic</TableCell>
-                    </TableRow>
-                </TableHead>
+                <TableHeaderRow columns={['Stage', 'Conservative', 'Moderate', 'Optimistic']} />
                 <TableBody>
                     <TableRow>
                         <TableCell>C. Stage 3 output (selected cell)</TableCell>
