@@ -1,14 +1,19 @@
 import React from 'react';
 import { Box, Container, Paper, Typography, Divider } from '@mui/material';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '../firebase';
 import NavBar from '../components/NavBar';
+import PublicNavBar from '../components/PublicNavBar';
 import ThemeProvider from '../components/common/ThemeProvider';
 import { COLORS } from '../constants/colors';
 
 const TerminologyPage = () => {
+    const [user] = useAuthState(auth);
+
     return (
         <ThemeProvider>
             <div className="App">
-                <NavBar />
+                {user ? <NavBar /> : <PublicNavBar />}
                 <Box
                     sx={{
                         backgroundColor: COLORS.primary,

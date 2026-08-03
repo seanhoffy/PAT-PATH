@@ -1,5 +1,5 @@
 import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
-import { deriveFunnelDisplay, cellValuesFromActualSummary, getStage6Value, stage6TierLabel } from '../../utils/funnelCalculations';
+import { deriveFunnelDisplay, cellValuesFromResults, getStage6Value, stage6TierLabel } from '../../utils/funnelCalculations';
 import { STAGE9_METHODOLOGICAL_CAVEAT, STAGE9_OREGON_COMPARATOR_CAPTION } from '../../constants/funnelDefaults';
 
 // Define styles for the PDF
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     },
     funnelBarFill: {
         height: 10,
-        backgroundColor: '#023e74',
+        backgroundColor: '#c2410c',
         borderRadius: 2,
     },
     calloutBox: {
@@ -203,7 +203,7 @@ const FunnelBarChart = ({ rows }) => {
     return (
         <View>
             {rows.map((row) => (
-                <View key={row.key} style={styles.funnelBarRow}>
+                <View key={row.key} style={styles.funnelBarRow} wrap={false}>
                     <View style={styles.funnelBarLabelRow}>
                         <Text style={styles.funnelBarLabel}>{row.stage}</Text>
                         <Text style={styles.funnelBarValue}>
@@ -221,14 +221,14 @@ const FunnelBarChart = ({ rows }) => {
 
 const FunnelRecapTable = ({ rows }) => (
     <View style={styles.funnelTable}>
-        <View style={styles.funnelTableHeaderRow}>
+        <View style={styles.funnelTableHeaderRow} wrap={false}>
             <Text style={styles.funnelTableHeaderCell}>Stage</Text>
             <Text style={styles.funnelTableHeaderCell}>Type</Text>
             <Text style={styles.funnelTableHeaderCell}>Rate</Text>
             <Text style={styles.funnelTableHeaderCell}>N</Text>
         </View>
         {rows.map((row) => (
-            <View key={row.key} style={styles.funnelTableRow}>
+            <View key={row.key} style={styles.funnelTableRow} wrap={false}>
                 <Text style={styles.funnelTableCell}>{row.stage}</Text>
                 <Text style={styles.funnelTableCell}>{row.type === 'base' ? '—' : row.type}</Text>
                 <Text style={styles.funnelTableCell}>{row.rate !== null && row.rate !== undefined ? `${row.rate}%` : '—'}</Text>
@@ -240,36 +240,36 @@ const FunnelRecapTable = ({ rows }) => (
 
 const ScenarioExplorerPdfTable = ({ startN, scenario }) => {
     const stageRows = [
-        { label: 'D. Aware', rowKey: 'D' },
-        { label: 'E. Interested | Aware', rowKey: 'E' },
-        { label: 'F. Can afford', rowKey: 'F' },
-        { label: 'G. Can access provider', rowKey: 'G' },
+        { label: '4. Aware', rowKey: 'D' },
+        { label: '5. Interested | Aware', rowKey: 'E' },
+        { label: '6. Can afford', rowKey: 'F' },
+        { label: '7. Can access provider', rowKey: 'G' },
     ];
     const findRow = (column, rowKey) => scenario[column].rows.find((r) => r.key === rowKey);
 
     return (
         <View style={styles.funnelTable}>
-            <View style={styles.funnelTableHeaderRow}>
+            <View style={styles.funnelTableHeaderRow} wrap={false}>
                 <Text style={styles.funnelTableHeaderCell}>Stage</Text>
                 <Text style={styles.funnelTableHeaderCell}>Conservative</Text>
                 <Text style={styles.funnelTableHeaderCell}>Moderate</Text>
                 <Text style={styles.funnelTableHeaderCell}>Optimistic</Text>
             </View>
-            <View style={styles.funnelTableRow}>
-                <Text style={styles.funnelTableCell}>C. Stage 3 output (selected cell)</Text>
+            <View style={styles.funnelTableRow} wrap={false}>
+                <Text style={styles.funnelTableCell}>3. Funnel Input</Text>
                 <Text style={styles.funnelTableCell}>{Number(startN).toLocaleString()}</Text>
                 <Text style={styles.funnelTableCell}>{Number(startN).toLocaleString()}</Text>
                 <Text style={styles.funnelTableCell}>{Number(startN).toLocaleString()}</Text>
             </View>
             {stageRows.map(({ label, rowKey }) => (
-                <View key={rowKey} style={styles.funnelTableRow}>
+                <View key={rowKey} style={styles.funnelTableRow} wrap={false}>
                     <Text style={styles.funnelTableCell}>{label}</Text>
                     <Text style={styles.funnelTableCell}>{findRow('conservative', rowKey)?.rate ?? '—'}%</Text>
                     <Text style={styles.funnelTableCell}>{findRow('moderate', rowKey)?.rate ?? '—'}%</Text>
                     <Text style={styles.funnelTableCell}>{findRow('optimistic', rowKey)?.rate ?? '—'}%</Text>
                 </View>
             ))}
-            <View style={styles.funnelTableRow}>
+            <View style={styles.funnelTableRow} wrap={false}>
                 <Text style={[styles.funnelTableCell, { fontWeight: 'bold' }]}>= Effective demand (funnel)</Text>
                 <Text style={[styles.funnelTableCell, { fontWeight: 'bold' }]}>{Number(scenario.conservative.effectiveDemand).toLocaleString()}</Text>
                 <Text style={[styles.funnelTableCell, { fontWeight: 'bold' }]}>{Number(scenario.moderate.effectiveDemand).toLocaleString()}</Text>
@@ -280,7 +280,7 @@ const ScenarioExplorerPdfTable = ({ startN, scenario }) => {
 };
 
 // PDF Document Component
-const MyDocument = ({ formData, results, actual, modelCreatedOn, calculatedAt, funnelState }) => {
+const MyDocument = ({ formData, results, modelCreatedOn, calculatedAt, funnelState }) => {
     if (!formData) {
         return (
             <Document>
@@ -291,17 +291,17 @@ const MyDocument = ({ formData, results, actual, modelCreatedOn, calculatedAt, f
         );
     }
 
-    const funnelDisplay = funnelState ? deriveFunnelDisplay(funnelState, cellValuesFromActualSummary(actual)) : null;
+    const funnelDisplay = funnelState ? deriveFunnelDisplay(funnelState, cellValuesFromResults(results)) : null;
 
     return (
         <Document>
             <Page size="A4" style={styles.page}>
-                <View style={styles.section}>
+                <View style={styles.section} wrap={false}>
                     <Text style={styles.header}>PATpath Model Report</Text>
                 </View>
 
                 {/* General Information */}
-                <View style={styles.section}>
+                <View style={styles.section} wrap={false}>
                     <Text style={styles.sectionTitle}>General Information</Text>
                     <View style={styles.infoSection}>
                         <View style={styles.infoRow}>
@@ -336,7 +336,7 @@ const MyDocument = ({ formData, results, actual, modelCreatedOn, calculatedAt, f
                 </View>
 
                 {/* Prevalence Data */}
-                <View style={styles.section}>
+                <View style={styles.section} wrap={false}>
                     <Text style={styles.sectionTitle}>Prevalence</Text>
                     <View style={styles.inputGrid}>
                         <View style={styles.inputItem}>
@@ -355,7 +355,7 @@ const MyDocument = ({ formData, results, actual, modelCreatedOn, calculatedAt, f
                 </View>
 
                 {/* Exclusion Criteria */}
-                <View style={styles.section}>
+                <View style={styles.section} wrap={false}>
                     <Text style={styles.sectionTitle}>Exclusion Criteria Percentages</Text>
                     <View style={styles.inputGrid}>
                         <View style={styles.inputItem}>
@@ -398,7 +398,7 @@ const MyDocument = ({ formData, results, actual, modelCreatedOn, calculatedAt, f
                 </View>
 
                 {/* Double Counting Adjustments */}
-                <View style={styles.section}>
+                <View style={styles.section} wrap={false}>
                     <Text style={styles.sectionTitle}>Double Counting Adjustments</Text>
                     <View style={styles.inputGrid}>
                         <View style={styles.inputItem}>
@@ -417,7 +417,7 @@ const MyDocument = ({ formData, results, actual, modelCreatedOn, calculatedAt, f
                 </View>
 
                 {/* Results Section */}
-                <View style={styles.section}>
+                <View style={styles.section} wrap={false}>
                     <Text style={styles.sectionTitle}>Results</Text>
                     <Text style={styles.subtitle}>Trial Exclusion Criteria</Text>
                     <View style={styles.resultsGrid}>
@@ -442,84 +442,12 @@ const MyDocument = ({ formData, results, actual, modelCreatedOn, calculatedAt, f
                             <Text style={styles.value}>{parseInt(results.real.TRD).toLocaleString()}</Text>
                         </View>
                     </View>
-
-                    {/* Actual demand estimates, if provided */}
-                    {actual && (
-                        <>
-                            <Text style={styles.subtitle}>Calculated Demand Estimates</Text>
-                            <View style={styles.resultsGrid}>
-                                <View style={styles.resultItem}>
-                                    <Text style={styles.label}>MDD – Trial %:</Text>
-                                    <Text style={styles.value}>
-                                        {actual.percents?.trialMDD != null ? `${actual.percents.trialMDD}%` : 'N/A'}
-                                    </Text>
-                                </View>
-                                <View style={styles.resultItem}>
-                                    <Text style={styles.label}>MDD – Real World %:</Text>
-                                    <Text style={styles.value}>
-                                        {actual.percents?.realMDD != null ? `${actual.percents.realMDD}%` : 'N/A'}
-                                    </Text>
-                                </View>
-                            </View>
-                            <View style={styles.resultsGrid}>
-                                <View style={styles.resultItem}>
-                                    <Text style={styles.label}>TRD – Trial %:</Text>
-                                    <Text style={styles.value}>
-                                        {actual.percents?.trialTRD != null ? `${actual.percents.trialTRD}%` : 'N/A'}
-                                    </Text>
-                                </View>
-                                <View style={styles.resultItem}>
-                                    <Text style={styles.label}>TRD – Real World %:</Text>
-                                    <Text style={styles.value}>
-                                        {actual.percents?.realTRD != null ? `${actual.percents.realTRD}%` : 'N/A'}
-                                    </Text>
-                                </View>
-                            </View>
-
-                            <View style={styles.resultsGrid}>
-                                <View style={styles.resultItem}>
-                                    <Text style={styles.label}>Calculated MDD – Trial:</Text>
-                                    <Text style={styles.value}>
-                                        {actual.MDD?.trial != null
-                                            ? actual.MDD.trial.toLocaleString()
-                                            : 'N/A'}
-                                    </Text>
-                                </View>
-                                <View style={styles.resultItem}>
-                                    <Text style={styles.label}>Calculated MDD – Real World:</Text>
-                                    <Text style={styles.value}>
-                                        {actual.MDD?.real != null
-                                            ? actual.MDD.real.toLocaleString()
-                                            : 'N/A'}
-                                    </Text>
-                                </View>
-                            </View>
-                            <View style={styles.resultsGrid}>
-                                <View style={styles.resultItem}>
-                                    <Text style={styles.label}>Calculated TRD – Trial:</Text>
-                                    <Text style={styles.value}>
-                                        {actual.TRD?.trial != null
-                                            ? actual.TRD.trial.toLocaleString()
-                                            : 'N/A'}
-                                    </Text>
-                                </View>
-                                <View style={styles.resultItem}>
-                                    <Text style={styles.label}>Calculated TRD – Real World:</Text>
-                                    <Text style={styles.value}>
-                                        {actual.TRD?.real != null
-                                            ? actual.TRD.real.toLocaleString()
-                                            : 'N/A'}
-                                    </Text>
-                                </View>
-                            </View>
-                        </>
-                    )}
                 </View>
 
                 {/* Stages 4-9 */}
                 {funnelDisplay && (
                     <>
-                        <View style={styles.section}>
+                        <View style={styles.section} wrap={false}>
                             <Text style={styles.sectionTitle}>Stages 4-9 Inputs</Text>
                             <View style={styles.inputGrid}>
                                 <View style={styles.inputItem}>
@@ -535,29 +463,29 @@ const MyDocument = ({ formData, results, actual, modelCreatedOn, calculatedAt, f
                                     <Text style={styles.value}>{funnelState.funnelInputSelection}</Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>Stage 4 — Aware (%):</Text>
+                                    <Text style={styles.label}>4. Aware (%):</Text>
                                     <Text style={styles.value}>{funnelState.stage4.value}%</Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>Stage 5 — Interested | Aware (%):</Text>
+                                    <Text style={styles.label}>5. Interested | Aware (%):</Text>
                                     <Text style={styles.value}>{funnelState.stage5.value}%</Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>Stage 6 — Can afford (selected row / %):</Text>
+                                    <Text style={styles.label}>6. Can afford (selected row / %):</Text>
                                     <Text style={styles.value}>{stage6TierLabel(funnelState.stage6)} / {getStage6Value(funnelState.stage6)}%</Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>Stage 7 — Can access provider (%):</Text>
+                                    <Text style={styles.label}>7. Can access provider (%):</Text>
                                     <Text style={styles.value}>{funnelState.stage7.value}%</Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>Stage 8 — Facilitators / throughput / multiplier:</Text>
+                                    <Text style={styles.label}>8. Facilitators / throughput / multiplier:</Text>
                                     <Text style={styles.value}>
                                         {funnelState.stage8.facilitators} / {funnelState.stage8.throughput} / {funnelState.stage8.multiplier}x
                                     </Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>Stage 8 — Estimated annual capacity:</Text>
+                                    <Text style={styles.label}>8. Estimated annual capacity:</Text>
                                     <Text style={styles.value}>{Number(funnelDisplay.capacityN).toLocaleString()}/yr</Text>
                                 </View>
                                 <View style={styles.inputItem}>
@@ -567,7 +495,7 @@ const MyDocument = ({ formData, results, actual, modelCreatedOn, calculatedAt, f
                             </View>
                         </View>
 
-                        <View style={styles.section}>
+                        <View style={styles.section} wrap={false}>
                             <Text style={styles.sectionTitle}>Inputs Recap</Text>
                             <FunnelRecapTable rows={funnelDisplay.funnelRows} />
                             <Text style={[styles.value, { fontWeight: 'bold' }]}>
@@ -576,17 +504,17 @@ const MyDocument = ({ formData, results, actual, modelCreatedOn, calculatedAt, f
                             </Text>
                         </View>
 
-                        <View style={styles.section}>
+                        <View style={styles.section} wrap={false}>
                             <Text style={styles.sectionTitle}>Scenario Explorer (Conservative / Moderate / Optimistic)</Text>
                             <ScenarioExplorerPdfTable startN={funnelDisplay.funnelInputN} scenario={funnelDisplay.scenario} />
                         </View>
 
-                        <View style={styles.section}>
+                        <View style={styles.section} wrap={false}>
                             <Text style={styles.sectionTitle}>Funnel Plot (Moderate column)</Text>
                             <FunnelBarChart rows={funnelDisplay.scenario.moderate.rows} />
                         </View>
 
-                        <View style={styles.section}>
+                        <View style={styles.section} wrap={false}>
                             <View style={styles.calloutBox}>
                                 <Text style={styles.calloutText}>{STAGE9_METHODOLOGICAL_CAVEAT}</Text>
                             </View>

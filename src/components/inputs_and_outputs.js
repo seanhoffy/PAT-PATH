@@ -29,6 +29,7 @@ import { COLORS } from '../constants/colors';
 import { CALCULATION_CONSTANTS } from '../constants/calculations';
 import { calculateAllResults, formatResultsForModel, scrollToBottom } from '../utils/calculations';
 import { isStringField, validateFormData } from '../utils/formValidation';
+import { validateFunnelRequiredStages } from '../utils/funnelCalculations';
 import { fetchUserModel, updateUserModel, addSavedModel, updateSavedModel, fetchUserFormState, saveUserFormState, clearUserFormState } from '../utils/firebaseHelpers';
 import { getPSTDateTime } from '../utils/dateTimeHelpers';
 import BetaNotice from './BetaNotice';
@@ -55,13 +56,6 @@ const buildInitialFormData = () => ({
     additionalComments: "",
 });
 
-const buildInitialActualPercents = () => ({
-    trialMDD: 100,
-    realMDD: 100,
-    trialTRD: 100,
-    realTRD: 100,
-});
-
 const InputsForm = () => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -75,7 +69,6 @@ const InputsForm = () => {
 
     const [results, setResults] = useState(null);
     const [modelCreatedOn, setModelCreatedOn] = useState(null);
-    const [actualPercents, setActualPercents] = useState(buildInitialActualPercents);
     const [savingModel, setSavingModel] = useState(false);
     const [funnelState, setFunnelState] = useState(null);
     const [funnelDerived, setFunnelDerived] = useState(null);
@@ -101,16 +94,13 @@ const InputsForm = () => {
                 // from a specific saved model instead (see the effect below).
                 if (location.state?.editModel) return;
 
-                const { currentForm, currentResults, currentActualPercents, currentModelCreatedOn, currentFunnelState, currentEditingModelId } = await fetchUserFormState(user.uid);
+                const { currentForm, currentResults, currentModelCreatedOn, currentFunnelState, currentEditingModelId } = await fetchUserFormState(user.uid);
                 // Only set formData if currentForm exists (saved state), otherwise use initial state with defaults
                 if (currentForm) {
                     setFormData(currentForm);
                 }
                 if (currentResults) {
                     setResults(currentResults);
-                }
-                if (currentActualPercents) {
-                    setActualPercents(currentActualPercents);
                 }
                 if (currentModelCreatedOn) {
                     setModelCreatedOn(currentModelCreatedOn);
@@ -139,7 +129,6 @@ const InputsForm = () => {
 
         setFormData(editModel.inputs || buildInitialFormData());
         setResults(editModel.outputs || null);
-        setActualPercents(editModel.outputs?.actual?.percents || buildInitialActualPercents());
         setModelCreatedOn(editModel.modelCreatedOn || editModel.calculatedAt || null);
         setRestoredFunnelState(editModel.funnel || null);
         setEditingModelId(editModel.id);
@@ -159,7 +148,7 @@ const InputsForm = () => {
             clearTimeout(saveTimerRef.current);
         }
         saveTimerRef.current = setTimeout(() => {
-            saveUserFormState(user.uid, formData, results ?? null, actualPercents ?? null, modelCreatedOn ?? null, funnelState ?? null, editingModelId ?? null);
+            saveUserFormState(user.uid, formData, results ?? null, modelCreatedOn ?? null, funnelState ?? null, editingModelId ?? null);
         }, 800);
 
         return () => {
@@ -167,7 +156,7 @@ const InputsForm = () => {
                 clearTimeout(saveTimerRef.current);
             }
         };
-    }, [user?.uid, formData, results, actualPercents, modelCreatedOn, funnelState, editingModelId]);
+    }, [user?.uid, formData, results, modelCreatedOn, funnelState, editingModelId]);
 
     // Update model in Firestore when it changes
     const updateModelInFirestore = useCallback(async () => {
@@ -244,18 +233,23 @@ const InputsForm = () => {
         setModelCreatedOn(calculationDateTime);
         setModel(formatResultsForModel(calculatedResults));
         if (user?.uid) {
-            saveUserFormState(user.uid, formDataTemp, calculatedResults, actualPercents ?? null, calculationDateTime, funnelState ?? null, editingModelId ?? null);
+            saveUserFormState(user.uid, formDataTemp, calculatedResults, calculationDateTime, funnelState ?? null, editingModelId ?? null);
         }
         handleDisclaimerClose();
         scrollToBottom();
     };
 
-    const handleDownload = async (actualSummary) => {
+    const handleDownload = async () => {
+        const funnelValidation = validateFunnelRequiredStages(funnelState);
+        if (!funnelValidation.isValid) {
+            alert(funnelValidation.message);
+            return;
+        }
+
         const blob = await pdf(
             <MyDocument
                 formData={formData}
                 results={results}
-                actual={actualSummary}
                 modelCreatedOn={modelCreatedOn}
                 funnelState={funnelState}
             />
@@ -272,20 +266,17 @@ const InputsForm = () => {
         URL.revokeObjectURL(url);
     };
 
-    const buildSavePayload = (actualSummary) => ({
+    const buildSavePayload = () => ({
         title: formData.modelTitle || 'Untitled model',
         geographicArea: formData.geographicArea || '',
         motivation: formData.motivation || '',
         inputs: formData,
-        outputs: {
-            ...results,
-            actual: actualSummary || null,
-        },
+        outputs: { ...results },
         modelCreatedOn: modelCreatedOn || null,
         funnel: funnelState ? { ...funnelState, effectiveDemand: funnelDerived?.displayedEffectiveDemand ?? null } : null,
     });
 
-    const handleSaveModel = async (actualSummary) => {
+    const handleSaveModel = async () => {
         if (!user?.uid) {
             alert('Please log in to save models.');
             return;
@@ -294,9 +285,14 @@ const InputsForm = () => {
             alert('Please run the model before saving.');
             return;
         }
+        const funnelValidation = validateFunnelRequiredStages(funnelState);
+        if (!funnelValidation.isValid) {
+            alert(funnelValidation.message);
+            return;
+        }
 
         setSavingModel(true);
-        const response = await addSavedModel(user.uid, buildSavePayload(actualSummary));
+        const response = await addSavedModel(user.uid, buildSavePayload());
         setSavingModel(false);
 
         if (!response.success) {
@@ -309,10 +305,15 @@ const InputsForm = () => {
         alert('Model saved to your history.');
     };
 
-    const handleUpdateModel = async (actualSummary) => {
+    const handleUpdateModel = async () => {
         if (!user?.uid || !editingModelId) return;
         if (!results) {
             alert('Please run the model before saving.');
+            return;
+        }
+        const funnelValidation = validateFunnelRequiredStages(funnelState);
+        if (!funnelValidation.isValid) {
+            alert(funnelValidation.message);
             return;
         }
         if (!window.confirm(`This will overwrite the saved model "${formData.modelTitle || 'Untitled model'}" with the current values. Continue?`)) {
@@ -320,7 +321,7 @@ const InputsForm = () => {
         }
 
         setSavingModel(true);
-        const response = await updateSavedModel(user.uid, editingModelId, buildSavePayload(actualSummary));
+        const response = await updateSavedModel(user.uid, editingModelId, buildSavePayload());
         setSavingModel(false);
 
         if (!response.success) {
@@ -339,7 +340,6 @@ const InputsForm = () => {
         setFormData(buildInitialFormData());
         setResults(null);
         setModelCreatedOn(null);
-        setActualPercents(buildInitialActualPercents());
         setEditingModelId(null);
         setRestoredFunnelState(null);
         setFunnelState(null);
@@ -356,8 +356,8 @@ const InputsForm = () => {
             <BetaNotice />
             <Paper elevation={0} sx={{ mb: 3, mt: 2, p: 2.5, backgroundColor: 'white', borderRadius: 2 }}>
                 <Typography variant="body1" sx={{ color: '#023e74', lineHeight: 1.7, fontSize: '1.15rem' }}>
-                    To generate a demand estimate for psilocybin-assisted therapy in your population, you will need to provide 11 numerical input values and context about your model. 
-                    Running the model will take as little as five minutes if you are comfortable with default values for population characteristics, 
+                    To generate a demand estimate for psilocybin-assisted therapy in your geographic area, you will need to provide 11 numerical input values and context about your model.
+                    Running the model will take as little as five minutes if you are comfortable with default values for population characteristics,
                     or if you have prepared input values previously.
                 </Typography>
             </Paper>
@@ -411,7 +411,7 @@ const InputsForm = () => {
                             />
                         </Box>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            Tell us about yourself and the scenario for using this model
+                            Tell us about your scenario for using this model
                         </Typography>
                         <Grid container spacing={3} alignItems="center" sx={{ mb: -2.2 }}>
                             <Grid item xs={3}>
@@ -464,14 +464,14 @@ const InputsForm = () => {
                     {/* Prevalence Section */}
                     <Paper elevation={2} sx={{ p: 3 }}>
                         <Box display="flex" alignItems="center" justifyContent="center" gap={0}>
-                            <Typography variant="h5">Prevalence in Your Population</Typography>
+                            <Typography variant="h5">Prevalence of Depression in Your Population</Typography>
                             <InfoButton
                                 dialogTitle={INFO_DIALOGS.prevalence.title}
                                 dialogContent={INFO_DIALOGS.prevalence.content}
                             />
                         </Box>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            Enter the number of people with Major Depressive Disorder (MDD) in the population of interest and the percentage with Treatment-Resistant Depression (TRD)
+                            Enter the number of people with Major Depressive Disorder (MDD) in the population of interest and the % with Treatment-Resistant Depression (TRD)
                         </Typography>
                         <Grid container spacing={3} alignItems="center">
                             <Grid item xs={4}>
@@ -544,10 +544,10 @@ const InputsForm = () => {
                             />
                         </Box>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: .5 }}>
-                        Enter the percentage of people with Major Depressive Disorder (MDD) in the population you are analyzing who have the listed conditions. 
+                            Enter the % of people with Major Depressive Disorder (MDD) in the population you are analyzing who have the listed conditions.
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            These estimates apply to the US as a whole, if you have better estimates that apply to your population you can override them.
+                            The default values provided below are for the US as a whole, if you have better estimates for your population you can override them.
                         </Typography>
                         <Grid container spacing={3}>
                             {EXCLUSION_CRITERIA_FIELDS.map(([key, label]) => (
@@ -590,7 +590,7 @@ const InputsForm = () => {
                         onClick={() => setDoubleCountingOpen(true)}
                         startIcon={<EditIcon />}
                         size="medium">
-                        Adjust for Double Counting (Optional)
+                        Refine the adjustment for double counting (Optional)
                     </Button>
 
                     <DoubleCountingDialog
@@ -632,8 +632,6 @@ const InputsForm = () => {
             <ResultsDisplay
                 results={results}
                 formData={formData}
-                actualPercents={actualPercents}
-                setActualPercents={setActualPercents}
                 onDownload={handleDownload}
                 onSave={handleSaveModel}
                 saving={savingModel}
@@ -642,6 +640,7 @@ const InputsForm = () => {
                 initialFunnelState={restoredFunnelState}
                 editingModelId={editingModelId}
                 onUpdate={handleUpdateModel}
+                funnelReady={validateFunnelRequiredStages(funnelState).isValid}
             />
         </Container >
     );

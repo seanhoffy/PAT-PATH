@@ -1,12 +1,17 @@
 import React from 'react';
 import NavBar from '../components/NavBar';
+import PublicNavBar from '../components/PublicNavBar';
 import { Box, Typography, Button, Paper } from '@mui/material';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '../firebase';
 import '../App.css';
 import DownloadIcon from '@mui/icons-material/Download';
 import ThemeProvider from '../components/common/ThemeProvider';
 import { COLORS } from '../constants/colors';
 
 const PDFPage = () => {
+    const [user] = useAuthState(auth);
+
     const handleDownload = () => {
         const link = document.createElement('a');
         link.href = `${process.env.PUBLIC_URL}/ResearchPaper.pdf`;
@@ -19,7 +24,7 @@ const PDFPage = () => {
     return (
         <ThemeProvider>
             <div className="App">
-                <NavBar />
+                {user ? <NavBar /> : <PublicNavBar />}
             </div>
             <Box sx={{ 
                 display: 'flex', 

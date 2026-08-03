@@ -19,7 +19,7 @@ import { auth } from '../firebase';
 import { fetchSavedModels, deleteSavedModel, fetchUserProfile } from '../utils/firebaseHelpers';
 import { COLORS } from '../constants/colors';
 import { EXCLUSION_CRITERIA_FIELDS, DOUBLE_COUNTING_FIELDS } from '../constants/formFields';
-import { deriveFunnelDisplay, cellValuesFromActualSummary, stage6TierLabel } from '../utils/funnelCalculations';
+import { deriveFunnelDisplay, cellValuesFromResults, stage6TierLabel } from '../utils/funnelCalculations';
 import FunnelRowsTable from '../components/funnel/FunnelRowsTable';
 import {
     AWARENESS_INTEREST_CONTEXTS,
@@ -80,12 +80,11 @@ const HistoryPage = () => {
                 real: model.outputs?.real || {},
                 comorbid: model.outputs?.comorbid || {},
             };
-            const actual = model.outputs?.actual || null;
             const modelCreatedOn = model.modelCreatedOn || model.calculatedAt || null;
             const calculatedAt = model.calculatedAt || null; // For backward compatibility
 
             // Generate PDF
-            const blob = await pdf(<MyDocument formData={formData} results={results} actual={actual} modelCreatedOn={modelCreatedOn} calculatedAt={calculatedAt} funnelState={model.funnel || null} />).toBlob();
+            const blob = await pdf(<MyDocument formData={formData} results={results} modelCreatedOn={modelCreatedOn} calculatedAt={calculatedAt} funnelState={model.funnel || null} />).toBlob();
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -128,7 +127,7 @@ const HistoryPage = () => {
 
     const renderModelCard = (model) => {
         const funnelDisplay = model.funnel
-            ? deriveFunnelDisplay(model.funnel, cellValuesFromActualSummary(model.outputs?.actual))
+            ? deriveFunnelDisplay(model.funnel, cellValuesFromResults(model.outputs))
             : null;
 
         return (
@@ -251,31 +250,6 @@ const HistoryPage = () => {
                                 <Typography variant="body2" fontWeight="bold">Comorbid (MDD / TRD)</Typography>
                                 <Typography variant="body2" color="text.secondary">
                                     {model.outputs?.comorbid?.MDD ? parseInt(model.outputs.comorbid.MDD).toLocaleString() : '—'} / {model.outputs?.comorbid?.TRD ? parseInt(model.outputs.comorbid.TRD).toLocaleString() : '—'}
-                                </Typography>
-                            </Grid>
-
-                            {/* Actual demand percentages */}
-                            <Grid item xs={12}>
-                                <Typography variant="body2" fontWeight="bold">Calculated Demand Inputs (Percent)</Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    MDD Trial: {model.outputs?.actual?.percents?.trialMDD ?? '—'}% &nbsp;|&nbsp; MDD Real: {model.outputs?.actual?.percents?.realMDD ?? '—'}%
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    TRD Trial: {model.outputs?.actual?.percents?.trialTRD ?? '—'}% &nbsp;|&nbsp; TRD Real: {model.outputs?.actual?.percents?.realTRD ?? '—'}%
-                                </Typography>
-                            </Grid>
-
-                            {/* Actual demand outputs */}
-                            <Grid item xs={12}>
-                                <Typography variant="body2" fontWeight="bold">Calculated Demand (MDD)</Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    Trial: {model.outputs?.actual?.MDD?.trial != null ? parseInt(model.outputs.actual.MDD.trial).toLocaleString() : '—'} &nbsp;/&nbsp; Real: {model.outputs?.actual?.MDD?.real != null ? parseInt(model.outputs.actual.MDD.real).toLocaleString() : '—'}
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={12}>
-                                <Typography variant="body2" fontWeight="bold">Calculated Demand (TRD)</Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    Trial: {model.outputs?.actual?.TRD?.trial != null ? parseInt(model.outputs.actual.TRD.trial).toLocaleString() : '—'} &nbsp;/&nbsp; Real: {model.outputs?.actual?.TRD?.real != null ? parseInt(model.outputs.actual.TRD.real).toLocaleString() : '—'}
                                 </Typography>
                             </Grid>
                         </Grid>

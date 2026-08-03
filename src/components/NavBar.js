@@ -1,4 +1,4 @@
-import { AppBar, Toolbar, Typography, Box, Button, ButtonBase, Dialog, DialogTitle, DialogContent, DialogActions, Link } from '@mui/material';
+import { AppBar, Toolbar, Typography, Box, Button, ButtonBase } from '@mui/material';
 // import logo from '../logo.svg'; // Remove this line
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
@@ -6,8 +6,9 @@ import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
 import { clearUserFormState, fetchUserFormState, addSavedModel, updateSavedModel } from '../utils/firebaseHelpers';
-import { deriveFunnelDisplay, cellValuesFromActualSummary } from '../utils/funnelCalculations';
+import { deriveFunnelDisplay, cellValuesFromResults } from '../utils/funnelCalculations';
 import LogoutSaveDialog from './dialogs/LogoutSaveDialog';
+import ContactUsDialog from './dialogs/ContactUsDialog';
 
 const NavBar = () => {
     const [user, loading] = useAuthState(auth);
@@ -48,7 +49,7 @@ const NavBar = () => {
 
         try {
             // Fetch current form state and results from Firestore
-            const { currentForm, currentResults, currentActualPercents, currentFunnelState, currentEditingModelId } = await fetchUserFormState(user.uid);
+            const { currentForm, currentResults, currentFunnelState, currentEditingModelId } = await fetchUserFormState(user.uid);
 
             // Check if results exist
             if (!currentResults) {
@@ -59,52 +60,13 @@ const NavBar = () => {
                 return;
             }
 
-            // Get actualPercents or use defaults
-            const actualPercents = currentActualPercents || {
-                trialMDD: 100,
-                realMDD: 100,
-                trialTRD: 100,
-                realTRD: 100,
-            };
-
-            // Construct actualSummary similar to ResultsDisplay component
-            const baseTrialMDD = Number(currentResults.trial?.MDD) || 0;
-            const baseRealMDD = Number(currentResults.real?.MDD) || 0;
-            const baseTrialTRD = Number(currentResults.trial?.TRD) || 0;
-            const baseRealTRD = Number(currentResults.real?.TRD) || 0;
-
-            const actualTrialMDD = Math.round(
-                baseTrialMDD * ((Number(actualPercents.trialMDD) || 0) / 100)
-            );
-            const actualRealMDD = Math.round(
-                baseRealMDD * ((Number(actualPercents.realMDD) || 0) / 100)
-            );
-            const actualTrialTRD = Math.round(
-                baseTrialTRD * ((Number(actualPercents.trialTRD) || 0) / 100)
-            );
-            const actualRealTRD = Math.round(
-                baseRealTRD * ((Number(actualPercents.realTRD) || 0) / 100)
-            );
-
-            const actualSummary = {
-                percents: actualPercents,
-                MDD: {
-                    trial: actualTrialMDD,
-                    real: actualRealMDD,
-                },
-                TRD: {
-                    trial: actualTrialTRD,
-                    real: actualRealTRD,
-                },
-            };
-
             // Construct funnel payload the same way buildSavePayload does in
             // inputs_and_outputs.js, so saves from this flow aren't missing
             // Stages 4-9 data relative to the in-page Save/Update buttons.
             const funnel = currentFunnelState
                 ? {
                     ...currentFunnelState,
-                    effectiveDemand: deriveFunnelDisplay(currentFunnelState, cellValuesFromActualSummary(actualSummary))?.displayedEffectiveDemand ?? null,
+                    effectiveDemand: deriveFunnelDisplay(currentFunnelState, cellValuesFromResults(currentResults))?.displayedEffectiveDemand ?? null,
                 }
                 : null;
 
@@ -114,10 +76,7 @@ const NavBar = () => {
                 geographicArea: currentForm?.geographicArea || '',
                 motivation: currentForm?.motivation || '',
                 inputs: currentForm,
-                outputs: {
-                    ...currentResults,
-                    actual: actualSummary || null,
-                },
+                outputs: { ...currentResults },
                 funnel,
             };
 
@@ -204,39 +163,10 @@ const NavBar = () => {
                 onLogoutWithoutSaving={handleLogoutWithoutSaving}
                 saving={savingBeforeLogout}
             />
-            <Dialog
+            <ContactUsDialog
                 open={contactDialogOpen}
                 onClose={() => setContactDialogOpen(false)}
-                maxWidth="sm"
-                fullWidth
-            >
-                <DialogTitle sx={{ fontWeight: 'bold' }}>Contact Us</DialogTitle>
-                <DialogContent>
-                    <Typography component="p" sx={{ mb: 2 }}>
-                        <strong>Elliot Marseille, DrPH, MPP</strong>
-                    </Typography>
-                    <Typography component="p" sx={{ mb: 2 }}>
-                        <Link href="mailto:emarseille1@berkeley.edu" color="primary">
-                            emarseille1@berkeley.edu
-                        </Link>
-                    </Typography>
-                    <Typography component="p" sx={{ mb: 1 }}>
-                        <Link 
-                            href="https://cghdde.berkeley.edu/projects/collaborative-economics-psychedelics-cep" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            color="primary"
-                        >
-                            CEP Website
-                        </Link>
-                    </Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setContactDialogOpen(false)} variant="contained">
-                        Close
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            />
         </AppBar>
     )
 }

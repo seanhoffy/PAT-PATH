@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Box, Divider, Typography } from '@mui/material';
+import { Box, Typography, Alert } from '@mui/material';
 import MethodsPreamble from './MethodsPreamble';
 import ContextSelectors from './ContextSelectors';
 import FunnelInputSelector from './FunnelInputSelector';
@@ -13,13 +13,13 @@ import ScenarioExplorerTable from './ScenarioExplorerTable';
 import FunnelPlot from './FunnelPlot';
 import Callout from './Callout';
 import { useFunnelReducer, getModeratePercents } from './useFunnelReducer';
-import { deriveFunnelDisplay, buildFunnelRows } from '../../utils/funnelCalculations';
+import { deriveFunnelDisplay, buildFunnelRows, validateFunnelRequiredStages } from '../../utils/funnelCalculations';
 import { STAGE9_METHODOLOGICAL_CAVEAT, STAGE9_OREGON_COMPARATOR_CAPTION } from '../../constants/funnelDefaults';
 
 // Top-level container for Stages 4-9. Owns the reducer and composes every
 // cross-cutting piece and stage subcomponent. Lifts its whole state upward
-// via onFunnelStateChange, mirroring the existing actualPercents/setActualPercents
-// lifted-state pattern already used for the Stage 1-3 2x2 grid.
+// via onFunnelStateChange, mirroring the results/setResults lifted-state
+// pattern already used elsewhere in the app.
 const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
     const [state, dispatch] = useFunnelReducer(initialState);
 
@@ -29,9 +29,12 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
         effectiveDemand,
         displayedEffectiveDemand,
         capacityN,
+        capacityReady,
         exceedsCapacity,
         scenario,
     } = deriveFunnelDisplay(state, cellValues);
+
+    const funnelReady = validateFunnelRequiredStages(state).isValid;
 
     const moderatePercents = getModeratePercents(state);
 
@@ -61,12 +64,23 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
 
     return (
         <Box sx={{ mt: 4 }}>
-            <Divider sx={{ mb: 3 }} />
-            <Typography variant="h4" sx={{ mb: 2 }}>
+            <Typography variant="h4" sx={{ mb: 1, textAlign: 'center' }}>
                 Stages 4–9: Realistic Utilization Funnel
             </Typography>
+            <Typography
+                variant="subtitle1"
+                color="text.secondary"
+                sx={{ mb: 3, fontStyle: 'bold', textAlign: 'center', maxWidth: '860px', mx: 'auto' }}
+            >
+                This next section narrows the raw prevalence estimate down to a realistic annual utilization
+                number by applying real world funnel factors including awareness, interest, affordability,
+                geographic access, and provider capacity.
+            </Typography>
 
-            <MethodsPreamble />
+            <Callout>
+                We expect you to have the best available estimates for these values in your location.
+                Reference info and typical ranges are provided if needed.
+            </Callout>
 
             <FunnelInputSelector
                 cellValues={cellValues}
@@ -79,6 +93,8 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
                 onContextChange={(dropdown, value) => dispatch({ type: 'SET_CONTEXT', dropdown, value })}
                 onResetDefaults={() => dispatch({ type: 'RESET_CONTEXT_DEFAULTS' })}
             />
+
+            <MethodsPreamble />
 
             <StageAwareness
                 value={state.stage4.value}
@@ -109,6 +125,7 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
                 effectiveDemand={effectiveDemand}
                 displayedEffectiveDemand={displayedEffectiveDemand}
                 capacityN={capacityN}
+                capacityReady={capacityReady}
                 exceedsCapacity={exceedsCapacity}
                 onFieldChange={(field, value) => dispatch({ type: 'SET_STAGE8_FIELD', field, value })}
                 onApplyCap={() => dispatch({ type: 'APPLY_CAPACITY_CAP' })}
@@ -123,22 +140,30 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
             </Typography>
             <Callout title="Methodological caveat">{STAGE9_METHODOLOGICAL_CAVEAT}</Callout>
 
-            <InputsRecapTable
-                funnelRows={funnelRows}
-                displayedEffectiveDemand={displayedEffectiveDemand}
-                capacityCapApplied={state.stage8.capacityCapApplied}
-            />
+            {funnelReady ? (
+                <>
+                    <InputsRecapTable
+                        funnelRows={funnelRows}
+                        displayedEffectiveDemand={displayedEffectiveDemand}
+                        capacityCapApplied={state.stage8.capacityCapApplied}
+                    />
 
-            <ScenarioExplorerTable
-                startN={funnelInputN}
-                moderatePercents={moderatePercents}
-                scenarioInputs={state.scenario}
-                scenario={scenario}
-                onCellChange={(column, stage, value) => dispatch({ type: 'SET_SCENARIO_CELL', column, stage, value })}
-                onReset={() => dispatch({ type: 'RESET_SCENARIO_EXPLORER' })}
-            />
+                    <ScenarioExplorerTable
+                        startN={funnelInputN}
+                        moderatePercents={moderatePercents}
+                        scenarioInputs={state.scenario}
+                        scenario={scenario}
+                        onCellChange={(column, stage, value) => dispatch({ type: 'SET_SCENARIO_CELL', column, stage, value })}
+                        onReset={() => dispatch({ type: 'RESET_SCENARIO_EXPLORER' })}
+                    />
 
-            <FunnelPlot rows={moderateRows} />
+                    <FunnelPlot rows={moderateRows} />
+                </>
+            ) : (
+                <Alert severity="info" sx={{ mb: 3 }}>
+                    Complete Stages 4–7 above to see your funnel and effective-demand estimate.
+                </Alert>
+            )}
 
             <Callout title="Oregon comparator">{STAGE9_OREGON_COMPARATOR_CAPTION}</Callout>
         </Box>

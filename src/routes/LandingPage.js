@@ -18,6 +18,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
+import PublicNavBar from "../components/PublicNavBar";
 
 const LandingPage = () => {
     const [user, loading] = useAuthState(auth);
@@ -44,6 +45,7 @@ const LandingPage = () => {
 
     return (
         <Box sx={{ backgroundColor: "#FFFFFF", fontFamily: 'Inter, sans-serif' }}>
+            <PublicNavBar />
             {/* Hero Section */}
             <Box
                 sx={{
@@ -114,16 +116,16 @@ const LandingPage = () => {
                 </Box>
 
                 {/* Main Content - Added padding-right to prevent overlap on medium screens */}
-                <Box 
-                    sx={{ 
+                <Box
+                    sx={{
                         pt: { xs: 2, md: 2 },
                         pr: { xs: 0, md: "280px", lg: "320px" }, // Add padding when logo is visible
                         maxWidth: { xs: "100%", md: "950px", lg: "950px" }, // Allow a bit more width for the hero text
                     }}
                 >
-                    <Typography 
-                        variant="h3" 
-                        fontWeight="bold" 
+                    <Typography
+                        variant="h3"
+                        fontWeight="bold"
                         gutterBottom
                         sx={{
                             fontSize: { xs: "1.75rem", sm: "2.25rem", md: "2.75rem", lg: "3rem" },
@@ -131,9 +133,9 @@ const LandingPage = () => {
                     >
                         Model the Demand for
                     </Typography>
-                    <Typography 
-                        variant="h3" 
-                        fontWeight="bold" 
+                    <Typography
+                        variant="h3"
+                        fontWeight="bold"
                         gutterBottom
                         sx={{
                             fontSize: { xs: "1.75rem", sm: "2.25rem", md: "2.75rem", lg: "3rem" },
@@ -144,8 +146,8 @@ const LandingPage = () => {
                     <Typography
                         variant="h6"
                         fontWeight="bold"
-                        sx={{ 
-                            mt: { xs: 3, md: 5 }, 
+                        sx={{
+                            mt: { xs: 3, md: 5 },
                             color: "#023e74",
                             fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
                             lineHeight: 1.6,
@@ -156,9 +158,9 @@ const LandingPage = () => {
                     </Typography>
                     <Typography
                         variant="h6"
-                        sx={{ 
-                            mt: { xs: 3, md: 5 }, 
-                            mb: 4, 
+                        sx={{
+                            mt: { xs: 3, md: 5 },
+                            mb: 4,
                             color: "#023e74",
                             fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
                             lineHeight: 1.6,
@@ -175,20 +177,29 @@ const LandingPage = () => {
                             Rab, Raison, Marseille (2024)
                         </a>
                         , the CEP psilocybin-assisted therapy (PAT) demand model
-                        provides estimates of the potential demand for PAT. It identifies eligible
-                        individuals among those with major depressive disorder (MDD) and those with 
-                        treatment-resistant depression (TRD). It applies validated inclusion and exclusion 
-                        criteria from peer-reviewed research to accurately project treatment needs.
+                        provides estimates of the potential demand for PAT in a specific geographic area. It identifies eligible
+                        individuals among those with major depressive disorder (MDD) and those with
+                        treatment-resistant depression (TRD). It applies validated inclusion and exclusion
+                        criteria from peer-reviewed research as well as accessibility statistics from your region to accurately project treatment needs.
                     </Typography>
                     <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mt: { xs: 3, md: 4 } }}>
-                        <Button 
-                            variant="contained" 
-                            onClick={() => handleDevNotice('/register')} 
-                            sx={{ 
+                        <Button
+                            variant="contained"
+                            onClick={() => handleDevNotice('/register')}
+                            sx={{
                                 backgroundColor: "#023e74",
-                                fontSize: { xs: "0.875rem", sm: "1rem" },
-                                px: { xs: 2, sm: 3 },
-                                py: { xs: 1, sm: 1.5 },
+                                fontSize: { xs: "1rem", sm: "1.15rem" },
+                                fontWeight: 700,
+                                px: { xs: 3, sm: 4 },
+                                py: { xs: 1.25, sm: 1.75 },
+                                borderRadius: 2,
+                                boxShadow: "0 6px 20px rgba(2, 62, 116, 0.45)",
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                    backgroundColor: "#034e91",
+                                    boxShadow: "0 8px 26px rgba(2, 62, 116, 0.6)",
+                                    transform: "translateY(-2px)",
+                                },
                             }}
                         >
                             Use the Model
@@ -263,10 +274,10 @@ const LandingPage = () => {
                     </Typography>
                 </DialogContent>
                 <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
-                    <Button 
-                        variant="contained" 
+                    <Button
+                        variant="contained"
                         onClick={handleDevNoticeClose}
-                        sx={{ 
+                        sx={{
                             backgroundColor: "#023e74",
                             '&:hover': {
                                 backgroundColor: "#034e91"
@@ -280,7 +291,7 @@ const LandingPage = () => {
 
             {/* What Does Our Model Offer Section */}
             <Box sx={{ px: { xs: 3, md: 12 }, py: { xs: 4, md: 5 }, pb: { xs: 6, md: 8 } }}>
-                <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ 
+                <Typography variant="h4" fontWeight="bold" gutterBottom sx={{
                     textAlign: 'center',
                     mb: 3,
                     color: '#023e74',
@@ -288,7 +299,7 @@ const LandingPage = () => {
                 }}>
                     What Does PATpath Do?
                 </Typography>
-                <Paper elevation={0} sx={{ 
+                <Paper elevation={0} sx={{
                     p: { xs: 2, md: 3 },
                     mb: 3,
                     backgroundColor: '#023e74',
@@ -303,7 +314,7 @@ const LandingPage = () => {
                 <Grid container spacing={3}>
                     {/* 1. Customizable Inputs */}
                     <Grid item xs={12} sm={6} md={6}>
-                        <Paper elevation={0} sx={{ 
+                        <Paper elevation={0} sx={{
                             p: 1,
                             height: '100%',
                             backgroundColor: '#023e74',
@@ -321,7 +332,7 @@ const LandingPage = () => {
 
                     {/* 2. PDF Report Generation */}
                     <Grid item xs={12} sm={6} md={6}>
-                        <Paper elevation={0} sx={{ 
+                        <Paper elevation={0} sx={{
                             p: 1,
                             height: '100%',
                             backgroundColor: '#023e74',
@@ -339,7 +350,7 @@ const LandingPage = () => {
 
                     {/* 3. Data Transparency */}
                     <Grid item xs={12} sm={6} md={6}>
-                        <Paper elevation={0} sx={{ 
+                        <Paper elevation={0} sx={{
                             p: 1,
                             height: '100%',
                             backgroundColor: '#023e74',
@@ -349,7 +360,7 @@ const LandingPage = () => {
                             <Typography variant="h5" fontWeight="bold" sx={{ color: 'white' }}>
                                 Data Transparency
                             </Typography>
-                            <Typography variant="h6"sx={{ color: 'white', mb: -1.5 }}>
+                            <Typography variant="h6" sx={{ color: 'white', mb: -1.5 }}>
                                 Use default data inputs based on peer-reviewed source and authoritative population estimates.
                             </Typography>
                         </Paper>
@@ -357,7 +368,7 @@ const LandingPage = () => {
 
                     {/* 4. Real-time Calculations */}
                     <Grid item xs={12} sm={6} md={6}>
-                        <Paper elevation={0} sx={{ 
+                        <Paper elevation={0} sx={{
                             p: 1,
                             height: '100%',
                             backgroundColor: '#023e74',
@@ -368,7 +379,7 @@ const LandingPage = () => {
                                 Real-time Calculations
                             </Typography>
                             <Typography variant="h6" sx={{ color: 'white', mb: -1.5 }}>
-                                Instantly see how inclusion/exclusion criteria affect treatment demand for your population.
+                                Instantly see how inclusion/exclusion criteria affect treatment demand for specified populations.
                             </Typography>
                         </Paper>
                     </Grid>
@@ -376,13 +387,13 @@ const LandingPage = () => {
             </Box>
 
             {/* Why Use Our Model Section */}
-            <Box sx={{ 
+            <Box sx={{
                 mb: 4,
-                px: { xs: 3, md: 12 }, 
-                py: { xs: 4, md: 5 }, 
+                px: { xs: 3, md: 12 },
+                py: { xs: 4, md: 5 },
                 backgroundColor: '#023e74'
             }}>
-                <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ 
+                <Typography variant="h4" fontWeight="bold" gutterBottom sx={{
                     color: 'white',
                     textAlign: 'center',
                     mb: 3,
@@ -390,54 +401,36 @@ const LandingPage = () => {
                 }}>
                     Intended Users
                 </Typography>
-                
-                <Grid container spacing={3} sx={{ alignItems: 'stretch' }}>
-                    <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
-                        <Paper elevation={3} sx={{
-                            p: 1,
-                            backgroundColor: 'white',
-                            borderRadius: 2,
-                            width: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                        }}>
-                            <Typography variant="h5" fontWeight="bold" sx={{ color: '#023e74' }}>
-                                Healthcare Payers
-                            </Typography>
-                            <Typography variant="h6" sx={{ color: '#023e74', mb: 0 }}>
-                                • Project potential patient populations for coverage planning.
-                            </Typography>
-                            <Typography variant="h6" sx={{ color: '#023e74', mb: 0 }}>
-                                • Estimate regional treatment demand for resource allocation.
-                            </Typography>
-                            <Box sx={{ flexGrow: 1 }} />
-                        </Paper>
-                    </Grid>
 
-                    <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
-                        <Paper elevation={3} sx={{ 
-                            p: 1,
-                            backgroundColor: 'white',
-                            borderRadius: 2,
-                            width: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                        }}>
-                            <Typography variant="h5" fontWeight="bold" sx={{ color: '#023e74' }}>
-                                Policymakers & Healthcare Systems
-                            </Typography>
-                            <Typography variant="h6" sx={{ color: '#023e74', mb: 0 }}>
-                                • Assess potential needs for psilocybin-assisted therapy.                          
-                            </Typography>
-                            <Typography variant="h6" sx={{ color: '#023e74', mb: 0 }}>
-                                • Plan resource allocation using region-specific insights.
-                            </Typography>
-                            <Typography variant="h6" sx={{ color: '#023e74', mb: 0 }}>
-                                • Make data-driven treatment implementation decisions.
-                            </Typography>
-                        </Paper>
-                    </Grid>
-                </Grid>
+                <Paper elevation={3} sx={{
+                    p: { xs: 2, md: 3 },
+                    backgroundColor: 'white',
+                    borderRadius: 2,
+                    maxWidth: '800px',
+                    mx: 'auto',
+                }}>
+                    <Typography variant="h5" fontWeight="bold" sx={{ color: '#023e74', textAlign: 'center', mb: 2 }}>
+                        Healthcare Payers, Policymakers & Healthcare Systems
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: '#023e74', mb: 1, textAlign: 'center' }}>
+                        • Project potential patient populations for coverage planning.
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: '#023e74', mb: 1, textAlign: 'center' }}>
+                        • Estimate regional treatment demand for resource allocation.
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: '#023e74', mb: 1, textAlign: 'center' }}>
+                        • Assess potential needs for psilocybin-assisted therapy.
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: '#023e74', mb: 1, textAlign: 'center' }}>
+                        • Plan resource allocation using region-specific insights.
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: '#023e74', mb: 2, textAlign: 'center' }}>
+                        • Makes data-driven treatment implementation decisions.
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: '#023e74', fontStyle: 'italic', textAlign: 'center' }}>
+                        All projections are generated for the specific geographic location you select.
+                    </Typography>
+                </Paper>
 
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: { xs: 3, md: 4 } }}>
                     <Button
@@ -446,18 +439,20 @@ const LandingPage = () => {
                         sx={{
                             backgroundColor: 'white',
                             color: '#023e74',
-                            px: 4,
-                            py: 1.5,
-                            fontWeight: 600,
-                            fontSize: '1.1rem',
+                            px: 5,
+                            py: 1.75,
+                            fontWeight: 700,
+                            fontSize: '1.2rem',
                             borderRadius: 2,
-                            boxShadow: 3,
+                            boxShadow: '0 6px 20px rgba(0, 0, 0, 0.35)',
                             border: '2px solid rgba(2, 62, 116, 0.3)',
+                            transition: 'all 0.2s ease',
                             '&:hover': {
                                 backgroundColor: '#f0f4fa',
                                 color: '#023e74',
-                                boxShadow: 6,
-                                border: '2px solid #023e74'
+                                boxShadow: '0 8px 26px rgba(0, 0, 0, 0.45)',
+                                border: '2px solid #023e74',
+                                transform: 'translateY(-2px)',
                             }
                         }}
                     >

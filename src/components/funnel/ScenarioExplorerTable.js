@@ -2,10 +2,10 @@ import { Paper, Typography, Table, TableBody, TableRow, TableCell, TextField, Bu
 import TableHeaderRow from './TableHeaderRow';
 
 const STAGE_ROWS = [
-    { rowKey: 'D', label: 'D. Aware', stageKey: 'stage4' },
-    { rowKey: 'E', label: 'E. Interested | Aware', stageKey: 'stage5' },
-    { rowKey: 'F', label: 'F. Can afford', stageKey: 'stage6' },
-    { rowKey: 'G', label: 'G. Can access provider', stageKey: 'stage7' },
+    { rowKey: 'D', label: '4. Aware', stageKey: 'stage4' },
+    { rowKey: 'E', label: '5. Interested | Aware', stageKey: 'stage5' },
+    { rowKey: 'F', label: '6. Can afford', stageKey: 'stage6' },
+    { rowKey: 'G', label: '7. Can access provider', stageKey: 'stage7' },
 ];
 
 // Stage 9, component 2 — editable Scenario Explorer. Conservative/Optimistic
@@ -30,7 +30,7 @@ const ScenarioExplorerTable = ({ startN, moderatePercents, scenarioInputs, scena
                 <TableHeaderRow columns={['Stage', 'Conservative', 'Moderate', 'Optimistic']} />
                 <TableBody>
                     <TableRow>
-                        <TableCell>C. Stage 3 output (selected cell)</TableCell>
+                        <TableCell>3. Funnel Input</TableCell>
                         <TableCell>{Number(startN).toLocaleString()}</TableCell>
                         <TableCell>{Number(startN).toLocaleString()}</TableCell>
                         <TableCell>{Number(startN).toLocaleString()}</TableCell>

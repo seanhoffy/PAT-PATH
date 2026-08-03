@@ -289,7 +289,7 @@ export const fetchUserProfile = async (userId) => {
  * Fetch persisted form/results state for a user
  */
 export const fetchUserFormState = async (userId) => {
-    const empty = { currentForm: null, currentResults: null, currentActualPercents: null, currentModelCreatedOn: null, currentFunnelState: null, currentEditingModelId: null };
+    const empty = { currentForm: null, currentResults: null, currentModelCreatedOn: null, currentFunnelState: null, currentEditingModelId: null };
     if (!userId) return empty;
 
     try {
@@ -300,7 +300,6 @@ export const fetchUserFormState = async (userId) => {
         return {
             currentForm: data.currentForm ?? null,
             currentResults: data.currentResults ?? null,
-            currentActualPercents: data.currentActualPercents ?? null,
             currentModelCreatedOn: data.currentModelCreatedOn ?? null,
             currentFunnelState: data.currentFunnelState ?? null,
             currentEditingModelId: data.currentEditingModelId ?? null,
@@ -314,14 +313,13 @@ export const fetchUserFormState = async (userId) => {
 /**
  * Save persisted form/results state for a user
  */
-export const saveUserFormState = async (userId, currentForm, currentResults, currentActualPercents, currentModelCreatedOn, currentFunnelState, currentEditingModelId) => {
+export const saveUserFormState = async (userId, currentForm, currentResults, currentModelCreatedOn, currentFunnelState, currentEditingModelId) => {
     if (!userId) return;
     try {
         const docRef = doc(db, 'users', userId);
         await updateDoc(docRef, {
             currentForm: currentForm ?? null,
             currentResults: currentResults ?? null,
-            currentActualPercents: currentActualPercents ?? null,
             currentModelCreatedOn: currentModelCreatedOn ?? null,
             currentFunnelState: currentFunnelState ?? null,
             currentEditingModelId: currentEditingModelId ?? null,
@@ -341,7 +339,6 @@ export const clearUserFormState = async (userId) => {
         await updateDoc(docRef, {
             currentForm: null,
             currentResults: null,
-            currentActualPercents: null,
             currentFunnelState: null,
             currentEditingModelId: null,
         });

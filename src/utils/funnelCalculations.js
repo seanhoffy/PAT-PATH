@@ -58,7 +58,7 @@ export const buildFunnelRows = (startN, percents) => {
     const rows = [
         {
             key: 'C',
-            stage: 'Stage 3 output (selected cell)',
+            stage: '3. Funnel Input',
             type: 'base',
             rate: null,
             n: Math.round(base),
@@ -66,7 +66,7 @@ export const buildFunnelRows = (startN, percents) => {
         },
         {
             key: 'D',
-            stage: 'D. Aware',
+            stage: '4. Aware',
             type: 'independent',
             rate: percents.stage4,
             n: chain.D,
@@ -74,7 +74,7 @@ export const buildFunnelRows = (startN, percents) => {
         },
         {
             key: 'E',
-            stage: 'E. Interested | Aware',
+            stage: '5. Interested | Aware',
             type: 'conditional',
             rate: percents.stage5,
             n: chain.E,
@@ -82,7 +82,7 @@ export const buildFunnelRows = (startN, percents) => {
         },
         {
             key: 'F',
-            stage: 'F. Can afford',
+            stage: '6. Can afford',
             type: 'conditional',
             rate: percents.stage6,
             n: chain.F,
@@ -90,7 +90,7 @@ export const buildFunnelRows = (startN, percents) => {
         },
         {
             key: 'G',
-            stage: 'G. Can access provider',
+            stage: '7. Can access provider',
             type: 'conditional',
             rate: percents.stage7,
             n: chain.G,
@@ -120,6 +120,41 @@ export const capacityExceeded = (finalFunnelN, capacityN) => {
     return (Number(finalFunnelN) || 0) > (Number(capacityN) || 0);
 };
 
+const isBlank = (v) => v === '' || v === null || v === undefined || Number.isNaN(Number(v));
+
+/**
+ * Stages 4-7 are required for the funnel chain to mean anything; Stage 8
+ * (capacity) is an independent, optional sanity check. Used to gate the
+ * on-screen funnel display and to block saving/downloading an incomplete
+ * model.
+ */
+export const validateFunnelRequiredStages = (funnelState) => {
+    const stage6 = funnelState?.stage6;
+    const stage6Value = stage6?.selectedRow === 'userDefined'
+        ? stage6.userDefined?.pct
+        : stage6?.rowValues?.[stage6?.selectedRow];
+
+    if (
+        isBlank(funnelState?.stage4?.value)
+        || isBlank(funnelState?.stage5?.value)
+        || !stage6?.selectedRow
+        || isBlank(stage6Value)
+        || isBlank(funnelState?.stage7?.value)
+    ) {
+        return { isValid: false, message: 'Please complete Stages 4-7 (Awareness, Interest, Afford, Geographic access) before saving or downloading.' };
+    }
+    return { isValid: true };
+};
+
+/**
+ * Whether Stage 8's capacity inputs have all been filled in. Gates the
+ * demand-vs-capacity comparison/warning so a blank Stage 8 (facilitators
+ * default resolves to 0) doesn't produce a spurious "exceeds capacity" alert.
+ */
+export const isStage8Complete = (stage8) => (
+    !isBlank(stage8?.facilitators) && !isBlank(stage8?.throughput) && !isBlank(stage8?.multiplier)
+);
+
 /**
  * Resolves Stage 6's currently-selected row to its effective % (the real
  * funnel input for Stage 6).
@@ -143,15 +178,16 @@ export const getModeratePercents = (funnelState) => ({
 });
 
 /**
- * Converts the Stage 1-3 "actual summary" (the existing 2x2 grid's four
- * cells) into the { trialMDD, realMDD, trialTRD, realTRD } shape CC-1's
- * selector expects.
+ * Converts the Stage 1-3 base results (the "Potential Demand" 2x2 grid) into
+ * the { trialMDD, realMDD, trialTRD, realTRD } shape CC-1's selector expects.
+ * This is the funnel's starting N — Stage 1-3 output is used directly, with
+ * no further user-adjustable percentage layered on top.
  */
-export const cellValuesFromActualSummary = (actual) => ({
-    trialMDD: actual?.MDD?.trial ?? 0,
-    realMDD: actual?.MDD?.real ?? 0,
-    trialTRD: actual?.TRD?.trial ?? 0,
-    realTRD: actual?.TRD?.real ?? 0,
+export const cellValuesFromResults = (results) => ({
+    trialMDD: Number(results?.trial?.MDD) || 0,
+    realMDD: Number(results?.real?.MDD) || 0,
+    trialTRD: Number(results?.trial?.TRD) || 0,
+    realTRD: Number(results?.real?.TRD) || 0,
 });
 
 /**
@@ -174,7 +210,8 @@ export const deriveFunnelDisplay = (funnelState, cellValues) => {
     const { rows: funnelRows, effectiveDemand } = buildFunnelRows(funnelInputN, livePercents);
 
     const capacityN = computeCapacity(funnelState.stage8);
-    const exceedsCapacity = capacityExceeded(effectiveDemand, capacityN);
+    const capacityReady = isStage8Complete(funnelState.stage8);
+    const exceedsCapacity = capacityReady && capacityExceeded(effectiveDemand, capacityN);
     // Clamp rather than substitute: the cap should only ever pull the
     // displayed figure DOWN toward capacity, never show a stale capacity
     // number that's now higher than the (recalculated) real demand.
@@ -195,6 +232,7 @@ export const deriveFunnelDisplay = (funnelState, cellValues) => {
         effectiveDemand,
         displayedEffectiveDemand,
         capacityN,
+        capacityReady,
         exceedsCapacity,
         scenario,
     };

@@ -7,10 +7,6 @@ import {
     STAGE5_CONTEXT_DEFAULTS,
     STAGE7_CONTEXT_DEFAULTS,
     STAGE6_TABLE_A_ROWS,
-    STAGE6_DEFAULT_ROW_KEY,
-    STAGE8_FACILITATORS_DEFAULT,
-    STAGE8_THROUGHPUT_DEFAULT,
-    STAGE8_MULTIPLIER_DEFAULT,
 } from '../../constants/funnelDefaults';
 // Re-exported so existing imports of these two helpers from this module keep
 // working; the canonical definitions live in funnelCalculations.js (shared
@@ -31,18 +27,22 @@ export const initialFunnelState = () => ({
         geographicAccess: DEFAULT_GEOGRAPHIC_ACCESS_CONTEXT,
     },
     funnelInputSelection: DEFAULT_FUNNEL_INPUT_CELL,
-    stage4: { value: STAGE4_CONTEXT_DEFAULTS[DEFAULT_AWARENESS_INTEREST_CONTEXT].value, overridden: false },
-    stage5: { value: STAGE5_CONTEXT_DEFAULTS[DEFAULT_AWARENESS_INTEREST_CONTEXT].value, overridden: false },
+    // Stage 4/5/6/7 start blank rather than pre-filled with our reference
+    // estimates — the user should knowingly choose their own regional value
+    // or explicitly opt into ours (via "Reset to context defaults" / picking
+    // a Stage 6 row), not silently inherit it.
+    stage4: { value: '' },
+    stage5: { value: '' },
     stage6: {
-        selectedRow: STAGE6_DEFAULT_ROW_KEY,
+        selectedRow: null,
         rowValues: buildStage6RowValues(),
         userDefined: { price: '', pct: '', source: '' },
     },
-    stage7: { value: STAGE7_CONTEXT_DEFAULTS[DEFAULT_GEOGRAPHIC_ACCESS_CONTEXT].value, overridden: false },
+    stage7: { value: '' },
     stage8: {
-        facilitators: STAGE8_FACILITATORS_DEFAULT,
-        throughput: STAGE8_THROUGHPUT_DEFAULT,
-        multiplier: STAGE8_MULTIPLIER_DEFAULT,
+        facilitators: '',
+        throughput: '',
+        multiplier: '',
         capacityCapApplied: false,
     },
     scenario: {
@@ -55,41 +55,25 @@ export const initialFunnelState = () => ({
 export const funnelReducer = (state, action) => {
     switch (action.type) {
         case 'SET_CONTEXT': {
+            // Switching context no longer auto-fills Stage 4/5/7 — it only
+            // changes which reference row each stage's "defaults" table
+            // highlights (and which value "Reset to context defaults" would
+            // apply). Silently overwriting a blank-or-typed value here would
+            // undercut the whole point of starting these fields empty.
             const { dropdown, value } = action;
-            const nextContexts = { ...state.contexts, [dropdown]: value };
-
-            if (dropdown === 'awarenessInterest') {
-                const stage4Default = STAGE4_CONTEXT_DEFAULTS[value];
-                const stage5Default = STAGE5_CONTEXT_DEFAULTS[value];
-                return {
-                    ...state,
-                    contexts: nextContexts,
-                    stage4: state.stage4.overridden ? state.stage4 : { value: stage4Default.value, overridden: false },
-                    stage5: state.stage5.overridden ? state.stage5 : { value: stage5Default.value, overridden: false },
-                };
-            }
-
-            if (dropdown === 'geographicAccess') {
-                const stage7Default = STAGE7_CONTEXT_DEFAULTS[value];
-                return {
-                    ...state,
-                    contexts: nextContexts,
-                    stage7: state.stage7.overridden ? state.stage7 : { value: stage7Default.value, overridden: false },
-                };
-            }
-
-            return { ...state, contexts: nextContexts };
+            return { ...state, contexts: { ...state.contexts, [dropdown]: value } };
         }
 
         case 'RESET_CONTEXT_DEFAULTS': {
+            // The explicit "use our reference values" action for Stage 4/5/7.
             const stage4Default = STAGE4_CONTEXT_DEFAULTS[state.contexts.awarenessInterest];
             const stage5Default = STAGE5_CONTEXT_DEFAULTS[state.contexts.awarenessInterest];
             const stage7Default = STAGE7_CONTEXT_DEFAULTS[state.contexts.geographicAccess];
             return {
                 ...state,
-                stage4: { value: stage4Default.value, overridden: false },
-                stage5: { value: stage5Default.value, overridden: false },
-                stage7: { value: stage7Default.value, overridden: false },
+                stage4: { value: stage4Default.value },
+                stage5: { value: stage5Default.value },
+                stage7: { value: stage7Default.value },
             };
         }
 
@@ -98,7 +82,7 @@ export const funnelReducer = (state, action) => {
 
         case 'SET_STAGE_VALUE': {
             const { stage, value } = action; // stage: 'stage4' | 'stage5' | 'stage7'
-            return { ...state, [stage]: { value, overridden: true } };
+            return { ...state, [stage]: { value } };
         }
 
         case 'SET_STAGE6_ROW':

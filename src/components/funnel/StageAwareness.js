@@ -33,12 +33,15 @@ const StageAwareness = ({ value, awarenessInterestContext, onChange }) => {
                 “Who knows this therapy exists?”
             </Typography>
 
+            <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                {STAGE4_LABEL}
+            </Typography>
             <TextField
-                label={STAGE4_LABEL}
                 type="number"
                 value={value}
                 onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
                 InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
+                inputProps={{ 'aria-label': STAGE4_LABEL }}
                 sx={{ mb: 2, minWidth: 320 }}
             />
 

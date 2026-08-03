@@ -5,7 +5,8 @@ import {
     CONTEXT_HELPER_TEXT,
 } from '../../constants/funnelDefaults';
 
-// CC-3: the two context dropdowns that drive default pre-population of
+// CC-3: the two context dropdowns that determine which reference row is
+// highlighted (and which value "Use suggested defaults" applies) for
 // Stages 4-5 (Awareness/Interest) and Stage 7 (Geographic Access).
 const ContextSelectors = ({ contexts, onContextChange, onResetDefaults }) => (
     <Box sx={{ mb: 2 }}>
@@ -45,7 +46,7 @@ const ContextSelectors = ({ contexts, onContextChange, onResetDefaults }) => (
             {CONTEXT_HELPER_TEXT}
         </Typography>
         <Link component="button" type="button" variant="body2" onClick={onResetDefaults} sx={{ mt: 1, display: 'inline-block' }}>
-            Reset to context defaults
+            Use suggested defaults for this context
         </Link>
     </Box>
 );
