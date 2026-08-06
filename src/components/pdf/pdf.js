@@ -240,10 +240,10 @@ const FunnelRecapTable = ({ rows }) => (
 
 const ScenarioExplorerPdfTable = ({ startN, scenario }) => {
     const stageRows = [
-        { label: '4. Aware', rowKey: 'D' },
-        { label: '5. Interested | Aware', rowKey: 'E' },
-        { label: '6. Can afford', rowKey: 'F' },
-        { label: '7. Can access provider', rowKey: 'G' },
+        { label: 'Aware', rowKey: 'D' },
+        { label: 'Interested | Aware', rowKey: 'E' },
+        { label: 'Can afford', rowKey: 'F' },
+        { label: 'Can access provider', rowKey: 'G' },
     ];
     const findRow = (column, rowKey) => scenario[column].rows.find((r) => r.key === rowKey);
 
@@ -256,7 +256,7 @@ const ScenarioExplorerPdfTable = ({ startN, scenario }) => {
                 <Text style={styles.funnelTableHeaderCell}>Optimistic</Text>
             </View>
             <View style={styles.funnelTableRow} wrap={false}>
-                <Text style={styles.funnelTableCell}>3. Funnel Input</Text>
+                <Text style={styles.funnelTableCell}>Funnel Input</Text>
                 <Text style={styles.funnelTableCell}>{Number(startN).toLocaleString()}</Text>
                 <Text style={styles.funnelTableCell}>{Number(startN).toLocaleString()}</Text>
                 <Text style={styles.funnelTableCell}>{Number(startN).toLocaleString()}</Text>
@@ -306,7 +306,7 @@ const MyDocument = ({ formData, results, modelCreatedOn, calculatedAt, funnelSta
                     <View style={styles.infoSection}>
                         <View style={styles.infoRow}>
                             <View style={styles.infoColumn}>
-                                <Text style={styles.generalInfoLabel}>Model Title:</Text>
+                                <Text style={styles.generalInfoLabel}>Organization:</Text>
                                 <Text style={styles.generalInfoValue}>{formData.modelTitle || "N/A"}</Text>
                             </View>
                             <View style={styles.infoColumn}>
@@ -402,7 +402,7 @@ const MyDocument = ({ formData, results, modelCreatedOn, calculatedAt, funnelSta
                     <Text style={styles.sectionTitle}>Double Counting Adjustments</Text>
                     <View style={styles.inputGrid}>
                         <View style={styles.inputItem}>
-                            <Text style={styles.label}>Psychological Problems:</Text>
+                            <Text style={styles.label}>Psychological Disorders:</Text>
                             <Text style={styles.value}>{formData.psycological_P}%</Text>
                         </View>
                         <View style={styles.inputItem}>
@@ -410,7 +410,7 @@ const MyDocument = ({ formData, results, modelCreatedOn, calculatedAt, funnelSta
                             <Text style={styles.value}>{formData.health_P}%</Text>
                         </View>
                         <View style={styles.inputItem}>
-                            <Text style={styles.label}>Lower Hepatic Impairment:</Text>
+                            <Text style={styles.label}>Hepatic Impairments:</Text>
                             <Text style={styles.value}>{formData.comorbid_hepatic_P}%</Text>
                         </View>
                     </View>
@@ -448,44 +448,44 @@ const MyDocument = ({ formData, results, modelCreatedOn, calculatedAt, funnelSta
                 {funnelDisplay && (
                     <>
                         <View style={styles.section} wrap={false}>
-                            <Text style={styles.sectionTitle}>Stages 4-9 Inputs</Text>
+                            <Text style={styles.sectionTitle}>Funnel Inputs</Text>
                             <View style={styles.inputGrid}>
                                 <View style={styles.inputItem}>
                                     <Text style={styles.label}>Awareness / Interest context:</Text>
                                     <Text style={styles.value}>{funnelState.contexts.awarenessInterest}</Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>Geographic Access context:</Text>
+                                    <Text style={styles.label}>Geographic Accessibility context:</Text>
                                     <Text style={styles.value}>{funnelState.contexts.geographicAccess}</Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>Funnel input population (Stage 3 cell):</Text>
+                                    <Text style={styles.label}>Funnel input population:</Text>
                                     <Text style={styles.value}>{funnelState.funnelInputSelection}</Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>4. Aware (%):</Text>
+                                    <Text style={styles.label}>Aware (%):</Text>
                                     <Text style={styles.value}>{funnelState.stage4.value}%</Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>5. Interested | Aware (%):</Text>
+                                    <Text style={styles.label}>Interested | Aware (%):</Text>
                                     <Text style={styles.value}>{funnelState.stage5.value}%</Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>6. Can afford (selected row / %):</Text>
+                                    <Text style={styles.label}>Can afford (selected row / %):</Text>
                                     <Text style={styles.value}>{stage6TierLabel(funnelState.stage6)} / {getStage6Value(funnelState.stage6)}%</Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>7. Can access provider (%):</Text>
+                                    <Text style={styles.label}>Can access provider (%):</Text>
                                     <Text style={styles.value}>{funnelState.stage7.value}%</Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>8. Facilitators / throughput / multiplier:</Text>
+                                    <Text style={styles.label}>Facilitators / throughput / multiplier:</Text>
                                     <Text style={styles.value}>
                                         {funnelState.stage8.facilitators} / {funnelState.stage8.throughput} / {funnelState.stage8.multiplier}x
                                     </Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>8. Estimated annual capacity:</Text>
+                                    <Text style={styles.label}>Estimated annual capacity:</Text>
                                     <Text style={styles.value}>{Number(funnelDisplay.capacityN).toLocaleString()}/yr</Text>
                                 </View>
                                 <View style={styles.inputItem}>

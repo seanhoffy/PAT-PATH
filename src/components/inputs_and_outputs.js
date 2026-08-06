@@ -10,6 +10,7 @@ import {
     Button,
     Box,
     InputAdornment,
+    Tooltip,
 } from '@mui/material';
 import { auth } from "../firebase";
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -355,10 +356,13 @@ const InputsForm = () => {
         <Container maxWidth="lg" sx={{ py: 4 }}>
             <BetaNotice />
             <Paper elevation={0} sx={{ mb: 3, mt: 2, p: 2.5, backgroundColor: 'white', borderRadius: 2 }}>
-                <Typography variant="body1" sx={{ color: '#023e74', lineHeight: 1.7, fontSize: '1.15rem' }}>
-                    To generate a demand estimate for psilocybin-assisted therapy in your geographic area, you will need to provide 11 numerical input values and context about your model.
+                <Typography variant="body1" sx={{ color: '#023e74', lineHeight: 1.7, fontSize: '1.15rem', fontWeight: 'bold' }}>
+                    This model generates a demand estimate for psilocybin-assisted therapy for Major Depressive Disorder (MDD) and Treatment-Resistant Depression (TRD) in your geographic area. You will need to provide 11 numerical input values and context about your treatment delivery approach.
                     Running the model will take as little as five minutes if you are comfortable with default values for population characteristics,
                     or if you have prepared input values previously.
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#023e74', lineHeight: 1.7, fontSize: '1.15rem', mt: 2 }}>
+                    As with any model, the accuracy of the results depends on the quality of your inputs.
                 </Typography>
             </Paper>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: -2.5, mb: 0.5, gap: 2 }}>
@@ -410,14 +414,17 @@ const InputsForm = () => {
                                 dialogContent={INFO_DIALOGS.generalInfo.content}
                             />
                         </Box>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            Tell us about your scenario for using this model
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                            Tell us about this model scenario
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                            * = required
                         </Typography>
                         <Grid container spacing={3} alignItems="center" sx={{ mb: -2.2 }}>
                             <Grid item xs={3}>
                                 <TextField
                                     fullWidth
-                                    label="Model Title"
+                                    label="Organization"
                                     variant="outlined"
                                     name="modelTitle"
                                     value={formData.modelTitle}
@@ -435,14 +442,16 @@ const InputsForm = () => {
                                     onChange={handleInputChange}></TextField>
                             </Grid>
                             <Grid item xs={3}>
-                                <TextField
-                                    fullWidth
-                                    label="Scenario"
-                                    variant="outlined"
-                                    name="motivation"
-                                    value={formData.motivation}
-                                    required
-                                    onChange={handleInputChange}></TextField>
+                                <Tooltip title="e.g. high utilization, first year, fifth year, aggressive, basecase/upside" arrow>
+                                    <TextField
+                                        fullWidth
+                                        label="Scenario"
+                                        variant="outlined"
+                                        name="motivation"
+                                        value={formData.motivation}
+                                        required
+                                        onChange={handleInputChange}></TextField>
+                                </Tooltip>
                             </Grid>
                             <Grid item xs={3}>
                                 <TextField
@@ -471,7 +480,7 @@ const InputsForm = () => {
                             />
                         </Box>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            Enter the number of people with Major Depressive Disorder (MDD) in the population of interest and the % with Treatment-Resistant Depression (TRD)
+                            Enter the number of people with MDD in the population of interest and the % with TRD
                         </Typography>
                         <Grid container spacing={3} alignItems="center">
                             <Grid item xs={4}>
@@ -544,10 +553,10 @@ const InputsForm = () => {
                             />
                         </Box>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: .5 }}>
-                            Enter the % of people with Major Depressive Disorder (MDD) in the population you are analyzing who have the listed conditions.
+                            Enter the % of people with MDD in the population you are analyzing who have the listed conditions.
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            The default values provided below are for the US as a whole, if you have better estimates for your population you can override them.
+                            The default values provided below are for the US as a whole. If you have better estimates for your population you can override them.
                         </Typography>
                         <Grid container spacing={3}>
                             {EXCLUSION_CRITERIA_FIELDS.map(([key, label]) => (

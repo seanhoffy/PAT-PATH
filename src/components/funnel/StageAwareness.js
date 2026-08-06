@@ -1,4 +1,4 @@
-import { Paper, Box, Typography, TextField, InputAdornment, Table, TableBody, TableRow, TableCell } from '@mui/material';
+import { Paper, Box, Typography, TextField, InputAdornment, Table, TableBody, TableRow, TableCell, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import ProbabilityTypeTag from './ProbabilityTypeTag';
 import Callout from './Callout';
 import TableHeaderRow from './TableHeaderRow';
@@ -10,6 +10,8 @@ import {
     STAGE4_ADJUSTMENT_CAPTION,
     STAGE4_SOURCES,
     DEFAULT_AWARENESS_INTEREST_CONTEXT,
+    AWARENESS_INTEREST_CONTEXTS,
+    AWARENESS_INTEREST_CONTEXT_HELPER_TEXT,
     PROBABILITY_TYPES,
 } from '../../constants/funnelDefaults';
 
@@ -20,17 +22,34 @@ const CONTEXT_ROW_LABELS = {
 };
 
 // Stage 4 — Awareness ("Who knows this therapy exists?"). Independent.
-const StageAwareness = ({ value, awarenessInterestContext, onChange }) => {
+const StageAwareness = ({ value, awarenessInterestContext, onContextChange, onChange }) => {
     const showAdjustmentCaption = awarenessInterestContext !== DEFAULT_AWARENESS_INTEREST_CONTEXT;
 
     return (
         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
             <Box display="flex" alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="h5">Stage 4 — Awareness</Typography>
+                <Typography variant="h5">Awareness</Typography>
                 <ProbabilityTypeTag type={PROBABILITY_TYPES.INDEPENDENT} />
             </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 “Who knows this therapy exists?”
+            </Typography>
+
+            <FormControl sx={{ mb: 1, minWidth: 320 }}>
+                <InputLabel id="awareness-interest-context-label">Awareness / Interest context</InputLabel>
+                <Select
+                    labelId="awareness-interest-context-label"
+                    label="Awareness / Interest context"
+                    value={awarenessInterestContext}
+                    onChange={(e) => onContextChange('awarenessInterest', e.target.value)}
+                >
+                    {AWARENESS_INTEREST_CONTEXTS.map(({ key, label }) => (
+                        <MenuItem key={key} value={key}>{label}</MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                {AWARENESS_INTEREST_CONTEXT_HELPER_TEXT}
             </Typography>
 
             <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>

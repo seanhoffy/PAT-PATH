@@ -58,7 +58,7 @@ export const buildFunnelRows = (startN, percents) => {
     const rows = [
         {
             key: 'C',
-            stage: '3. Funnel Input',
+            stage: 'Funnel Input',
             type: 'base',
             rate: null,
             n: Math.round(base),
@@ -66,7 +66,7 @@ export const buildFunnelRows = (startN, percents) => {
         },
         {
             key: 'D',
-            stage: '4. Aware',
+            stage: 'Aware',
             type: 'independent',
             rate: percents.stage4,
             n: chain.D,
@@ -74,7 +74,7 @@ export const buildFunnelRows = (startN, percents) => {
         },
         {
             key: 'E',
-            stage: '5. Interested | Aware',
+            stage: 'Interested | Aware',
             type: 'conditional',
             rate: percents.stage5,
             n: chain.E,
@@ -82,7 +82,7 @@ export const buildFunnelRows = (startN, percents) => {
         },
         {
             key: 'F',
-            stage: '6. Can afford',
+            stage: 'Can afford',
             type: 'conditional',
             rate: percents.stage6,
             n: chain.F,
@@ -90,7 +90,7 @@ export const buildFunnelRows = (startN, percents) => {
         },
         {
             key: 'G',
-            stage: '7. Can access provider',
+            stage: 'Can access provider',
             type: 'conditional',
             rate: percents.stage7,
             n: chain.G,
@@ -141,7 +141,7 @@ export const validateFunnelRequiredStages = (funnelState) => {
         || isBlank(stage6Value)
         || isBlank(funnelState?.stage7?.value)
     ) {
-        return { isValid: false, message: 'Please complete Stages 4-7 (Awareness, Interest, Afford, Geographic access) before saving or downloading.' };
+        return { isValid: false, message: 'Please complete Awareness, Interest, Afford, and Geographic Accessibility before saving or downloading.' };
     }
     return { isValid: true };
 };

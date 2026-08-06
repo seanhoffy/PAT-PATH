@@ -24,7 +24,7 @@ import {
 const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capacityN, capacityReady, exceedsCapacity, onFieldChange, onApplyCap, onRemoveCap }) => (
     <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
         <Box display="flex" alignItems="center" sx={{ mb: 1 }}>
-            <Typography variant="h5">Stage 8 — Provider Capacity</Typography>
+            <Typography variant="h5">Provider Capacity</Typography>
             <ProbabilityTypeTag type={PROBABILITY_TYPES.CAPACITY} />
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -87,7 +87,7 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
             <>
                 <Grid container spacing={3} sx={{ mb: 2 }}>
                     <Grid item xs={12} sm={6}>
-                        <Typography variant="body2" color="text.secondary">Stage 7 output (funnel-estimated demand)</Typography>
+                        <Typography variant="body2" color="text.secondary">Geographic Accessibility output (funnel-estimated demand)</Typography>
                         <Typography variant="h6">{Number(effectiveDemand || 0).toLocaleString()}/yr</Typography>
                     </Grid>
                     <Grid item xs={12} sm={6}>

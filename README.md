@@ -164,6 +164,13 @@ psil-at-app/
 - Generate professional reports for stakeholders
 - Track changes in demand over time
 
+## ⚠️ Known Naming Discrepancies
+
+- The "General Info" field labeled **Organization** in the UI (formerly "Model Title") is still stored internally as `modelTitle` (component state, Firestore `inputs.modelTitle`/saved-model `title`, PDF export, filenames, etc.). Only the user-facing label changed — the internal field name was left as-is to avoid a wider refactor across `inputs_and_outputs.js`, `HistoryPage.js`, `pdf.js`, `NavBar.js`, `firebaseHelpers.js`, and `formValidation.js`. Keep this in mind when reading/writing that field in code.
+- The double-counting field labeled **Psychological Disorders (Mania, Suicide)** in the UI (formerly "Psychological Problems (Manic, Suicide)") is still stored internally as `psycological_P` (note the original typo in the key itself — `psycological` not `psychological`).
+- The double-counting field labeled **Hepatic Impairments** in the UI (formerly "Lower Hepatic Impairment") is still stored internally as `comorbid_hepatic_P`.
+- Both of the above are defined once in `DOUBLE_COUNTING_FIELDS` (`src/constants/formFields.js`) and referenced from there by `DoubleCountingDialog.js` and `HistoryPage.js`; only `pdf.js` has its own separate hardcoded copy of the label text (kept in sync manually, since the PDF export doesn't import from `formFields.js`).
+
 ## 🔒 Security & Privacy
 
 - **User Authentication**: Secure login via Firebase

@@ -16,8 +16,8 @@ export const EXCLUSION_CRITERIA_FIELDS = [
 
 // Double counting adjustment fields
 export const DOUBLE_COUNTING_FIELDS = [
-    ['psycological_P', 'Psychological Problems (Manic, Suicide)'],
+    ['psycological_P', 'Psychological Disorders (Mania, Suicide)'],
     ['health_P', 'Health Conditions (Diabetes, Stroke, Heart Attack, BP+)'],
-    ['comorbid_hepatic_P', 'Lower Hepatic Impairment'],
+    ['comorbid_hepatic_P', 'Hepatic Impairments'],
 ];
 

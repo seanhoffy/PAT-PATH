@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { Box, Typography, Alert } from '@mui/material';
 import MethodsPreamble from './MethodsPreamble';
-import ContextSelectors from './ContextSelectors';
 import FunnelInputSelector from './FunnelInputSelector';
 import StageAwareness from './StageAwareness';
 import StageInterest from './StageInterest';
@@ -65,7 +64,7 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
     return (
         <Box sx={{ mt: 4 }}>
             <Typography variant="h4" sx={{ mb: 1, textAlign: 'center' }}>
-                Stages 4–9: Realistic Utilization Funnel
+                Demand Funnel
             </Typography>
             <Typography
                 variant="subtitle1"
@@ -73,12 +72,14 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
                 sx={{ mb: 3, fontStyle: 'bold', textAlign: 'center', maxWidth: '860px', mx: 'auto' }}
             >
                 This next section narrows the raw prevalence estimate down to a realistic annual utilization
-                number by applying real world funnel factors including awareness, interest, affordability,
-                geographic access, and provider capacity.
+                number by applying real world funnel factors including: <strong>awareness, interest, affordability,
+                    geographic access, and provider capacity</strong>.
             </Typography>
 
+            <MethodsPreamble />
+
             <Callout>
-                We expect you to have the best available estimates for these values in your location.
+                You will need to provide plausible estimates for these values in your location.
                 Reference info and typical ranges are provided if needed.
             </Callout>
 
@@ -88,17 +89,10 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
                 onChange={(value) => dispatch({ type: 'SET_FUNNEL_INPUT_SELECTION', value })}
             />
 
-            <ContextSelectors
-                contexts={state.contexts}
-                onContextChange={(dropdown, value) => dispatch({ type: 'SET_CONTEXT', dropdown, value })}
-                onResetDefaults={() => dispatch({ type: 'RESET_CONTEXT_DEFAULTS' })}
-            />
-
-            <MethodsPreamble />
-
             <StageAwareness
                 value={state.stage4.value}
                 awarenessInterestContext={state.contexts.awarenessInterest}
+                onContextChange={(dropdown, value) => dispatch({ type: 'SET_CONTEXT', dropdown, value })}
                 onChange={(value) => dispatch({ type: 'SET_STAGE_VALUE', stage: 'stage4', value })}
             />
 
@@ -117,6 +111,7 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
             <StageGeographic
                 value={state.stage7.value}
                 geographicAccessContext={state.contexts.geographicAccess}
+                onContextChange={(dropdown, value) => dispatch({ type: 'SET_CONTEXT', dropdown, value })}
                 onChange={(value) => dispatch({ type: 'SET_STAGE_VALUE', stage: 'stage7', value })}
             />
 
@@ -133,7 +128,7 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
             />
 
             <Typography variant="h5" sx={{ mt: 4 }}>
-                Stage 9 — Effective Demand
+                Effective Demand
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 “Your realistic annual utilization estimate.”
@@ -161,7 +156,7 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
                 </>
             ) : (
                 <Alert severity="info" sx={{ mb: 3 }}>
-                    Complete Stages 4–7 above to see your funnel and effective-demand estimate.
+                    Complete Awareness, Interest, Afford, and Geographic Accessibility above to see your funnel and effective-demand estimate.
                 </Alert>
             )}
 

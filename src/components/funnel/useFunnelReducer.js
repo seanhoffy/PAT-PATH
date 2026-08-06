@@ -3,9 +3,6 @@ import {
     DEFAULT_FUNNEL_INPUT_CELL,
     DEFAULT_AWARENESS_INTEREST_CONTEXT,
     DEFAULT_GEOGRAPHIC_ACCESS_CONTEXT,
-    STAGE4_CONTEXT_DEFAULTS,
-    STAGE5_CONTEXT_DEFAULTS,
-    STAGE7_CONTEXT_DEFAULTS,
     STAGE6_TABLE_A_ROWS,
 } from '../../constants/funnelDefaults';
 // Re-exported so existing imports of these two helpers from this module keep
@@ -28,9 +25,8 @@ export const initialFunnelState = () => ({
     },
     funnelInputSelection: DEFAULT_FUNNEL_INPUT_CELL,
     // Stage 4/5/6/7 start blank rather than pre-filled with our reference
-    // estimates — the user should knowingly choose their own regional value
-    // or explicitly opt into ours (via "Reset to context defaults" / picking
-    // a Stage 6 row), not silently inherit it.
+    // estimates — the user should knowingly choose their own regional value,
+    // not silently inherit it.
     stage4: { value: '' },
     stage5: { value: '' },
     stage6: {
@@ -57,24 +53,10 @@ export const funnelReducer = (state, action) => {
         case 'SET_CONTEXT': {
             // Switching context no longer auto-fills Stage 4/5/7 — it only
             // changes which reference row each stage's "defaults" table
-            // highlights (and which value "Reset to context defaults" would
-            // apply). Silently overwriting a blank-or-typed value here would
-            // undercut the whole point of starting these fields empty.
+            // highlights. Silently overwriting a blank-or-typed value here
+            // would undercut the whole point of starting these fields empty.
             const { dropdown, value } = action;
             return { ...state, contexts: { ...state.contexts, [dropdown]: value } };
-        }
-
-        case 'RESET_CONTEXT_DEFAULTS': {
-            // The explicit "use our reference values" action for Stage 4/5/7.
-            const stage4Default = STAGE4_CONTEXT_DEFAULTS[state.contexts.awarenessInterest];
-            const stage5Default = STAGE5_CONTEXT_DEFAULTS[state.contexts.awarenessInterest];
-            const stage7Default = STAGE7_CONTEXT_DEFAULTS[state.contexts.geographicAccess];
-            return {
-                ...state,
-                stage4: { value: stage4Default.value },
-                stage5: { value: stage5Default.value },
-                stage7: { value: stage7Default.value },
-            };
         }
 
         case 'SET_FUNNEL_INPUT_SELECTION':

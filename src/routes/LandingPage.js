@@ -178,8 +178,8 @@ const LandingPage = () => {
                         </a>
                         , the CEP psilocybin-assisted therapy (PAT) demand model
                         provides estimates of the potential demand for PAT in a specific geographic area. It identifies eligible
-                        individuals among those with major depressive disorder (MDD) and those with
-                        treatment-resistant depression (TRD). It applies validated inclusion and exclusion
+                        individuals among those with Major Depressive Disorder (MDD) and those with
+                        Treatment-Resistant Depression (TRD). It applies validated inclusion and exclusion
                         criteria from peer-reviewed research as well as accessibility statistics from your region to accurately project treatment needs.
                     </Typography>
                     <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mt: { xs: 3, md: 4 } }}>
@@ -413,19 +413,13 @@ const LandingPage = () => {
                         Healthcare Payers, Policymakers & Healthcare Systems
                     </Typography>
                     <Typography variant="h6" sx={{ color: '#023e74', mb: 1, textAlign: 'center' }}>
-                        • Project potential patient populations for coverage planning.
-                    </Typography>
-                    <Typography variant="h6" sx={{ color: '#023e74', mb: 1, textAlign: 'center' }}>
-                        • Estimate regional treatment demand for resource allocation.
-                    </Typography>
-                    <Typography variant="h6" sx={{ color: '#023e74', mb: 1, textAlign: 'center' }}>
-                        • Assess potential needs for psilocybin-assisted therapy.
+                        • Assess regional needs for psilocybin-assisted therapy.
                     </Typography>
                     <Typography variant="h6" sx={{ color: '#023e74', mb: 1, textAlign: 'center' }}>
                         • Plan resource allocation using region-specific insights.
                     </Typography>
                     <Typography variant="h6" sx={{ color: '#023e74', mb: 2, textAlign: 'center' }}>
-                        • Makes data-driven treatment implementation decisions.
+                        • Make data-driven treatment implementation decisions.
                     </Typography>
                     <Typography variant="body1" sx={{ color: '#023e74', fontStyle: 'italic', textAlign: 'center' }}>
                         All projections are generated for the specific geographic location you select.

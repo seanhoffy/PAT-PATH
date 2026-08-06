@@ -44,7 +44,7 @@ const ResultsDisplay = ({ results, formData, onDownload, onSave, onUpdate, savin
             <Grid container spacing={3} sx={{ mb: 1 }}>
                 <Grid item xs={12} sm={4}>
                     <Typography variant="h6" sx={{ mt: 0, mb: 1 }}>
-                        Major Depressive Disorder (MDD)
+                        MDD
                     </Typography>
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -71,7 +71,7 @@ const ResultsDisplay = ({ results, formData, onDownload, onSave, onUpdate, savin
             <Grid container spacing={3} sx={{ mb: 4 }}>
                 <Grid item xs={12} sm={4}>
                     <Typography variant="h6" sx={{ mt: 0, mb: 1 }}>
-                        Treatment-Resistant Depression (TRD)
+                        TRD
                     </Typography>
                 </Grid>
                 <Grid item xs={12} sm={4}>
@@ -150,7 +150,7 @@ const ResultsDisplay = ({ results, formData, onDownload, onSave, onUpdate, savin
             </Stack>
             {!funnelReady && (
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    Complete Stages 4-7 above to save or download this model.
+                    Complete Awareness, Interest, Afford, and Geographic Accessibility above to save or download this model.
                 </Typography>
             )}
         </Paper>

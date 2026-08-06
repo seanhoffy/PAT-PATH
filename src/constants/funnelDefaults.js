@@ -31,7 +31,8 @@ export const GEOGRAPHIC_ACCESS_CONTEXTS = [
 ];
 export const DEFAULT_GEOGRAPHIC_ACCESS_CONTEXT = 'mixedUrbanSuburban';
 
-export const CONTEXT_HELPER_TEXT = "Awareness and interest depend on cultural context (3 buckets, source-backed); geographic access depends on population density (5 buckets, source-backed). Unusual combinations (e.g., Progressive / Urban awareness with Conservative / Rural access) are allowed.";
+export const AWARENESS_INTEREST_CONTEXT_HELPER_TEXT = "Awareness and interest depend on cultural context (3 buckets, source-backed).";
+export const GEOGRAPHIC_ACCESS_CONTEXT_HELPER_TEXT = "Geographic access depends on population density (5 buckets, source-backed).";
 
 // ---------------------------------------------------------------------------
 // CC-4: Methods preamble (static text block, rendered above Stages 4-9 inputs)
@@ -60,7 +61,7 @@ export const STAGE4_REFERENCE_ROW = {
     rationale: 'Corrigan uplift among aware, clinically eligible respondents.',
 };
 
-export const STAGE4_HELPER_TEXT = "Default: 47% of adults are aware of psychedelic therapy as a mental health treatment option. Source: UC Berkeley BCSP National Survey, 2023, n=1,500. Demographic gap: 29% of African-American respondents reported recent awareness vs. 47% overall.";
+export const STAGE4_HELPER_TEXT = "Default: 47% of adults are aware of psychedelic therapy as a mental health treatment option. Source: UC Berkeley BCSP National Survey, 2023, n=1,500. Demographic gap: 29% of African-American respondents reported recent awareness vs. 47% overall. Please see the table below with other figures which may be more relevant to your setting.";
 export const STAGE4_ADJUSTMENT_CAPTION = "Reduce to 25–35% for conservative or rural areas; increase to 55–65% for progressive urban areas with active psychedelic policy discourse (e.g., Oregon, Colorado metro).";
 
 export const STAGE4_SOURCES = [
@@ -224,7 +225,7 @@ export const STAGE7_CONTEXT_DEFAULTS = {
 };
 
 export const STAGE7_SESSION_LENGTH_CALLOUT = "Unlike standard outpatient therapy (45–60 min sessions), psilocybin sessions last 6–8 hours. Travel distance, time off work, and recovery time are substantially more consequential. The geographic access percentages above already discount for this, but standard MH access benchmarks understate the problem for psilocybin therapy.";
-export const STAGE7_MEDICAL_TOURISM_FOOTNOTE = "Some demand in opted-out jurisdictions may be met via travel to neighboring legal jurisdictions. This medical-tourism flow is not modeled in the default 0% but may be material in border counties. Override Stage 7 upward to model such scenarios.";
+export const STAGE7_MEDICAL_TOURISM_FOOTNOTE = "Some demand in opted-out jurisdictions may be met via travel to neighboring legal jurisdictions. This medical-tourism flow is not modeled in the default 0% but may be material in border counties. Override Geographic Accessibility upward to model such scenarios.";
 export const STAGE7_VETERANS_NOTE = "The defaults use general mental-health utilization patterns. Some populations — notably veterans — may not follow these patterns. Veterans have been a leading constituency driving psychedelic research and advocacy; institutional channels such as the VA could enable utilization rates exceeding what generalized MH-access models predict, even among rural or lower-SES subgroups that typically under-utilize MH services. Most relevant if PATpath extends to MDMA / PTSD.";
 
 export const STAGE7_SOURCES = [
@@ -248,7 +249,7 @@ export const STAGE8_MULTIPLIER_MIN = 1;
 export const STAGE8_MULTIPLIER_MAX = 3;
 export const STAGE8_MULTIPLIER_HELPER = 'If group-session models are available in your area, multiply by 2–3× to account for higher throughput.';
 
-export const STAGE8_SECTION_HELPER_TEXT = "Stage 8 is a parallel sanity check, not part of the funnel multiplication. Estimate local capacity here and compare it to your Stage 7 output. If your funnel-estimated demand exceeds capacity, the UI will flag it and offer an optional capacity cap.";
+export const STAGE8_SECTION_HELPER_TEXT = "Capacity is a parallel sanity check, not part of the funnel multiplication. Estimate local capacity here and compare it to your Geographic Accessibility output. If your funnel-estimated demand exceeds capacity, the UI will flag it and offer an optional capacity cap.";
 export const STAGE8_WARNING_COPY = "Your calculated demand exceeds plausible local capacity. Consider applying the capacity cap below.";
 export const STAGE8_THROUGHPUT_RATIONALE = "By Q1–Q3 2025, Oregon served 4,577 clients / ~377 facilitators — annualizing to ~6,100/yr, or ~16 clients per facilitator per year. This reflects maturing practices, growing awareness, and group sessions. Colorado data, as it accumulates, will cross-check this, particularly given that state's more permissive delivery model.";
 
@@ -268,7 +269,7 @@ export const STAGE8_SOURCES = [
 // ---------------------------------------------------------------------------
 // Stage 9 — Effective Demand & Results Page
 // ---------------------------------------------------------------------------
-export const STAGE9_METHODOLOGICAL_CAVEAT = "Multiplying six to seven uncertain percentages compounds error: a ±10 pp uncertainty per stage can produce a 5× range in final output. The stages aren't truly independent — people who can afford $2,000+ tend to be urban, educated, aware, and geographically proximate. Treating stages as independent likely overstates constraints for affluent urban populations and understates them for lower-income rural ones. Stage 5's conditional framing partially addresses this; residual interdependence remains. Treat any point estimate as approximate and use the Scenario Explorer.";
+export const STAGE9_METHODOLOGICAL_CAVEAT = "Multiplying six to seven uncertain percentages compounds error: a ±10 pp uncertainty per stage can produce a 5× range in final output. The stages aren't truly independent — people who can afford $2,000+ tend to be urban, educated, aware, and geographically proximate. Treating stages as independent likely overstates constraints for affluent urban populations and understates them for lower-income rural ones. Interest's conditional framing partially addresses this; residual interdependence remains. Treat any point estimate as approximate and use the Scenario Explorer.";
 
 export const STAGE9_RECAP_HELPER_TEXT = 'To change a value, return to the corresponding stage above.';
 

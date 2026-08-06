@@ -18,16 +18,16 @@ const DoubleCountingDialog = ({ open, onClose, formData, onInputChange }) => {
             <DialogTitle>Adjust Exclusion Criteria for Double Counting</DialogTitle>
             <DialogContent>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                    These inputs allow you flexibility to adjust for double counting if needed as some exclusion criteria overlap. The default values come from the same study in the "about" section and should only be changed if you have access to better or more recent data on overlapping disorders and you are an expert in this field.
+                    These inputs allow you flexibility to adjust for double counting if needed as some exclusion criteria overlap, giving you the opportunity to apply them as broad categories. The default likelihood of overlap comes from the same study in the "about" section and should only be changed if you have access to better or more recent data on overlapping disorders and you are an expert in this field.
                 </Typography>
                 <Typography variant="body2">
-                    Psychological Problems: Percentage of MDD subjects with a mental disorder and/or a suicide attempt in the past year.
+                    <strong>Psychological Disorders</strong>: Percentage of MDD subjects with a mental disorder and/or a suicide attempt in the past year.
                 </Typography>
                 <Typography variant="body2">
-                    Health Conditions: Percentage of MDD subjects with diabetes, stroke, heart attack in the last year, and/or high blood pressure (140+/90+ and treatment-resistant).
+                    <strong>Health Conditions</strong>: Percentage of MDD subjects with diabetes, stroke, heart attack in the last year, and/or high blood pressure (140+/90+ and treatment-resistant).
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 4 }}>
-                    Lower Hepatic Impairment: Percentage of MDD subjects with this condition.
+                    <strong>Hepatic Impairments</strong>: Percentage of MDD subjects with this condition.
                 </Typography>
                 <Paper elevation={2} sx={{ p: 3, mt: 2 }}>
                     <Grid container spacing={3}>

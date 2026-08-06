@@ -2,10 +2,10 @@ import { Paper, Typography, Table, TableBody, TableRow, TableCell, TextField, Bu
 import TableHeaderRow from './TableHeaderRow';
 
 const STAGE_ROWS = [
-    { rowKey: 'D', label: '4. Aware', stageKey: 'stage4' },
-    { rowKey: 'E', label: '5. Interested | Aware', stageKey: 'stage5' },
-    { rowKey: 'F', label: '6. Can afford', stageKey: 'stage6' },
-    { rowKey: 'G', label: '7. Can access provider', stageKey: 'stage7' },
+    { rowKey: 'D', label: 'Aware', stageKey: 'stage4' },
+    { rowKey: 'E', label: 'Interested | Aware', stageKey: 'stage5' },
+    { rowKey: 'F', label: 'Can afford', stageKey: 'stage6' },
+    { rowKey: 'G', label: 'Can access provider', stageKey: 'stage7' },
 ];
 
 // Stage 9, component 2 — editable Scenario Explorer. Conservative/Optimistic
@@ -30,7 +30,7 @@ const ScenarioExplorerTable = ({ startN, moderatePercents, scenarioInputs, scena
                 <TableHeaderRow columns={['Stage', 'Conservative', 'Moderate', 'Optimistic']} />
                 <TableBody>
                     <TableRow>
-                        <TableCell>3. Funnel Input</TableCell>
+                        <TableCell>Funnel Input</TableCell>
                         <TableCell>{Number(startN).toLocaleString()}</TableCell>
                         <TableCell>{Number(startN).toLocaleString()}</TableCell>
                         <TableCell>{Number(startN).toLocaleString()}</TableCell>
@@ -62,7 +62,7 @@ const ScenarioExplorerTable = ({ startN, moderatePercents, scenarioInputs, scena
                 </TableBody>
             </Table>
             <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 1 }}>
-                Stage 8 capacity check displayed separately.
+                Capacity check displayed separately.
             </Typography>
         </Paper>
     );

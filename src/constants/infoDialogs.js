@@ -12,7 +12,7 @@ export const INFO_DIALOGS = {
         title: 'More Information',
         content: [
             'For example values on the US population as a whole, see our \'motivation\' page.',
-            'Patients with MDD: Input your estimated number of people with Major Depressive Disorder in the population you serve.',
+            'Patients with MDD: Input your estimated number of people with MDD in the population you serve.',
             'Percentage with TRD: Input your estimate of the percentage in your region of those people with MDD that are also treatment-resistant (2+ treatment failures).',
             'Patients with TRD: This value is calculated automatically using the percentage previously inputted.',
         ],

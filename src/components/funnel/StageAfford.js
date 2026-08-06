@@ -23,8 +23,8 @@ const StageAfford = ({ stage6, onSelectRow, onRowValueChange, onUserDefinedChang
     return (
         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
             <Box display="flex" alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="h5">Stage 6 — Can Afford</Typography>
-                <ProbabilityTypeTag type={PROBABILITY_TYPES.CONDITIONAL} priorStages="Stages 4 + 5" />
+                <Typography variant="h5">Can Afford</Typography>
+                <ProbabilityTypeTag type={PROBABILITY_TYPES.CONDITIONAL} priorStages="Awareness, Interest" />
             </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 “Who can pay for treatment?”

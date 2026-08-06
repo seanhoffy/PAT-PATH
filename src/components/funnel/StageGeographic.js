@@ -1,4 +1,4 @@
-import { Paper, Box, Typography, TextField, InputAdornment, Table, TableBody, TableRow, TableCell } from '@mui/material';
+import { Paper, Box, Typography, TextField, InputAdornment, Table, TableBody, TableRow, TableCell, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import ProbabilityTypeTag from './ProbabilityTypeTag';
 import Callout from './Callout';
 import TableHeaderRow from './TableHeaderRow';
@@ -10,6 +10,8 @@ import {
     STAGE7_VETERANS_NOTE,
     STAGE7_SOURCES,
     DEFAULT_GEOGRAPHIC_ACCESS_CONTEXT,
+    GEOGRAPHIC_ACCESS_CONTEXTS,
+    GEOGRAPHIC_ACCESS_CONTEXT_HELPER_TEXT,
     PROBABILITY_TYPES,
 } from '../../constants/funnelDefaults';
 
@@ -23,14 +25,31 @@ const CONTEXT_ROW_LABELS = {
 
 // Stage 7 — Geographic Accessibility, Conditional on Stages 4-6 ("Who can
 // physically reach a provider?").
-const StageGeographic = ({ value, geographicAccessContext, onChange }) => (
+const StageGeographic = ({ value, geographicAccessContext, onContextChange, onChange }) => (
     <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
         <Box display="flex" alignItems="center" sx={{ mb: 1 }}>
-            <Typography variant="h5">Stage 7 — Geographic Accessibility</Typography>
-            <ProbabilityTypeTag type={PROBABILITY_TYPES.CONDITIONAL} priorStages="Stages 4 – 6" />
+            <Typography variant="h5">Geographic Accessibility</Typography>
+            <ProbabilityTypeTag type={PROBABILITY_TYPES.CONDITIONAL} priorStages="Awareness, Interest, Afford" />
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             “Who can physically reach a provider?”
+        </Typography>
+
+        <FormControl sx={{ mb: 1, minWidth: 320 }}>
+            <InputLabel id="geographic-access-context-label">Geographic Access context</InputLabel>
+            <Select
+                labelId="geographic-access-context-label"
+                label="Geographic Access context"
+                value={geographicAccessContext}
+                onChange={(e) => onContextChange('geographicAccess', e.target.value)}
+            >
+                {GEOGRAPHIC_ACCESS_CONTEXTS.map(({ key, label }) => (
+                    <MenuItem key={key} value={key}>{label}</MenuItem>
+                ))}
+            </Select>
+        </FormControl>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {GEOGRAPHIC_ACCESS_CONTEXT_HELPER_TEXT}
         </Typography>
 
         <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>

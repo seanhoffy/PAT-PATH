@@ -20,8 +20,8 @@ const StageInterest = ({ value, onChange }) => {
     return (
         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
             <Box display="flex" alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="h5">Stage 5 — Interest</Typography>
-                <ProbabilityTypeTag type={PROBABILITY_TYPES.CONDITIONAL} priorStages="Stages 3 + 4" />
+                <Typography variant="h5">Interest</Typography>
+                <ProbabilityTypeTag type={PROBABILITY_TYPES.CONDITIONAL} priorStages="Funnel Input, Awareness" />
             </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 “Among those who know about it, who would actually consider it?”
@@ -41,16 +41,12 @@ const StageInterest = ({ value, onChange }) => {
 
             <Callout>{STAGE5_CAVEAT}</Callout>
 
-            <Link component="button" type="button" variant="body2" onClick={() => setRationaleOpen((o) => !o)}>
+            <Link component="button" type="button" variant="body2" onClick={() => setRationaleOpen((o) => !o)} sx={{ mb: 2, display: 'inline-block' }}>
                 {rationaleOpen ? 'Hide rationale' : 'Why this default?'}
             </Link>
             <Collapse in={rationaleOpen}>
                 <Callout>{STAGE5_RATIONALE}</Callout>
             </Collapse>
-
-            <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 2, mb: 1 }}>
-                Combined Stage 4 + 5 (read-only)
-            </Typography>
             <Table size="small">
                 <TableHeaderRow columns={['Context', 'Aware', 'Interest | Aware', 'Combined', 'Rationale']} />
                 <TableBody>

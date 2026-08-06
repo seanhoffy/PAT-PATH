@@ -115,7 +115,7 @@ const HistoryPage = () => {
 
         // Handle other fields
         const labelMap = {
-            modelTitle: 'Model Title',
+            modelTitle: 'Organization',
             geographicArea: 'Geographic Area',
             MDD: 'Patients with MDD',
             TRD_P: 'Percentage With TRD',
@@ -259,25 +259,25 @@ const HistoryPage = () => {
                 {funnelDisplay && (
                     <>
                         <Divider sx={{ my: 2 }} />
-                        <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1 }}>Stages 4-9</Typography>
+                        <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1 }}>Demand Funnel</Typography>
                         <Grid container spacing={2} sx={{ mb: 1 }}>
                             <Grid item xs={12} sm={4}>
                                 <Typography variant="body2" color="text.secondary">
                                     Awareness / Interest context: {labelFromList(AWARENESS_INTEREST_CONTEXTS, model.funnel.contexts?.awarenessInterest)}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                    Geographic Access context: {labelFromList(GEOGRAPHIC_ACCESS_CONTEXTS, model.funnel.contexts?.geographicAccess)}
+                                    Geographic Accessibility context: {labelFromList(GEOGRAPHIC_ACCESS_CONTEXTS, model.funnel.contexts?.geographicAccess)}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
                                     Funnel input population: {labelFromList(FUNNEL_INPUT_CELLS, model.funnel.funnelInputSelection)}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                    Stage 6 selected tier: {stage6TierLabel(model.funnel.stage6)}
+                                    Afford selected tier: {stage6TierLabel(model.funnel.stage6)}
                                 </Typography>
                             </Grid>
                             <Grid item xs={12} sm={4}>
                                 <Typography variant="body2" color="text.secondary">
-                                    Stage 8 — facilitators / throughput / multiplier: {model.funnel.stage8?.facilitators} / {model.funnel.stage8?.throughput} / {model.funnel.stage8?.multiplier}x
+                                    Facilitators / throughput / multiplier: {model.funnel.stage8?.facilitators} / {model.funnel.stage8?.throughput} / {model.funnel.stage8?.multiplier}x
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
                                     Estimated annual capacity: {Number(funnelDisplay.capacityN).toLocaleString()}/yr

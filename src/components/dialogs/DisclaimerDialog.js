@@ -33,7 +33,7 @@ const DisclaimerDialog = ({ open, onClose, onProceed, disclaimerChecked, onDiscl
                     }}
                 >
                     <Typography variant="body1" fontWeight="bold" sx={{ color: '#333' }}>
-                        CEP does not take responsibility for user-provided inputs or the resulting model outputs. The relevance and accuracy of results depend on entering appropriate inputs and properly interpreting the outputs.
+                        CEP does not take responsibility for user-provided inputs or the resulting model outputs. The relevance and accuracy of results depend on entering appropriate inputs and properly interpreting the outputs. *pending vetting by a lawyer*
                     </Typography>
                 </Box>
                 <FormControlLabel
