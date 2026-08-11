@@ -1,6 +1,7 @@
 import { Paper, Box, Typography, TextField, InputAdornment, Grid, Alert, Button, List, ListItem, Link } from '@mui/material';
 import ProbabilityTypeTag from './ProbabilityTypeTag';
 import Callout from './Callout';
+import SourcesList from './SourcesList';
 import {
     STAGE8_FACILITATORS_HELPER,
     STAGE8_THROUGHPUT_DEFAULT,
@@ -35,35 +36,42 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
 
         <Grid container spacing={3} sx={{ mb: 2 }}>
             <Grid item xs={12} sm={4}>
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 500, minHeight: '2.7rem', display: 'flex', alignItems: 'flex-end' }}>
+                    Licensed / trained facilitators in your target area
+                </Typography>
                 <TextField
                     fullWidth
-                    label="Licensed / trained facilitators in your target area"
                     type="number"
                     value={stage8.facilitators}
                     onChange={(e) => onFieldChange('facilitators', e.target.value === '' ? '' : Number(e.target.value))}
+                    inputProps={{ 'aria-label': 'Licensed / trained facilitators in your target area' }}
                     helperText={STAGE8_FACILITATORS_HELPER}
                 />
             </Grid>
             <Grid item xs={12} sm={4}>
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 500, minHeight: '2.7rem', display: 'flex', alignItems: 'flex-end' }}>
+                    Annual psilocybin therapy clients served per facilitator
+                </Typography>
                 <TextField
                     fullWidth
-                    label="Annual throughput per facilitator"
                     type="number"
                     value={stage8.throughput}
                     onChange={(e) => onFieldChange('throughput', e.target.value === '' ? '' : Number(e.target.value))}
-                    InputProps={{ inputProps: { min: STAGE8_THROUGHPUT_MIN, max: STAGE8_THROUGHPUT_MAX } }}
+                    InputProps={{ inputProps: { min: STAGE8_THROUGHPUT_MIN, max: STAGE8_THROUGHPUT_MAX, 'aria-label': 'Annual psilocybin therapy clients served per facilitator' } }}
                 />
             </Grid>
             <Grid item xs={12} sm={4}>
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 500, minHeight: '2.7rem', display: 'flex', alignItems: 'flex-end' }}>
+                    Group-session multiplier
+                </Typography>
                 <TextField
                     fullWidth
-                    label="Group-session multiplier"
                     type="number"
                     value={stage8.multiplier}
                     onChange={(e) => onFieldChange('multiplier', e.target.value === '' ? '' : Number(e.target.value))}
                     InputProps={{
                         endAdornment: <InputAdornment position="end">×</InputAdornment>,
-                        inputProps: { min: STAGE8_MULTIPLIER_MIN, max: STAGE8_MULTIPLIER_MAX },
+                        inputProps: { min: STAGE8_MULTIPLIER_MIN, max: STAGE8_MULTIPLIER_MAX, 'aria-label': 'Group-session multiplier' },
                     }}
                     helperText={STAGE8_MULTIPLIER_HELPER}
                 />
@@ -80,7 +88,7 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
             }}
             sx={{ display: 'inline-block', mb: 2 }}
         >
-            Use suggested throughput ({STAGE8_THROUGHPUT_DEFAULT}) &amp; multiplier ({STAGE8_MULTIPLIER_DEFAULT}×)
+            Use suggested clients served per facilitator ({STAGE8_THROUGHPUT_DEFAULT}) &amp; multiplier ({STAGE8_MULTIPLIER_DEFAULT}×)
         </Link>
 
         {capacityReady ? (
@@ -124,11 +132,11 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
             </>
         ) : (
             <Alert severity="info" sx={{ mb: 2 }}>
-                Enter your facilitator, throughput, and multiplier assumptions above to see how this compares to funnel-estimated demand.
+                Enter your facilitator, clients served per facilitator, and multiplier assumptions above to see how this compares to funnel-estimated demand.
             </Alert>
         )}
 
-        <Callout title="Throughput rationale">{STAGE8_THROUGHPUT_RATIONALE}</Callout>
+        <Callout title="Clients served per facilitator rationale">{STAGE8_THROUGHPUT_RATIONALE}</Callout>
 
         <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 2, mb: 1 }}>
             Workforce pipeline notes
@@ -141,9 +149,7 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
             ))}
         </List>
 
-        <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 1 }}>
-            Sources: {STAGE8_SOURCES.join(' ')}
-        </Typography>
+        <SourcesList sources={STAGE8_SOURCES} />
     </Paper>
 );
 

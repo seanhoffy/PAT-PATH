@@ -9,7 +9,7 @@ const TableHeaderRow = ({ columns }) => (
     <TableHead>
         <TableRow sx={{ backgroundColor: COLORS.primary }}>
             {columns.map((col, index) => (
-                <TableCell key={`${col}-${index}`} sx={{ color: COLORS.white, fontWeight: 'bold' }}>
+                <TableCell key={`${col}-${index}`} sx={{ color: COLORS.white, fontWeight: 'bold', textAlign: 'center' }}>
                     {col}
                 </TableCell>
             ))}

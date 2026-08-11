@@ -1,11 +1,12 @@
-import { Paper, Box, Typography, TextField, InputAdornment, Table, TableBody, TableRow, TableCell, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Paper, Box, Typography, TextField, Table, TableBody, TableRow, TableCell, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { NumericFormat } from 'react-number-format';
 import ProbabilityTypeTag from './ProbabilityTypeTag';
 import Callout from './Callout';
 import TableHeaderRow from './TableHeaderRow';
+import SourcesList from './SourcesList';
 import {
     STAGE7_LABEL,
     STAGE7_CONTEXT_DEFAULTS,
-    STAGE7_SESSION_LENGTH_CALLOUT,
     STAGE7_MEDICAL_TOURISM_FOOTNOTE,
     STAGE7_VETERANS_NOTE,
     STAGE7_SOURCES,
@@ -55,29 +56,29 @@ const StageGeographic = ({ value, geographicAccessContext, onContextChange, onCh
         <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
             {STAGE7_LABEL}
         </Typography>
-        <TextField
-            type="number"
+        <NumericFormat
+            customInput={TextField}
+            suffix=" %"
             value={value}
-            onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
-            InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
-            inputProps={{ 'aria-label': STAGE7_LABEL }}
-            sx={{ mb: 2, minWidth: 320 }}
+            onValueChange={(values) => onChange(values.value === '' ? '' : values.floatValue)}
+            inputProps={{ 'aria-label': STAGE7_LABEL, style: { textAlign: 'right' } }}
+            sx={{ mb: 2, width: 80 }}
         />
 
-        <Callout>{STAGE7_SESSION_LENGTH_CALLOUT}</Callout>
         {geographicAccessContext === 'optedOut' && <Callout>{STAGE7_MEDICAL_TOURISM_FOOTNOTE}</Callout>}
 
         <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 2, mb: 1 }}>
-            Geographic Accessibility table
+            Table E — Geographic Accessibility
         </Typography>
         <Table size="small">
-            <TableHeaderRow columns={['Setting', 'Default', 'Basis']} />
+            <TableHeaderRow columns={['Setting', 'Default', 'Basis', 'Source']} />
             <TableBody>
                 {Object.entries(STAGE7_CONTEXT_DEFAULTS).map(([key, row]) => (
                     <TableRow key={key} selected={key === geographicAccessContext}>
                         <TableCell>{CONTEXT_ROW_LABELS[key]}{key === DEFAULT_GEOGRAPHIC_ACCESS_CONTEXT ? ' (default)' : ''}</TableCell>
                         <TableCell>{row.range}</TableCell>
                         <TableCell>{row.basis}</TableCell>
+                        <TableCell>{row.source || '—'}</TableCell>
                     </TableRow>
                 ))}
             </TableBody>
@@ -85,9 +86,7 @@ const StageGeographic = ({ value, geographicAccessContext, onContextChange, onCh
 
         <Callout title="Veterans / specific populations">{STAGE7_VETERANS_NOTE}</Callout>
 
-        <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 2 }}>
-            Sources: {STAGE7_SOURCES.join(' ')}
-        </Typography>
+        <SourcesList sources={STAGE7_SOURCES} />
     </Paper>
 );
 

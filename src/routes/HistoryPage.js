@@ -277,7 +277,7 @@ const HistoryPage = () => {
                             </Grid>
                             <Grid item xs={12} sm={4}>
                                 <Typography variant="body2" color="text.secondary">
-                                    Facilitators / throughput / multiplier: {model.funnel.stage8?.facilitators} / {model.funnel.stage8?.throughput} / {model.funnel.stage8?.multiplier}x
+                                    Facilitators / clients served per facilitator / multiplier: {model.funnel.stage8?.facilitators} / {model.funnel.stage8?.throughput} / {model.funnel.stage8?.multiplier}x
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
                                     Estimated annual capacity: {Number(funnelDisplay.capacityN).toLocaleString()}/yr

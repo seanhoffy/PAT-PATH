@@ -1,10 +1,12 @@
 import {
     Paper, Box, Typography, Radio, RadioGroup, Table, TableBody, TableRow, TableCell,
-    TextField, InputAdornment,
+    TextField,
 } from '@mui/material';
+import { NumericFormat } from 'react-number-format';
 import ProbabilityTypeTag from './ProbabilityTypeTag';
 import Callout from './Callout';
 import TableHeaderRow from './TableHeaderRow';
+import SourcesList from './SourcesList';
 import {
     STAGE6_TABLE_A_ROWS,
     STAGE6_TABLE_A_DENOMINATOR,
@@ -16,7 +18,7 @@ import {
 } from '../../constants/funnelDefaults';
 
 // Stage 6 — Can Afford, Conditional on Stages 4+5 ("Who can pay for treatment?").
-// Table A is user-selectable and feeds the funnel; Table B is read-only/informational.
+// Table C is user-selectable and feeds the funnel; Table D is read-only/informational.
 const StageAfford = ({ stage6, onSelectRow, onRowValueChange, onUserDefinedChange }) => {
     const { selectedRow, rowValues, userDefined } = stage6;
 
@@ -34,11 +36,14 @@ const StageAfford = ({ stage6, onSelectRow, onRowValueChange, onUserDefinedChang
             <Callout>{STAGE6_COLORADO_CAVEAT}</Callout>
 
             <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 2, mb: 1 }}>
-                Table A — Out-of-Pocket Price Tiers ({STAGE6_TABLE_A_DENOMINATOR})
+                Table C — Out-of-Pocket Price Tiers ({STAGE6_TABLE_A_DENOMINATOR})
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Select most relevant context below
             </Typography>
             <RadioGroup value={selectedRow} onChange={(e) => onSelectRow(e.target.value)}>
                 <Table size="small">
-                    <TableHeaderRow columns={['', 'Price point', 'Context', '%', 'What this % represents', 'Source']} />
+                    <TableHeaderRow columns={['', 'Price point', 'Context', '%', 'Source']} />
                     <TableBody>
                         {STAGE6_TABLE_A_ROWS.map((row) => (
                             <TableRow key={row.key} selected={selectedRow === row.key}>
@@ -48,20 +53,17 @@ const StageAfford = ({ stage6, onSelectRow, onRowValueChange, onUserDefinedChang
                                 <TableCell>{row.pricePoint}{row.isDefault ? ' (default)' : ''}</TableCell>
                                 <TableCell>{row.context}</TableCell>
                                 <TableCell>
-                                    <TextField
+                                    <NumericFormat
+                                        customInput={TextField}
                                         size="small"
-                                        type="number"
+                                        suffix=" %"
                                         disabled={selectedRow !== row.key}
                                         value={rowValues[row.key]}
-                                        onChange={(e) => onRowValueChange(row.key, e.target.value === '' ? '' : Number(e.target.value))}
-                                        InputProps={{
-                                            endAdornment: <InputAdornment position="end">%</InputAdornment>,
-                                            inputProps: { min: row.min ?? 0, max: row.max ?? 100 },
-                                        }}
-                                        sx={{ width: 110 }}
+                                        onValueChange={(values) => onRowValueChange(row.key, values.value === '' ? '' : values.floatValue)}
+                                        inputProps={{ style: { textAlign: 'right' } }}
+                                        sx={{ width: 80 }}
                                     />
                                 </TableCell>
-                                <TableCell>{row.represents}</TableCell>
                                 <TableCell>{row.source}</TableCell>
                             </TableRow>
                         ))}
@@ -80,20 +82,18 @@ const StageAfford = ({ stage6, onSelectRow, onRowValueChange, onUserDefinedChang
                                 />
                             </TableCell>
                             <TableCell>
-                                <TextField
+                                <NumericFormat
+                                    customInput={TextField}
                                     size="small"
-                                    type="number"
+                                    suffix=" %"
                                     disabled={selectedRow !== 'userDefined'}
                                     value={userDefined.pct}
-                                    onChange={(e) => onUserDefinedChange('pct', e.target.value === '' ? '' : Number(e.target.value))}
-                                    InputProps={{
-                                        endAdornment: <InputAdornment position="end">%</InputAdornment>,
-                                        inputProps: { min: 0, max: 100 },
-                                    }}
-                                    sx={{ width: 110 }}
+                                    onValueChange={(values) => onUserDefinedChange('pct', values.value === '' ? '' : values.floatValue)}
+                                    inputProps={{ style: { textAlign: 'right' } }}
+                                    sx={{ width: 80 }}
                                 />
                             </TableCell>
-                            <TableCell colSpan={2}>
+                            <TableCell>
                                 <TextField
                                     size="small"
                                     label="Source"
@@ -109,7 +109,7 @@ const StageAfford = ({ stage6, onSelectRow, onRowValueChange, onUserDefinedChang
             </RadioGroup>
 
             <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 3, mb: 1 }}>
-                Table B — Coverage / Subsidy Pathways (informational only, does not feed the funnel)
+                Table D — Coverage / Subsidy Pathways (informational only, may inform user defined value)
             </Typography>
             <Table size="small">
                 <TableHeaderRow columns={['Pathway', 'Context', 'Best est.', 'What this % represents', 'Source']} />
@@ -129,9 +129,7 @@ const StageAfford = ({ stage6, onSelectRow, onRowValueChange, onUserDefinedChang
                 <Callout key={row.pathway} title={`Footnote — ${row.pathway}`}>{row.footnote}</Callout>
             ))}
 
-            <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 2 }}>
-                Sources: {STAGE6_SOURCES.join(' ')}
-            </Typography>
+            <SourcesList sources={STAGE6_SOURCES} />
         </Paper>
     );
 };

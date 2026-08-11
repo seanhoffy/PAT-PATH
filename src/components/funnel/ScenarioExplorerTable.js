@@ -26,6 +26,9 @@ const ScenarioExplorerTable = ({ startN, moderatePercents, scenarioInputs, scena
                 <Typography variant="h5">Scenario Explorer</Typography>
                 <Button variant="outlined" onClick={onReset}>Reset to defaults</Button>
             </Box>
+            <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1 }}>
+                Table G — Scenario Explorer
+            </Typography>
             <Table size="small">
                 <TableHeaderRow columns={['Stage', 'Conservative', 'Moderate', 'Optimistic']} />
                 <TableBody>

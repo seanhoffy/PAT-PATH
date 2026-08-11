@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { Paper, Box, Typography, TextField, InputAdornment, Table, TableBody, TableRow, TableCell, Collapse, Link } from '@mui/material';
+import { Paper, Box, Typography, TextField, Table, TableBody, TableRow, TableCell } from '@mui/material';
+import { NumericFormat } from 'react-number-format';
 import ProbabilityTypeTag from './ProbabilityTypeTag';
 import Callout from './Callout';
 import TableHeaderRow from './TableHeaderRow';
+import SourcesList from './SourcesList';
 import {
     STAGE5_LABEL,
     STAGE4_5_COMBINED_TABLE,
-    STAGE5_RATIONALE,
     STAGE5_CAVEAT,
     STAGE5_SOURCES,
     PROBABILITY_TYPES,
@@ -15,8 +15,6 @@ import {
 // Stage 5 — Interest, Conditional on Awareness ("Among those who know about
 // it, who would actually consider it?").
 const StageInterest = ({ value, onChange }) => {
-    const [rationaleOpen, setRationaleOpen] = useState(false);
-
     return (
         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
             <Box display="flex" alignItems="center" sx={{ mb: 1 }}>
@@ -30,25 +28,22 @@ const StageInterest = ({ value, onChange }) => {
             <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
                 {STAGE5_LABEL}
             </Typography>
-            <TextField
-                type="number"
+            <NumericFormat
+                customInput={TextField}
+                suffix=" %"
                 value={value}
-                onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
-                InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
-                inputProps={{ 'aria-label': STAGE5_LABEL }}
-                sx={{ mb: 2, minWidth: 320 }}
+                onValueChange={(values) => onChange(values.value === '' ? '' : values.floatValue)}
+                inputProps={{ 'aria-label': STAGE5_LABEL, style: { textAlign: 'right' } }}
+                sx={{ mb: 2, width: 80 }}
             />
 
             <Callout>{STAGE5_CAVEAT}</Callout>
 
-            <Link component="button" type="button" variant="body2" onClick={() => setRationaleOpen((o) => !o)} sx={{ mb: 2, display: 'inline-block' }}>
-                {rationaleOpen ? 'Hide rationale' : 'Why this default?'}
-            </Link>
-            <Collapse in={rationaleOpen}>
-                <Callout>{STAGE5_RATIONALE}</Callout>
-            </Collapse>
+            <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 2, mb: 1 }}>
+                Table B — Combined Awareness + Interest
+            </Typography>
             <Table size="small">
-                <TableHeaderRow columns={['Context', 'Aware', 'Interest | Aware', 'Combined', 'Rationale']} />
+                <TableHeaderRow columns={['Context', 'Aware', 'Interest Given Aware', 'Combined', 'Rationale', 'Source']} />
                 <TableBody>
                     {STAGE4_5_COMBINED_TABLE.map((row) => (
                         <TableRow key={row.context} selected={!!row.isDefault}>
@@ -57,14 +52,13 @@ const StageInterest = ({ value, onChange }) => {
                             <TableCell>{row.interestGivenAware}</TableCell>
                             <TableCell>{row.combined}</TableCell>
                             <TableCell>{row.rationale}</TableCell>
+                            <TableCell>{row.source || '—'}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
             </Table>
 
-            <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 2 }}>
-                Sources: {STAGE5_SOURCES.join(' ')}
-            </Typography>
+            <SourcesList sources={STAGE5_SOURCES} />
         </Paper>
     );
 };

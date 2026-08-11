@@ -37,7 +37,7 @@ export const GEOGRAPHIC_ACCESS_CONTEXT_HELPER_TEXT = "Geographic access depends 
 // ---------------------------------------------------------------------------
 // CC-4: Methods preamble (static text block, rendered above Stages 4-9 inputs)
 // ---------------------------------------------------------------------------
-export const METHODS_PREAMBLE = "We have sought the most relevant data to provide the best possible empirical basis for this model. The field is evolving rapidly and we expect better estimates over time; defaults reflect best current evidence as of 2026 and will be updated as the evidence base matures. Each stage indicates whether its value is independent (a rate measured in the general population and applied here as a proxy — e.g., BCSP's ‘47% of adults are aware’) or conditional (a rate measured specifically among those who passed the prior stages — e.g., Corrigan's ‘among the aware, 47% would be interested’). Mathematically, both are multiplied against the prior stage's count; the tag tells users where each rate was estimated, which matters because applying general-population rates to a narrower subset introduces some slippage.";
+export const METHODS_PREAMBLE = "We have sought the most relevant data to provide the best possible empirical basis for this model, but please share with us any more relevant information about your setting. The field is evolving rapidly and we expect better estimates over time; defaults reflect best current evidence as of 2026 and will be updated as the evidence base matures. Each stage indicates whether its value is independent (a rate measured in the general population and applied here as a proxy — e.g., BCSP's ‘47% of adults are aware’) or conditional (a rate measured specifically among those who passed the prior stages — e.g., Corrigan's ‘among the aware, 47% would be interested’). Mathematically, both are multiplied against the prior stage's count; the tag tells users where each rate was estimated, which matters because applying general-population rates to a narrower subset introduces some slippage.";
 
 // ---------------------------------------------------------------------------
 // Stage 4 — Awareness (Independent). Pre-populates from Awareness/Interest context.
@@ -48,9 +48,9 @@ export const STAGE4_DEFAULT = 47;
 // Point-default values are the doc's literal stated defaults, not recomputed
 // midpoints (see plan's cross-check notes on rounding).
 export const STAGE4_CONTEXT_DEFAULTS = {
-    progressiveUrban: { value: 60, range: '55–65%', rationale: 'Active psychedelic-policy discourse; e.g. Oregon, Colorado metro.' },
-    moderateMixed: { value: 47, range: '47%', rationale: 'BCSP National Survey, 2023, n=1,500.' },
-    conservativeRural: { value: 30, range: '25–35%', rationale: 'Low awareness anchor; PRRI 2024 conservative subgroup.' },
+    progressiveUrban: { value: 60, range: '55–65%', rationale: 'Active psychedelic-policy discourse; e.g. Oregon, Colorado metro.', source: '—' },
+    moderateMixed: { value: 47, range: '47%', rationale: 'BCSP National Survey, 2023, n=1,500.', source: 1 },
+    conservativeRural: { value: 30, range: '25–35%', rationale: 'Low awareness anchor; PRRI 2024 conservative subgroup.', source: 2 },
 };
 // Reference-only row shown alongside the table above; not a selectable dropdown option.
 // Included per PDF (cross-check resolved: the docx omitted this row for Stage 4;
@@ -59,6 +59,7 @@ export const STAGE4_REFERENCE_ROW = {
     label: 'Treated pop. + physician rec.',
     range: '60–70%',
     rationale: 'Corrigan uplift among aware, clinically eligible respondents.',
+    source: '—',
 };
 
 export const STAGE4_HELPER_TEXT = "Default: 47% of adults are aware of psychedelic therapy as a mental health treatment option. Source: UC Berkeley BCSP National Survey, 2023, n=1,500. Demographic gap: 29% of African-American respondents reported recent awareness vs. 47% overall. Please see the table below with other figures which may be more relevant to your setting.";
@@ -90,6 +91,7 @@ export const STAGE4_5_COMBINED_TABLE = [
         interestGivenAware: '50–55%',
         combined: '28–36%',
         rationale: 'Higher awareness and interest; active psychedelic policy discourse.',
+        source: '—',
     },
     {
         context: 'Moderate / Mixed',
@@ -98,6 +100,7 @@ export const STAGE4_5_COMBINED_TABLE = [
         combined: '21–24%',
         rationale: 'Default; anchored by BCSP awareness + Corrigan conditional interest.',
         isDefault: true,
+        source: 1,
     },
     {
         context: 'Conservative / Rural',
@@ -105,6 +108,7 @@ export const STAGE4_5_COMBINED_TABLE = [
         interestGivenAware: '30–40%',
         combined: '8–14%',
         rationale: 'Lower awareness; lower interest amongst conservatives (17% support per PRRI).',
+        source: 2,
     },
     {
         context: 'Treated pop. + physician rec.',
@@ -112,20 +116,20 @@ export const STAGE4_5_COMBINED_TABLE = [
         interestGivenAware: '55–60%',
         combined: '33–42%',
         rationale: 'Corrigan uplift discounted for U.S. context and provider knowledge gaps.',
+        source: 1,
     },
 ];
 
-export const STAGE5_RATIONALE = "The general-population figure of 28% positive attitudes (Ipsos/Psychedelic Alpha 2026; n≈900, ±3.3%) treats interest as independent of awareness or clinical status. Among people who are both aware and clinically eligible, interest is substantially higher. Corrigan et al. 2022 found 55% of mental health service users would accept psilocybin therapy if a doctor recommended it, with 25% neutral; those with depression/anxiety were significantly more likely to be interested (p=0.016). We adopt 47% as the conditional default.";
 export const STAGE5_CAVEAT = "All survey estimates are upper bounds. Sheeran (2002), meta-analyzing 422 studies, found stated positive intentions translate into action only 53% of the time. Webb & Sheeran (2006) confirmed that even interventions that change intentions produce only small-to-medium behavior change. The Global Drug Survey found 59% of prior psychedelic users vs. 18% of non-users would accept psychedelic therapy for depression — prior experience is a strong moderator, and prior use varies by geography and demographics.";
 
 export const STAGE5_SOURCES = [
-    'Ipsos / Psychedelic Alpha. (2026). National probability sample, n≈900, ±3.3%.',
     'Corrigan K, et al. (2022). Irish J Medical Science, 191, 1385–1397. n=99.',
     'PRRI. (2024). American Values Survey. n=5,352.',
     'Wang SE, et al. (2024). Scientific Reports, 14, Article 26832. n=879.',
     'Garza-Mouriño I, et al. (2024). J Psychedelic Studies, 8(1), 43–65.',
     'Sheeran P. (2002). European Review of Social Psychology, 12, 1–36.',
     'Webb TL, Sheeran P. (2006). Psychological Bulletin, 132, 249–268.',
+    'Global Drug Survey. (2019). GDS2019: The Psychedelic Revolution in Psychiatry and Why Patient Opinion Matters So Much.',
 ];
 
 // ---------------------------------------------------------------------------
@@ -141,7 +145,7 @@ export const STAGE6_TABLE_A_ROWS = [
         max: 50,
         default: 45,
         represents: 'Aware-and-interested who could fund a group session OOP',
-        source: 'Psychedelic Alpha Tracker, 2025',
+        source: 3,
     },
     {
         key: 'individual',
@@ -151,7 +155,7 @@ export const STAGE6_TABLE_A_ROWS = [
         max: null,
         default: 20,
         represents: 'Aware-and-interested who could fund an individual session OOP',
-        source: 'OHA Q1–Q3 2025; OHSU OPEN',
+        source: '2, 4',
         isDefault: true,
     },
     {
@@ -162,7 +166,7 @@ export const STAGE6_TABLE_A_ROWS = [
         max: 15,
         default: 11.5,
         represents: 'Aware-and-interested who could fund an FDA-priced course OOP',
-        source: 'Projected; cf. Spravato $18K–$45K/yr',
+        source: 6,
     },
 ];
 export const STAGE6_TABLE_A_DENOMINATOR = '% of the aware-and-interested population who can afford this price point out of pocket.';
@@ -170,13 +174,13 @@ export const STAGE6_DEFAULT_ROW_KEY = 'individual';
 
 export const STAGE6_TABLE_B_ROWS = [
     {
-        pathway: 'Employer TPA (Enthea)',
+        pathway: 'Employer Third Party Administrator (Enthea)',
         context: 'Employer-funded benefit',
         min: 35,
         max: 45,
         represents: 'Eligible employees whose employer would buy this benefit',
-        source: 'Enthea KAT model; lower-bound anchor',
-        footnote: "Enthea's ~$35/employee/year derives from its KAT book of business — the only empirical TPA data point currently available. Psilocybin's different utilization (fewer sessions per patient) could push the per-employee cost up or down (likely down). Treat 35–45% as a lower-bound anchor with substantial range, not a forecast.",
+        source: 5,
+        footnote: "Enthea's ~$35/employee/year derives from its Ketamine Assisted Therapy book of business — the only empirical Third Party Administrator data point currently available. Psilocybin Assisted Therapy’s different effectiveness, durability of benefit, and treatment regimen could push the per-employee cost up or down (likely down). Treat 35–45% as a lower-bound anchor with substantial range, not a forecast.",
     },
     {
         pathway: 'Subsidized / sliding-scale',
@@ -184,7 +188,7 @@ export const STAGE6_TABLE_B_ROWS = [
         min: 30,
         max: 40,
         represents: 'Income-qualified enrollees reached by grant programs',
-        source: 'Sheri Eckert Foundation; Oregon equity',
+        source: 8,
     },
     {
         pathway: 'Major insurer coverage',
@@ -192,11 +196,11 @@ export const STAGE6_TABLE_B_ROWS = [
         min: 55,
         max: 65,
         represents: 'Insured population with coverage',
-        source: 'Projected; MH Parity Act (BrainFutures, 2024)',
+        source: 7,
     },
 ];
 
-export const STAGE6_HEADER_RATIONALE = "Default: 20% can afford a $2,000 individual session with no insurance. The default is derived from NIMH/NHIS income-stratified data — the share of U.S. adults with depression whose household income clears a threshold sufficient for a $2,000 out-of-pocket session. Using stated income distributions rather than Oregon client demographics sidesteps the selection bias from revealed-preference data drawn from a population already filtered by geographic access. Users in markets with lower session costs or more diverse delivery formats may find 20% conservative and should adjust upward (see Table A row 1).";
+export const STAGE6_HEADER_RATIONALE = "Default: We assume no insurance covers this service. 20% can afford a $2,000 individual session with no insurance. The default is derived from NIMH/NHIS income-stratified data — the share of U.S. adults with depression whose household income clears a threshold sufficient for a $2,000 out-of-pocket session. Using stated income distributions rather than Oregon client demographics sidesteps the selection bias from revealed-preference data drawn from a population already filtered by geographic access. Users in markets with lower session costs or more diverse delivery formats may find 20% conservative and should adjust upward (see Table A row 1).";
 export const STAGE6_COLORADO_CAVEAT = "Oregon provides the best available revealed-preference data on psilocybin affordability. Colorado's more permissive model may yield different access patterns as it matures; we will incorporate Colorado data as it accumulates.";
 
 export const STAGE6_SOURCES = [
@@ -207,6 +211,7 @@ export const STAGE6_SOURCES = [
     'Enthea. (2025). KAP coverage; psilocybin planned. ~$35/employee/year.',
     'Petrie-Flom Center. (2024). Insurance Coverage for Psychedelic Therapy. Spravato $18K–$45K/yr.',
     'BrainFutures. (2024). A Path Toward Parity.',
+    'Sheri Eckert Foundation. (2026). Psilocybin Access Fund.',
 ];
 
 // ---------------------------------------------------------------------------
@@ -217,14 +222,13 @@ export const STAGE7_LABEL = 'Can reach a provider (% of affordable-and-intereste
 export const STAGE7_DEFAULT = 72;
 
 export const STAGE7_CONTEXT_DEFAULTS = {
-    progressiveUrban: { value: 82, range: '80–85%', basis: 'Discount from standard MH access (~90%) for session length; Oregon metro data.' },
-    mixedUrbanSuburban: { value: 72, range: '70–75%', basis: 'Oregon data + national MH access literature.' },
-    mixedUrbanRural: { value: 50, range: '45–55%', basis: 'RHIhub 2025: 18% of larger rural >30 min from MH facility.' },
-    conservativeRural: { value: 27, range: '20–35%', basis: 'RHIhub 2025: 40% of isolated rural >30 min from any MH care.' },
-    optedOut: { value: 0, range: '0%', basis: 'Most Oregon rural counties opted out. See medical-tourism footnote.' },
+    progressiveUrban: { value: 82, range: '80–85%', basis: 'Reduced from standard MH access (~90%) for longer psilocybin session length.', source: '—' },
+    mixedUrbanSuburban: { value: 72, range: '70–75%', basis: 'Oregon data + national MH access literature.', source: 3 },
+    mixedUrbanRural: { value: 50, range: '45–55%', basis: 'RHIhub 2025: 18% of larger rural >30 min from MH facility.', source: 1 },
+    conservativeRural: { value: 27, range: '20–35%', basis: 'RHIhub 2025: 40% of isolated rural >30 min from any MH care.', source: 1 },
+    optedOut: { value: 0, range: '0%', basis: 'Most Oregon rural counties opted out. See medical-tourism footnote.', source: 4 },
 };
 
-export const STAGE7_SESSION_LENGTH_CALLOUT = "Unlike standard outpatient therapy (45–60 min sessions), psilocybin sessions last 6–8 hours. Travel distance, time off work, and recovery time are substantially more consequential. The geographic access percentages above already discount for this, but standard MH access benchmarks understate the problem for psilocybin therapy.";
 export const STAGE7_MEDICAL_TOURISM_FOOTNOTE = "Some demand in opted-out jurisdictions may be met via travel to neighboring legal jurisdictions. This medical-tourism flow is not modeled in the default 0% but may be material in border counties. Override Geographic Accessibility upward to model such scenarios.";
 export const STAGE7_VETERANS_NOTE = "The defaults use general mental-health utilization patterns. Some populations — notably veterans — may not follow these patterns. Veterans have been a leading constituency driving psychedelic research and advocacy; institutional channels such as the VA could enable utilization rates exceeding what generalized MH-access models predict, even among rural or lower-SES subgroups that typically under-utilize MH services. Most relevant if PATpath extends to MDMA / PTSD.";
 
@@ -247,9 +251,9 @@ export const STAGE8_THROUGHPUT_MAX = 50;
 export const STAGE8_MULTIPLIER_DEFAULT = 1;
 export const STAGE8_MULTIPLIER_MIN = 1;
 export const STAGE8_MULTIPLIER_MAX = 3;
-export const STAGE8_MULTIPLIER_HELPER = 'If group-session models are available in your area, multiply by 2–3× to account for higher throughput.';
+export const STAGE8_MULTIPLIER_HELPER = 'If group-session models are available in your area, multiply by 2–3× to account for more clients served per facilitator.';
 
-export const STAGE8_SECTION_HELPER_TEXT = "Capacity is a parallel sanity check, not part of the funnel multiplication. Estimate local capacity here and compare it to your Geographic Accessibility output. If your funnel-estimated demand exceeds capacity, the UI will flag it and offer an optional capacity cap.";
+export const STAGE8_SECTION_HELPER_TEXT = "Capacity is a parallel sanity check, not part of the funnel multiplication. Estimate local capacity here and compare it to your Geographic Accessibility output. If your funnel-estimated demand exceeds capacity, the model will flag it and offer an optional capacity cap.";
 export const STAGE8_WARNING_COPY = "Your calculated demand exceeds plausible local capacity. Consider applying the capacity cap below.";
 export const STAGE8_THROUGHPUT_RATIONALE = "By Q1–Q3 2025, Oregon served 4,577 clients / ~377 facilitators — annualizing to ~6,100/yr, or ~16 clients per facilitator per year. This reflects maturing practices, growing awareness, and group sessions. Colorado data, as it accumulates, will cross-check this, particularly given that state's more permissive delivery model.";
 

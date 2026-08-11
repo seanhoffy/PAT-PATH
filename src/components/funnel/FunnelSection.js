@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
-import { Box, Typography, Alert } from '@mui/material';
+import { Box, Typography, Alert, Paper } from '@mui/material';
+import { COLORS } from '../../constants/colors';
 import MethodsPreamble from './MethodsPreamble';
 import FunnelInputSelector from './FunnelInputSelector';
 import StageAwareness from './StageAwareness';
@@ -137,11 +138,34 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
 
             {funnelReady ? (
                 <>
-                    <InputsRecapTable
-                        funnelRows={funnelRows}
-                        displayedEffectiveDemand={displayedEffectiveDemand}
-                        capacityCapApplied={state.stage8.capacityCapApplied}
-                    />
+                    <Paper
+                        elevation={3}
+                        sx={{
+                            p: 4,
+                            mb: 3,
+                            textAlign: 'center',
+                            backgroundColor: COLORS.primary,
+                            color: COLORS.white,
+                            borderRadius: 2,
+                        }}
+                    >
+                        <Typography variant="overline" sx={{ letterSpacing: 2, opacity: 0.85 }}>
+                            Effective Demand
+                        </Typography>
+                        <Typography variant="h2" fontWeight="bold" sx={{ lineHeight: 1.1 }}>
+                            {Number(displayedEffectiveDemand || 0).toLocaleString()}
+                            <Typography component="span" variant="h5" sx={{ ml: 1, opacity: 0.85 }}>
+                                /yr
+                            </Typography>
+                        </Typography>
+                        {state.stage8.capacityCapApplied && (
+                            <Typography variant="body2" sx={{ mt: 1, opacity: 0.85 }}>
+                                (capacity cap applied)
+                            </Typography>
+                        )}
+                    </Paper>
+
+                    <InputsRecapTable funnelRows={funnelRows} />
 
                     <ScenarioExplorerTable
                         startN={funnelInputN}

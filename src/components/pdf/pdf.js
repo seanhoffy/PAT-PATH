@@ -479,7 +479,7 @@ const MyDocument = ({ formData, results, modelCreatedOn, calculatedAt, funnelSta
                                     <Text style={styles.value}>{funnelState.stage7.value}%</Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>Facilitators / throughput / multiplier:</Text>
+                                    <Text style={styles.label}>Facilitators / clients served per facilitator / multiplier:</Text>
                                     <Text style={styles.value}>
                                         {funnelState.stage8.facilitators} / {funnelState.stage8.throughput} / {funnelState.stage8.multiplier}x
                                     </Text>

@@ -1,7 +1,9 @@
-import { Paper, Box, Typography, TextField, InputAdornment, Table, TableBody, TableRow, TableCell, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Paper, Box, Typography, TextField, Table, TableBody, TableRow, TableCell, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { NumericFormat } from 'react-number-format';
 import ProbabilityTypeTag from './ProbabilityTypeTag';
 import Callout from './Callout';
 import TableHeaderRow from './TableHeaderRow';
+import SourcesList from './SourcesList';
 import {
     STAGE4_LABEL,
     STAGE4_CONTEXT_DEFAULTS,
@@ -55,42 +57,42 @@ const StageAwareness = ({ value, awarenessInterestContext, onContextChange, onCh
             <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
                 {STAGE4_LABEL}
             </Typography>
-            <TextField
-                type="number"
+            <NumericFormat
+                customInput={TextField}
+                suffix=" %"
                 value={value}
-                onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
-                InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
-                inputProps={{ 'aria-label': STAGE4_LABEL }}
-                sx={{ mb: 2, minWidth: 320 }}
+                onValueChange={(values) => onChange(values.value === '' ? '' : values.floatValue)}
+                inputProps={{ 'aria-label': STAGE4_LABEL, style: { textAlign: 'right' } }}
+                sx={{ mb: 2, width: 70 }}
             />
 
             <Callout>{STAGE4_HELPER_TEXT}</Callout>
             {showAdjustmentCaption && <Callout>{STAGE4_ADJUSTMENT_CAPTION}</Callout>}
 
             <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 2, mb: 1 }}>
-                Context-driven defaults
+                Table A — Context-Driven Awareness Estimates
             </Typography>
             <Table size="small">
-                <TableHeaderRow columns={['Context', 'Aware', 'Rationale anchor']} />
+                <TableHeaderRow columns={['Context', 'Aware', 'Rationale anchor', 'Source']} />
                 <TableBody>
                     {Object.entries(STAGE4_CONTEXT_DEFAULTS).map(([key, row]) => (
                         <TableRow key={key} selected={key === awarenessInterestContext}>
                             <TableCell>{CONTEXT_ROW_LABELS[key]}{key === DEFAULT_AWARENESS_INTEREST_CONTEXT ? ' (default)' : ''}</TableCell>
                             <TableCell>{row.range}</TableCell>
                             <TableCell>{row.rationale}</TableCell>
+                            <TableCell>{row.source || '—'}</TableCell>
                         </TableRow>
                     ))}
                     <TableRow>
                         <TableCell>{STAGE4_REFERENCE_ROW.label}</TableCell>
                         <TableCell>{STAGE4_REFERENCE_ROW.range}</TableCell>
                         <TableCell>{STAGE4_REFERENCE_ROW.rationale}</TableCell>
+                        <TableCell>{STAGE4_REFERENCE_ROW.source || '—'}</TableCell>
                     </TableRow>
                 </TableBody>
             </Table>
 
-            <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 2 }}>
-                Sources: {STAGE4_SOURCES.join(' ')}
-            </Typography>
+            <SourcesList sources={STAGE4_SOURCES} />
         </Paper>
     );
 };

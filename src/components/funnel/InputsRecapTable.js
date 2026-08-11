@@ -4,15 +4,13 @@ import { STAGE9_RECAP_HELPER_TEXT } from '../../constants/funnelDefaults';
 
 // Stage 9, component 1 — read-only Inputs Recap. Rows are the real funnel
 // chain (Stage 3 output through Effective demand).
-const InputsRecapTable = ({ funnelRows, displayedEffectiveDemand, capacityCapApplied }) => (
+const InputsRecapTable = ({ funnelRows }) => (
     <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
         <Typography variant="h5" sx={{ mb: 2 }}>Inputs Recap</Typography>
 
-        <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1 }}>
-            Effective demand: {Number(displayedEffectiveDemand || 0).toLocaleString()}/yr
-            {capacityCapApplied ? ' (capacity cap applied)' : ''}
+        <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1 }}>
+            Table F — Funnel Chain Recap
         </Typography>
-
         <Box sx={{ mb: 1 }}>
             <FunnelRowsTable rows={funnelRows} />
         </Box>

@@ -9,7 +9,7 @@ const ProbabilityTypeTag = ({ type, priorStages }) => {
         return <Chip size="small" label="Independent" color="info" variant="outlined" sx={{ ml: 1, fontWeight: 500 }} />;
     }
     if (type === PROBABILITY_TYPES.CAPACITY) {
-        return <Chip size="small" label="Capacity check — parallel" variant="outlined" sx={{ ml: 1, fontWeight: 500 }} />;
+        return <Chip size="small" label="Reality Check" variant="outlined" sx={{ ml: 1, fontWeight: 500 }} />;
     }
     const label = priorStages ? `Conditional on ${priorStages}` : 'Conditional';
     return <Chip size="small" label={label} color="warning" variant="outlined" sx={{ ml: 1, fontWeight: 500 }} />;

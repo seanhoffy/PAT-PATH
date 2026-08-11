@@ -10,6 +10,7 @@ const Callout = ({ title, children, sx }) => (
         sx={{
             p: 2,
             my: 2,
+            textAlign: 'left',
             backgroundColor: '#f7f9fc',
             borderLeft: `4px solid ${COLORS.primary}`,
             borderRadius: 1,
