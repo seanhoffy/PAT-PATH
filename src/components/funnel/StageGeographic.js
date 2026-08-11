@@ -62,7 +62,7 @@ const StageGeographic = ({ value, geographicAccessContext, onContextChange, onCh
             value={value}
             onValueChange={(values) => onChange(values.value === '' ? '' : values.floatValue)}
             inputProps={{ 'aria-label': STAGE7_LABEL, style: { textAlign: 'right' } }}
-            sx={{ mb: 2, width: 80 }}
+            sx={{ mb: 2, width: 70 }}
         />
 
         {geographicAccessContext === 'optedOut' && <Callout>{STAGE7_MEDICAL_TOURISM_FOOTNOTE}</Callout>}

@@ -34,7 +34,7 @@ const StageInterest = ({ value, onChange }) => {
                 value={value}
                 onValueChange={(values) => onChange(values.value === '' ? '' : values.floatValue)}
                 inputProps={{ 'aria-label': STAGE5_LABEL, style: { textAlign: 'right' } }}
-                sx={{ mb: 2, width: 80 }}
+                sx={{ mb: 2, width: 70 }}
             />
 
             <Callout>{STAGE5_CAVEAT}</Callout>

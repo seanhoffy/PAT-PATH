@@ -61,7 +61,7 @@ const StageAfford = ({ stage6, onSelectRow, onRowValueChange, onUserDefinedChang
                                         value={rowValues[row.key]}
                                         onValueChange={(values) => onRowValueChange(row.key, values.value === '' ? '' : values.floatValue)}
                                         inputProps={{ style: { textAlign: 'right' } }}
-                                        sx={{ width: 80 }}
+                                        sx={{ width: 70 }}
                                     />
                                 </TableCell>
                                 <TableCell>{row.source}</TableCell>
@@ -90,7 +90,7 @@ const StageAfford = ({ stage6, onSelectRow, onRowValueChange, onUserDefinedChang
                                     value={userDefined.pct}
                                     onValueChange={(values) => onUserDefinedChange('pct', values.value === '' ? '' : values.floatValue)}
                                     inputProps={{ style: { textAlign: 'right' } }}
-                                    sx={{ width: 80 }}
+                                    sx={{ width: 70 }}
                                 />
                             </TableCell>
                             <TableCell>
