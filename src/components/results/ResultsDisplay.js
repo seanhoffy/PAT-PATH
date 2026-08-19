@@ -19,8 +19,8 @@ const ResultsDisplay = ({ results, formData, onDownload, onSave, onUpdate, savin
         <Paper id="results-section" elevation={2} sx={{ mt: 4, p: 3 }}>
             <Grid container spacing={3} sx={{ mb: 2 }}>
                 <Grid item xs={12} sm={4}>
-                    <Typography variant="h4" sx={{ mt: 2, mb: 2 }}>
-                        Results for {formData.modelTitle}
+                    <Typography variant="h5" sx={{ mt: 2, mb: 2 }}>
+                        Potential (Maximum) Demand for {formData.modelTitle}
                     </Typography>
                     {modelCreatedOn && (
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -30,12 +30,12 @@ const ResultsDisplay = ({ results, formData, onDownload, onSave, onUpdate, savin
                 </Grid>
                 <Grid item xs={12} sm={4}>
                     <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-                        Potential Psilocybin Demand Based on Trial Exclusion Criteria*
+                        Based on Trial Exclusion Criteria*
                     </Typography>
                 </Grid>
                 <Grid item xs={12} sm={4}>
                     <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
-                        Potential Psilocybin Demand Based on {formData.geographicArea} Exclusion Criteria (User Defined)
+                        Based on User Entered Exclusion Criteria
                     </Typography>
                 </Grid>
             </Grid>
@@ -94,7 +94,7 @@ const ResultsDisplay = ({ results, formData, onDownload, onSave, onUpdate, savin
                 </Grid>
             </Grid>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                * Stricter application (more people excluded) based on trial data.
+                * Stricter application (more adults excluded) based on trial data.
             </Typography>
             <Box sx={{ borderBottom: '2px solid rgba(0, 0, 0, 0.4)', mb: 3 }} />
 

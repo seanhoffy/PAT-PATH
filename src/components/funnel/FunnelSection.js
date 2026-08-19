@@ -31,6 +31,7 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
         capacityN,
         capacityReady,
         exceedsCapacity,
+        stage8Capacity,
         scenario,
     } = deriveFunnelDisplay(state, cellValues);
 
@@ -57,6 +58,7 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
             displayedEffectiveDemand,
             capacityN,
             exceedsCapacity,
+            stage8Capacity,
             scenario,
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps

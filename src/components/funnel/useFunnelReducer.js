@@ -36,9 +36,14 @@ export const initialFunnelState = () => ({
     },
     stage7: { value: '' },
     stage8: {
-        facilitators: '',
-        throughput: '',
-        multiplier: '',
+        facilitators: '',          // Field 1 — headcount, blank default
+        conversionFactor: 0.20,    // Field 2 — pre-filled, fully editable
+        pctIndividual: '',         // Field 3 — required, deliberately blank
+        hoursIndividual: 29.6,     // Field 4 — Sunstone individual default
+        hoursGroup: 20.2,          // Field 5 — Sunstone group-monitoring default
+        annualHoursPerFTE: 1890,   // Field 6 — advanced, collapsed by default
+        sites: '',                 // Field 7 — optional site check, blank default
+        clientsPerSite: 275,       // Field 8 — Oregon observed default
         capacityCapApplied: false,
     },
     scenario: {
@@ -130,4 +135,17 @@ export const funnelReducer = (state, action) => {
 
 // If `restoredState` is provided (e.g. hydrated from Firestore autosave), it
 // is used as the initial state directly rather than deriving fresh defaults.
-export const useFunnelReducer = (restoredState) => useReducer(funnelReducer, undefined, () => restoredState || initialFunnelState());
+// Stage 8 gets one exception: an old saved model's stage8 shape (facilitators/
+// throughput/multiplier/capacityCapApplied only) is merged UNDER the new
+// field defaults, so a resumed old model gets sensible values (conversionFactor
+// 0.20, hoursIndividual 29.6, etc.) for fields it never had, while its old
+// `facilitators` count and `capacityCapApplied` flag are preserved. Orphaned
+// legacy keys (`throughput`, `multiplier`) simply ride along, unused.
+export const useFunnelReducer = (restoredState) => useReducer(
+    funnelReducer,
+    undefined,
+    () => {
+        if (!restoredState) return initialFunnelState();
+        return { ...restoredState, stage8: { ...initialFunnelState().stage8, ...restoredState.stage8 } };
+    }
+);

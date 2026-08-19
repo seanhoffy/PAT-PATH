@@ -358,6 +358,9 @@ const InputsForm = () => {
             <Paper elevation={0} sx={{ mb: 3, mt: 2, p: 2.5, backgroundColor: 'white', borderRadius: 2 }}>
                 <Typography variant="body1" sx={{ color: '#023e74', lineHeight: 1.7, fontSize: '1.15rem', fontWeight: 'bold' }}>
                     This model generates a demand estimate for psilocybin-assisted therapy for Major Depressive Disorder (MDD) and Treatment-Resistant Depression (TRD) in your geographic area. You will need to provide 11 numerical input values and context about your treatment delivery approach.
+                    Most values are required and if necessary you can modify those inputs later based on further research.
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#023e74', lineHeight: 1.7, fontSize: '1.15rem', fontWeight: 'bold', mt: 2 }}>
                     Running the model will take as little as five minutes if you are comfortable with default values for population characteristics,
                     or if you have prepared input values previously.
                 </Typography>
@@ -480,17 +483,17 @@ const InputsForm = () => {
                             />
                         </Box>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            Enter the number of people with MDD in the population of interest and the % with TRD
+                            Enter the number of adults (18+) with MDD in the population of interest and the % with TRD
                         </Typography>
                         <Grid container spacing={3} alignItems="center">
                             <Grid item xs={4}>
                                 <NumericFormat
                                     customInput={TextField}
                                     fullWidth
-                                    label="Patients with MDD"
+                                    label="Adults with MDD"
                                     name="MDD"
                                     thousandSeparator=","
-                                    value={formData.MDD ?? undefined}
+                                    value={formData.MDD ?? ''}
                                     required
                                     placeholder="Enter number"
                                     //onChange={handleInputChange}
@@ -541,6 +544,9 @@ const InputsForm = () => {
                                 />
                             </Grid>
                         </Grid>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                            The estimated prevalence of MDD among U.S. adults is 7.4% (SAMHSA, 2026), and among adults with medication-treated MDD, an estimated 30.9% meet criteria for TRD - approximately 1.1% of the U.S. adult population (Zhdanava et al., 2021).
+                        </Typography>
                     </Paper>
 
                     {/* Real World Exclusion Criteria */}
@@ -553,7 +559,7 @@ const InputsForm = () => {
                             />
                         </Box>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: .5 }}>
-                            Enter the % of people with MDD in the population you are analyzing who have the listed conditions.
+                            Enter the % of adults with MDD in the population you are analyzing who have the listed conditions.
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                             The default values provided below are for the US as a whole. If you have better estimates for your population you can override them.

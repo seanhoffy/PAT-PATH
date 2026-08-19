@@ -104,7 +104,7 @@ const TerminologyPage = () => {
                                     estimated prevalence of individuals who meet theoretical eligibility criteria
                                     for psilocybin-assisted therapy based on clinical and exclusion parameters.
                                     It represents a modeled upper bound on the population who could be considered
-                                    for treatment, rather than an observed or predicted number of people who will
+                                    for treatment, rather than an observed or predicted number of adults who will
                                     actually seek, access, or receive psilocybin-assisted therapy in practice.
                                 </Typography>
                             </Box>

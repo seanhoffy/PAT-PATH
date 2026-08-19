@@ -117,7 +117,7 @@ const HistoryPage = () => {
         const labelMap = {
             modelTitle: 'Organization',
             geographicArea: 'Geographic Area',
-            MDD: 'Patients with MDD',
+            MDD: 'Adults with MDD',
             TRD_P: 'Percentage With TRD',
             TRD: 'Patients with TRD',
         };
@@ -277,7 +277,10 @@ const HistoryPage = () => {
                             </Grid>
                             <Grid item xs={12} sm={4}>
                                 <Typography variant="body2" color="text.secondary">
-                                    Facilitators / clients served per facilitator / multiplier: {model.funnel.stage8?.facilitators} / {model.funnel.stage8?.throughput} / {model.funnel.stage8?.multiplier}x
+                                    Facilitators (headcount) / conversion factor: {model.funnel.stage8?.facilitators ?? '—'} / {model.funnel.stage8?.conversionFactor ?? '—'}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Individual / group split: {model.funnel.stage8?.pctIndividual === '' || model.funnel.stage8?.pctIndividual == null ? '—' : `${model.funnel.stage8.pctIndividual}%`} individual
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
                                     Estimated annual capacity: {Number(funnelDisplay.capacityN).toLocaleString()}/yr

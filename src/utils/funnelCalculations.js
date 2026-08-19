@@ -108,19 +108,66 @@ export const buildFunnelRows = (startN, percents) => {
  */
 export const buildScenarioColumn = (startN, percents) => buildFunnelRows(startN, percents);
 
+const isBlank = (v) => v === '' || v === null || v === undefined || Number.isNaN(Number(v));
+
 /**
  * Stage 8 — capacity check. Independent of the funnel chain; never multiplies
- * into it.
+ * into it. All blending happens in the hours domain (clients-per-FTE is a
+ * reciprocal quantity — averaging it directly across the individual/group
+ * split would be mathematically wrong; see Marseille et al. 2023 sourcing
+ * notes). Internal math is kept at full precision; callers round for display.
  */
-export const computeCapacity = ({ facilitators, throughput, multiplier }) => {
-    return (Number(facilitators) || 0) * (Number(throughput) || 0) * (Number(multiplier) || 0);
+export const computeStage8Capacity = (stage8) => {
+    const headcount = Number(stage8?.facilitators) || 0;
+    const conversionFactor = Number(stage8?.conversionFactor) || 0;
+    const fte = headcount * conversionFactor;
+
+    // Field 3 is deliberately undefaulted — while blank, no implicit split
+    // (not 50%, not a stale prior value) is substituted; the provider arm
+    // simply does not compute.
+    const providerReady = !isBlank(stage8?.pctIndividual);
+    let blendedHours = null;
+    let clientsPerFTE = null;
+    let providerCapacity = null;
+
+    if (providerReady) {
+        const pct = Number(stage8.pctIndividual) / 100;
+        const hoursIndividual = Number(stage8.hoursIndividual) || 0;
+        const hoursGroup = Number(stage8.hoursGroup) || 0;
+        blendedHours = pct * hoursIndividual + (1 - pct) * hoursGroup;
+
+        const annualHoursPerFTE = Number(stage8.annualHoursPerFTE) || 0;
+        clientsPerFTE = blendedHours > 0 ? annualHoursPerFTE / blendedHours : 0;
+        providerCapacity = fte * clientsPerFTE;
+    }
+
+    const sitesFilled = !isBlank(stage8?.sites);
+    const siteCapacity = sitesFilled
+        ? (Number(stage8.sites) || 0) * (Number(stage8.clientsPerSite) || 0)
+        : null;
+
+    // Take the minimum of the two arms rather than multiplying constraints,
+    // to limit double-counting the workforce/site interaction (a facilitator
+    // with no room to work in has a low effective FTE, i.e. the two arms are
+    // not fully independent).
+    let capacity = null;
+    let bindingArm = null; // 'workforce' | 'sites'
+    if (providerReady) {
+        if (sitesFilled) {
+            capacity = Math.min(providerCapacity, siteCapacity);
+            bindingArm = providerCapacity <= siteCapacity ? 'workforce' : 'sites';
+        } else {
+            capacity = providerCapacity;
+            bindingArm = 'workforce';
+        }
+    }
+
+    return { fte, blendedHours, clientsPerFTE, providerCapacity, siteCapacity, capacity, bindingArm, providerReady, sitesFilled };
 };
 
 export const capacityExceeded = (finalFunnelN, capacityN) => {
     return (Number(finalFunnelN) || 0) > (Number(capacityN) || 0);
 };
-
-const isBlank = (v) => v === '' || v === null || v === undefined || Number.isNaN(Number(v));
 
 /**
  * Stages 4-7 are required for the funnel chain to mean anything; Stage 8
@@ -147,13 +194,12 @@ export const validateFunnelRequiredStages = (funnelState) => {
 };
 
 /**
- * Whether Stage 8's capacity inputs have all been filled in. Gates the
- * demand-vs-capacity comparison/warning so a blank Stage 8 (facilitators
- * default resolves to 0) doesn't produce a spurious "exceeds capacity" alert.
+ * Whether Stage 8 has enough input to compute a capacity figure. The sole
+ * gate is Field 3 (percent individual) — headcount/conversion factor being
+ * blank still yields a valid (zero) FTE and capacity, not an "incomplete"
+ * state.
  */
-export const isStage8Complete = (stage8) => (
-    !isBlank(stage8?.facilitators) && !isBlank(stage8?.throughput) && !isBlank(stage8?.multiplier)
-);
+export const isStage8Complete = (stage8) => !isBlank(stage8?.pctIndividual);
 
 /**
  * Resolves Stage 6's currently-selected row to its effective % (the real
@@ -209,13 +255,19 @@ export const deriveFunnelDisplay = (funnelState, cellValues) => {
     };
     const { rows: funnelRows, effectiveDemand } = buildFunnelRows(funnelInputN, livePercents);
 
-    const capacityN = computeCapacity(funnelState.stage8);
-    const capacityReady = isStage8Complete(funnelState.stage8);
+    const stage8Capacity = computeStage8Capacity(funnelState.stage8);
+    const capacityReady = stage8Capacity.providerReady;
+    const capacityN = stage8Capacity.capacity ?? 0;
     const exceedsCapacity = capacityReady && capacityExceeded(effectiveDemand, capacityN);
     // Clamp rather than substitute: the cap should only ever pull the
     // displayed figure DOWN toward capacity, never show a stale capacity
-    // number that's now higher than the (recalculated) real demand.
-    const displayedEffectiveDemand = funnelState.stage8.capacityCapApplied
+    // number that's now higher than the (recalculated) real demand. Also
+    // require capacityReady: a legacy saved model may have capacityCapApplied
+    // true under the OLD field shape, where capacityN now resolves to 0 (no
+    // pctIndividual to compute from) — without this guard the clamp would
+    // wrongly zero out that model's displayed demand instead of just falling
+    // back to the uncapped figure.
+    const displayedEffectiveDemand = (funnelState.stage8.capacityCapApplied && capacityReady)
         ? Math.min(capacityN, effectiveDemand)
         : effectiveDemand;
 
@@ -234,6 +286,7 @@ export const deriveFunnelDisplay = (funnelState, cellValues) => {
         capacityN,
         capacityReady,
         exceedsCapacity,
+        stage8Capacity,
         scenario,
     };
 };

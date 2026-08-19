@@ -276,7 +276,6 @@ export const fetchUserProfile = async (userId) => {
         return {
             name: data.name || '',
             user_type: data.user_type || '',
-            employer: data.employer || '',
             affiliation: data.affiliation || '',
         };
     } catch (error) {

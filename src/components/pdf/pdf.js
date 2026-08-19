@@ -479,9 +479,21 @@ const MyDocument = ({ formData, results, modelCreatedOn, calculatedAt, funnelSta
                                     <Text style={styles.value}>{funnelState.stage7.value}%</Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>Facilitators / clients served per facilitator / multiplier:</Text>
+                                    <Text style={styles.label}>Facilitators (headcount) / FTE conversion factor:</Text>
                                     <Text style={styles.value}>
-                                        {funnelState.stage8.facilitators} / {funnelState.stage8.throughput} / {funnelState.stage8.multiplier}x
+                                        {funnelState.stage8.facilitators ?? '—'} / {funnelState.stage8.conversionFactor ?? '—'}
+                                    </Text>
+                                </View>
+                                <View style={styles.inputItem}>
+                                    <Text style={styles.label}>Individual / group split, hours per client:</Text>
+                                    <Text style={styles.value}>
+                                        {funnelState.stage8.pctIndividual === '' || funnelState.stage8.pctIndividual == null ? '—' : `${funnelState.stage8.pctIndividual}%`} individual ({funnelState.stage8.hoursIndividual ?? '—'}h / {funnelState.stage8.hoursGroup ?? '—'}h)
+                                    </Text>
+                                </View>
+                                <View style={styles.inputItem}>
+                                    <Text style={styles.label}>Implied delivering workforce (FTE) / Clients per FTE per year:</Text>
+                                    <Text style={styles.value}>
+                                        {funnelDisplay.stage8Capacity?.fte != null ? funnelDisplay.stage8Capacity.fte.toFixed(1) : '—'} / {funnelDisplay.stage8Capacity?.clientsPerFTE != null ? funnelDisplay.stage8Capacity.clientsPerFTE.toFixed(1) : '—'}
                                     </Text>
                                 </View>
                                 <View style={styles.inputItem}>

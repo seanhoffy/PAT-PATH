@@ -14,7 +14,7 @@ function Register() {
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
     const [user_type, setUserType] = useState("");
-    const [employer, setEmployer] = useState("");
+    const [otherUserType, setOtherUserType] = useState("");
     const [affiliation, setAffiliation] = useState("");
     const [user, loading] = useAuthState(auth);
     const navigate = useNavigate();
@@ -25,8 +25,13 @@ function Register() {
     }, [loading, user, navigate]);
 
     const registerWithEmailAndPassword = async (name, email, password) => {
-        if (!name || !email || !password || !user_type || !employer || !affiliation) {
+        if (!name || !email || !password || !user_type || !affiliation) {
             alert("Please fill in all fields.");
+            return;
+        }
+
+        if (user_type === "Other" && !otherUserType.trim()) {
+            alert("Please specify your user type.");
             return;
         }
 
@@ -41,9 +46,8 @@ function Register() {
 
             await setDoc(doc(db, "users", user.uid), {
                 name: name,
-                user_type: user_type,
+                user_type: user_type === "Other" ? otherUserType.trim() : user_type,
                 model: [],
-                employer: employer,
                 affiliation: affiliation.trim() || "Test", // default "Test" for now
             });
 
@@ -113,7 +117,7 @@ function Register() {
                             <TextField fullWidth
                                 sx={{ mb: 1 }}
                                 onChange={(event) => setName(event.target.value)}
-                                label="Full Name"
+                                label="Name"
                                 value={name}
                                 type={'text'}
                                 id="filled-basic"
@@ -143,22 +147,25 @@ function Register() {
                                     <MenuItem value="Researcher">Researcher</MenuItem>
                                     <MenuItem value="Payer">Payer</MenuItem>
                                     <MenuItem value="Student">Student</MenuItem>
+                                    <MenuItem value="Program Director">Program Director</MenuItem>
+                                    <MenuItem value="Other">Other</MenuItem>
                                 </Select>
                             </FormControl>
-                            <TextField fullWidth
-                                sx={{ mt: 1 }}
-                                onChange={(event) => setEmployer(event.target.value)}
-                                label="Employer"
-                                value={employer}
-                                type={'text'}
-                                id="filled-basic"
-                            />
+                            {user_type === "Other" && (
+                                <TextField fullWidth
+                                    sx={{ mt: 1 }}
+                                    onChange={(event) => setOtherUserType(event.target.value)}
+                                    label="Please specify"
+                                    value={otherUserType}
+                                    type={'text'}
+                                    id="filled-basic"
+                                />
+                            )}
                             <TextField fullWidth
                                 sx={{ mt: 1 }}
                                 onChange={(event) => setAffiliation(event.target.value)}
-                                label="Affiliation"
+                                label="Affiliation/Employer"
                                 value={affiliation}
-                                required
                                 type={'text'}
                                 id="filled-basic"
                             />

@@ -3,7 +3,7 @@ import TableHeaderRow from './TableHeaderRow';
 
 const STAGE_ROWS = [
     { rowKey: 'D', label: 'Aware', stageKey: 'stage4' },
-    { rowKey: 'E', label: 'Interested | Aware', stageKey: 'stage5' },
+    { rowKey: 'E', label: 'Interest Given Aware', stageKey: 'stage5' },
     { rowKey: 'F', label: 'Can afford', stageKey: 'stage6' },
     { rowKey: 'G', label: 'Can access provider', stageKey: 'stage7' },
 ];

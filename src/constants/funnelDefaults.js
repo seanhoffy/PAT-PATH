@@ -243,19 +243,80 @@ export const STAGE7_SOURCES = [
 // ---------------------------------------------------------------------------
 // Stage 8 — Provider Capacity (Capacity check, parallel; not part of funnel math)
 // ---------------------------------------------------------------------------
-export const STAGE8_FACILITATORS_DEFAULT = 0;
-export const STAGE8_FACILITATORS_HELPER = 'If unknown, estimate based on the number of existing ketamine clinics in your area (the most likely early adopters).';
-export const STAGE8_THROUGHPUT_DEFAULT = 16;
-export const STAGE8_THROUGHPUT_MIN = 1;
-export const STAGE8_THROUGHPUT_MAX = 50;
-export const STAGE8_MULTIPLIER_DEFAULT = 1;
-export const STAGE8_MULTIPLIER_MIN = 1;
-export const STAGE8_MULTIPLIER_MAX = 3;
-export const STAGE8_MULTIPLIER_HELPER = 'If group-session models are available in your area, multiply by 2–3× to account for more clients served per facilitator.';
+// Section A — Facilitator supply
+export const STAGE8_SECTION_A_HEADING = 'A. Facilitator supply';
+export const STAGE8_FACILITATORS_LABEL = 'Licensed or trained facilitators (headcount)';
+export const STAGE8_FACILITATORS_HELPER = 'Count of credentialed people in your target area. If unknown, estimate from existing ketamine clinics (the most likely early adopters).';
+export const STAGE8_FACILITATORS_FTE_NOTE = 'If you already have an FTE figure, enter it here and set the conversion factor to 1.0.';
 
-export const STAGE8_SECTION_HELPER_TEXT = "Capacity is a parallel sanity check, not part of the funnel multiplication. Estimate local capacity here and compare it to your Geographic Accessibility output. If your funnel-estimated demand exceeds capacity, the model will flag it and offer an optional capacity cap.";
+export const STAGE8_CONVERSION_FACTOR_LABEL = 'Full Time Equivalent (FTE) Conversion Factor';
+export const STAGE8_CONVERSION_FACTOR_DEFAULT = 0.20;
+export const STAGE8_CONVERSION_FACTOR_MIN = 0;
+export const STAGE8_CONVERSION_FACTOR_MAX = 1;
+export const STAGE8_CONVERSION_FACTOR_STEP = 0.05;
+export const STAGE8_CONVERSION_FACTOR_HELPER = 'Fraction of a full-time practice the average credentialed facilitator devotes to psilocybin therapy. Oregon surveys suggest most facilitators work part-time or contractually, implying values well below 0.5 — but';
+// Rendered visually distinct (bold/warning color) per spec, so it's kept as
+// its own constant separate from the sentence above.
+export const STAGE8_CONVERSION_FACTOR_WARNING = 'no published estimate exists; this value is uncertain.';
+export const STAGE8_CONVERSION_FACTOR_ILLUSTRATIVE_RANGE = 'Illustrative range: 0.10–0.35.';
+
+export const STAGE8_FTE_READOUT_LABEL = 'Implied delivering workforce';
+
+// Section B — Delivery model mix
+export const STAGE8_SECTION_B_HEADING = 'B. Delivery model mix';
+export const STAGE8_PCT_INDIVIDUAL_LABEL = 'Percent of clients treated under an individual protocol';
+export const STAGE8_PCT_INDIVIDUAL_PLACEHOLDER = 'Enter 0–100';
+export const STAGE8_PCT_INDIVIDUAL_HELPER = "‘Individual’ means one client at a time in the session room, regardless of how many facilitators are present — most protocols use two. The remainder are treated under a group protocol, where multiple clients share a session. Enter the % of clients in each model for your site. Many sites run only individual or only group sessions, so values at or near 0% and 100% are common and often more realistic than a middle value.";
+
+export const STAGE8_HOURS_INDIVIDUAL_LABEL = 'Facilitator-hours per client, individual protocol';
+export const STAGE8_HOURS_INDIVIDUAL_DEFAULT = 29.6;
+export const STAGE8_HOURS_INDIVIDUAL_SOURCE_NOTE = 'Default: Sunstone psilocybin/MDD individual protocol (Marseille et al. 2023). Total facilitator hours per client.';
+
+export const STAGE8_HOURS_GROUP_LABEL = 'Facilitator-hours per client, group protocol';
+export const STAGE8_HOURS_GROUP_DEFAULT = 20.2;
+export const STAGE8_HOURS_GROUP_SOURCE_NOTE = 'Default: Sunstone group-monitoring model. Grayed out when the group share is 0%.';
+
+export const STAGE8_ADVANCED_DISCLOSURE_LABEL = 'Advanced: annual clinical hours per FTE (default 1,890)';
+export const STAGE8_ANNUAL_HOURS_LABEL = 'Annual clinical hours per FTE';
+export const STAGE8_ANNUAL_HOURS_DEFAULT = 1890;
+export const STAGE8_ANNUAL_HOURS_SOURCE_NOTE = 'Implied by Marseille et al. 2023 (protocol hours × clients per FTE ≈ 1,890); includes a 20% loading for scheduling, charting, and other indirect activities.';
+
+// Section C — Site capacity check (optional)
+export const STAGE8_SECTION_C_HEADING = 'C. Site capacity check (optional)';
+export const STAGE8_SITE_CHECK_DISCLOSURE_LABEL = 'C. Site capacity check (optional) — leave collapsed to run on the workforce estimate alone.';
+export const STAGE8_SITES_LABEL = 'Operational psilocybin service sites in your target area';
+export const STAGE8_SITES_HELPER = 'Count licensed, operating sites only — not planned or licensed-but-closed. If left blank, the stage runs on the workforce estimate alone. Note: this check cannot capture whether existing clinical space could be converted to psilocybin service use, at what cost, or on what timeline.';
+
+export const STAGE8_CLIENTS_PER_SITE_LABEL = 'Annual clients per site';
+export const STAGE8_CLIENTS_PER_SITE_DEFAULT = 275;
+export const STAGE8_CLIENTS_PER_SITE_HELPER = "Adjust upward if your area's sites are larger or run longer hours.";
+export const STAGE8_CLIENTS_PER_SITE_SOURCE_NOTE = 'Oregon observed roughly 250–300 clients per operational site per year; a 2–3 room center at realistic occupancy has a ceiling of roughly 500–750.';
+
+export const STAGE8_SITE_INTERACTION_THRESHOLD = 0.25; // arbitrary per spec, adjustable
+export const STAGE8_SITE_INTERACTION_WARNING = 'The site check binds well below the workforce estimate. If this gap is large, your FTE conversion factor (field 2) may be set too high — site scarcity shows up as facilitators without rooms to work in, i.e., a lower delivering fraction.';
+
+// Section C — Computed capacity display
+export const STAGE8_COMPUTED_CAPACITY_HEADING = 'Computed capacity';
+export const STAGE8_METRIC_BLENDED_HOURS_LABEL = 'Blended hours per client';
+export const STAGE8_METRIC_CLIENTS_PER_FTE_LABEL = 'Clients per FTE per year';
+export const STAGE8_METRIC_WORKFORCE_LABEL = 'Workforce estimate';
+export const STAGE8_METRIC_SITE_CHECK_LABEL = 'Capacity (after site check)';
+export const STAGE8_BLANK_STATE_PROMPT = 'Enter the individual/group split (field 3) to compute capacity';
+
+export const STAGE8_BENCHMARK_NOTE = "Benchmark: Oregon's observed throughput is approximately 16 clients per credentialed facilitator per year. That figure reflects early-market demand, not capacity, so the protocol-derived number above should be substantially higher.";
+
+// Plain-language capacity-result sentences — numeric parts interpolated in
+// StageCapacity.js. Never render the literal expression min(provider arm,
+// site arm) to users.
+export const STAGE8_CAPACITY_STATEMENT_NO_SITE = "Your area's capacity is the workforce estimate above (or, if you complete the optional site check, the smaller of the two). That figure is compared against your Stage 7 demand; if demand is higher, the model will flag it and offer an optional cap.";
+export const STAGE8_CAPACITY_STATEMENT_WITH_SITE_PREFIX = "Your area's capacity is the smaller of the workforce estimate and the site check:";
+
+export const STAGE8_SECTION_HELPER_TEXT = "Estimate local capacity here and compare it to your Geographic Accessibility output. If your funnel-estimated demand exceeds capacity, the model will flag it and offer an optional capacity cap.";
 export const STAGE8_WARNING_COPY = "Your calculated demand exceeds plausible local capacity. Consider applying the capacity cap below.";
-export const STAGE8_THROUGHPUT_RATIONALE = "By Q1–Q3 2025, Oregon served 4,577 clients / ~377 facilitators — annualizing to ~6,100/yr, or ~16 clients per facilitator per year. This reflects maturing practices, growing awareness, and group sessions. Colorado data, as it accumulates, will cross-check this, particularly given that state's more permissive delivery model.";
+
+// Purely a calibration benchmark; the Oregon figure no longer feeds any
+// calculation (was previously used to set the throughput default).
+export const STAGE8_THROUGHPUT_RATIONALE = "By Q1–Q3 2025, Oregon served 4,577 clients across roughly 377 credentialed facilitators — an annualized rate of about 16 clients per facilitator per year. This figure is no longer used to set any default in this stage; it is retained purely as a calibration benchmark against which your protocol-derived clients-per-FTE figure (above) can be compared. Colorado data, as it accumulates, will provide an additional cross-check, particularly given that state's more permissive delivery model.";
 
 export const STAGE8_WORKFORCE_PIPELINE_NOTES = [
     'Only 5% of graduate programs in counseling, social work, nursing, and psychology include psychedelic therapy in required courses (NORC/BrainFutures, 2024).',
@@ -268,12 +329,13 @@ export const STAGE8_SOURCES = [
     'Oregon Health Authority. (2025). OPS Data Dashboard.',
     'BrainFutures / CEP. (2025). Scaling Psychedelic Therapies in the Health System.',
     'NORC / BrainFutures. (2024). Survey on Psychedelic Therapy Curricula in Academia.',
+    'Marseille, E., et al. (2023). Micro-costing of psilocybin- and MDMA-assisted therapy protocols. Frontiers in Psychiatry, 14:1293243.',
 ];
 
 // ---------------------------------------------------------------------------
 // Stage 9 — Effective Demand & Results Page
 // ---------------------------------------------------------------------------
-export const STAGE9_METHODOLOGICAL_CAVEAT = "Multiplying six to seven uncertain percentages compounds error: a ±10 pp uncertainty per stage can produce a 5× range in final output. The stages aren't truly independent — people who can afford $2,000+ tend to be urban, educated, aware, and geographically proximate. Treating stages as independent likely overstates constraints for affluent urban populations and understates them for lower-income rural ones. Interest's conditional framing partially addresses this; residual interdependence remains. Treat any point estimate as approximate and use the Scenario Explorer.";
+export const STAGE9_METHODOLOGICAL_CAVEAT = "Multiplying six to seven uncertain percentages compounds error: a ±10 pp uncertainty per stage can produce a 5× range in final output. The stages aren't truly independent — adults who can afford $2,000+ tend to be urban, educated, aware, and geographically proximate. Treating stages as independent likely overstates constraints for affluent urban populations and understates them for lower-income rural ones. Interest's conditional framing partially addresses this; residual interdependence remains. Treat any point estimate as approximate and use the Scenario Explorer.";
 
 export const STAGE9_RECAP_HELPER_TEXT = 'To change a value, return to the corresponding stage above.';
 
