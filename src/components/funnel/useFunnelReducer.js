@@ -27,14 +27,14 @@ export const initialFunnelState = () => ({
     // Stage 4/5/6/7 start blank rather than pre-filled with our reference
     // estimates — the user should knowingly choose their own regional value,
     // not silently inherit it.
-    stage4: { value: '' },
-    stage5: { value: '' },
+    stage4: { value: '', low: '', high: '' },
+    stage5: { value: '', low: '', high: '' },
     stage6: {
         selectedRow: null,
         rowValues: buildStage6RowValues(),
-        userDefined: { price: '', pct: '', source: '' },
+        userDefined: { price: '', pct: '', source: '', low: '', high: '' },
     },
-    stage7: { value: '' },
+    stage7: { value: '', low: '', high: '' },
     stage8: {
         facilitators: '',          // Field 1 — headcount, blank default
         conversionFactor: 0.20,    // Field 2 — pre-filled, fully editable
@@ -42,14 +42,20 @@ export const initialFunnelState = () => ({
         hoursIndividual: 29.6,     // Field 4 — Sunstone individual default
         hoursGroup: 20.2,          // Field 5 — Sunstone group-monitoring default
         annualHoursPerFTE: 1890,   // Field 6 — advanced, collapsed by default
-        sites: '',                 // Field 7 — optional site check, blank default
-        clientsPerSite: 275,       // Field 8 — Oregon observed default
+        siteMode: 'program',       // Site check approach — 'program' (A) or 'siteBySite' (B)
+        sites: '',                 // Field 7 — Option A, optional site check, blank default
+        clientsPerSite: 275,       // Field 8 — Option A, Oregon observed default
+        siteGroups: [{ id: 1, count: '', clientsPerSite: '' }], // Option B rows
         capacityCapApplied: false,
     },
+    // Monte Carlo Scenario Explorer: seed is generated once, at model-creation
+    // time, so the simulation (a pure function of startN/ranges/seed) always
+    // reproduces the same Conservative/Optimistic on reload — no snapshot of
+    // results needs to be stored. conservative/optimistic are no longer
+    // manually-typed override maps.
     scenario: {
+        seed: Math.floor(Math.random() * 2 ** 31),
         moderateOverrides: {},
-        conservative: {},
-        optimistic: {},
     },
 });
 
@@ -69,7 +75,14 @@ export const funnelReducer = (state, action) => {
 
         case 'SET_STAGE_VALUE': {
             const { stage, value } = action; // stage: 'stage4' | 'stage5' | 'stage7'
-            return { ...state, [stage]: { value } };
+            // Preserve low/high — this used to reset to `{ value }` alone,
+            // which silently dropped the Monte Carlo range on every edit.
+            return { ...state, [stage]: { ...state[stage], value } };
+        }
+
+        case 'SET_STAGE_RANGE': {
+            const { stage, bound, value } = action; // bound: 'low' | 'high'
+            return { ...state, [stage]: { ...state[stage], [bound]: value } };
         }
 
         case 'SET_STAGE6_ROW':
@@ -103,29 +116,23 @@ export const funnelReducer = (state, action) => {
             return { ...state, stage8: { ...state.stage8, capacityCapApplied: false } };
 
         case 'SET_SCENARIO_CELL': {
-            const { column, stage, value } = action; // column: 'conservative' | 'moderate' | 'optimistic'
-            if (column === 'moderate') {
-                return {
-                    ...state,
-                    scenario: {
-                        ...state.scenario,
-                        moderateOverrides: { ...state.scenario.moderateOverrides, [stage]: value },
-                    },
-                };
-            }
+            // Conservative/Optimistic are no longer manually-typed (they're
+            // simulation-derived) — this only ever adjusts the Moderate column now.
+            const { stage, value } = action;
             return {
                 ...state,
                 scenario: {
                     ...state.scenario,
-                    [column]: { ...state.scenario[column], [stage]: value },
+                    moderateOverrides: { ...state.scenario.moderateOverrides, [stage]: value },
                 },
             };
         }
 
         case 'RESET_SCENARIO_EXPLORER':
+            // Preserve `seed` — only Moderate's overrides are ever reset now.
             return {
                 ...state,
-                scenario: { moderateOverrides: {}, conservative: {}, optimistic: {} },
+                scenario: { ...state.scenario, moderateOverrides: {} },
             };
 
         default:

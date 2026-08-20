@@ -24,7 +24,7 @@ const CONTEXT_ROW_LABELS = {
 };
 
 // Stage 4 — Awareness ("Who knows this therapy exists?"). Independent.
-const StageAwareness = ({ value, awarenessInterestContext, onContextChange, onChange }) => {
+const StageAwareness = ({ value, low, high, awarenessInterestContext, onContextChange, onChange, onRangeChange }) => {
     const showAdjustmentCaption = awarenessInterestContext !== DEFAULT_AWARENESS_INTEREST_CONTEXT;
 
     return (
@@ -57,14 +57,44 @@ const StageAwareness = ({ value, awarenessInterestContext, onContextChange, onCh
             <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
                 {STAGE4_LABEL}
             </Typography>
-            <NumericFormat
-                customInput={TextField}
-                suffix=" %"
-                value={value}
-                onValueChange={(values) => onChange(values.value === '' ? '' : values.floatValue)}
-                inputProps={{ 'aria-label': STAGE4_LABEL, style: { textAlign: 'right' } }}
-                sx={{ mb: 2, width: 70 }}
-            />
+            <Box display="flex" justifyContent="center" gap={2} sx={{ mb: 0.5 }}>
+                <Box>
+                    <Typography variant="caption" color="text.secondary" display="block">Lower Bound</Typography>
+                    <NumericFormat
+                        customInput={TextField}
+                        suffix=" %"
+                        decimalScale={2}
+                        value={low}
+                        onValueChange={(values) => onRangeChange('low', values.value === '' ? '' : values.floatValue)}
+                        inputProps={{ 'aria-label': `${STAGE4_LABEL} — lower bound`, style: { textAlign: 'center' } }}
+                        sx={{ width: 70 }}
+                    />
+                </Box>
+                <Box>
+                    <Typography variant="caption" color="text.secondary" display="block">Base Case</Typography>
+                    <NumericFormat
+                        customInput={TextField}
+                        suffix=" %"
+                        decimalScale={2}
+                        value={value}
+                        onValueChange={(values) => onChange(values.value === '' ? '' : values.floatValue)}
+                        inputProps={{ 'aria-label': STAGE4_LABEL, style: { textAlign: 'center' } }}
+                        sx={{ width: 70 }}
+                    />
+                </Box>
+                <Box>
+                    <Typography variant="caption" color="text.secondary" display="block">Upper Bound</Typography>
+                    <NumericFormat
+                        customInput={TextField}
+                        suffix=" %"
+                        decimalScale={2}
+                        value={high}
+                        onValueChange={(values) => onRangeChange('high', values.value === '' ? '' : values.floatValue)}
+                        inputProps={{ 'aria-label': `${STAGE4_LABEL} — upper bound`, style: { textAlign: 'center' } }}
+                        sx={{ width: 70 }}
+                    />
+                </Box>
+            </Box>
 
             <Callout>{STAGE4_HELPER_TEXT}</Callout>
             {showAdjustmentCaption && <Callout>{STAGE4_ADJUSTMENT_CAPTION}</Callout>}

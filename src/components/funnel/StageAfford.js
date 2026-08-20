@@ -43,7 +43,7 @@ const StageAfford = ({ stage6, onSelectRow, onRowValueChange, onUserDefinedChang
             </Typography>
             <RadioGroup value={selectedRow} onChange={(e) => onSelectRow(e.target.value)}>
                 <Table size="small">
-                    <TableHeaderRow columns={['', 'Price point', 'Context', '%', 'Source']} />
+                    <TableHeaderRow columns={['', 'Price point', 'Context', 'Range', '%', 'Source']} />
                     <TableBody>
                         {STAGE6_TABLE_A_ROWS.map((row) => (
                             <TableRow key={row.key} selected={selectedRow === row.key}>
@@ -52,15 +52,17 @@ const StageAfford = ({ stage6, onSelectRow, onRowValueChange, onUserDefinedChang
                                 </TableCell>
                                 <TableCell>{row.pricePoint}{row.isDefault ? ' (default)' : ''}</TableCell>
                                 <TableCell>{row.context}</TableCell>
+                                <TableCell>{row.min != null && row.max != null ? `${row.min}–${row.max}%` : '—'}</TableCell>
                                 <TableCell>
                                     <NumericFormat
                                         customInput={TextField}
                                         size="small"
                                         suffix=" %"
+                                        decimalScale={2}
                                         disabled={selectedRow !== row.key}
                                         value={rowValues[row.key]}
                                         onValueChange={(values) => onRowValueChange(row.key, values.value === '' ? '' : values.floatValue)}
-                                        inputProps={{ style: { textAlign: 'right' } }}
+                                        inputProps={{ style: { textAlign: 'center' } }}
                                         sx={{ width: 70 }}
                                     />
                                 </TableCell>
@@ -82,14 +84,43 @@ const StageAfford = ({ stage6, onSelectRow, onRowValueChange, onUserDefinedChang
                                 />
                             </TableCell>
                             <TableCell>
+                                <Box display="flex" gap={1}>
+                                    <NumericFormat
+                                        customInput={TextField}
+                                        size="small"
+                                        suffix=" %"
+                                        decimalScale={2}
+                                        label="Low"
+                                        disabled={selectedRow !== 'userDefined'}
+                                        value={userDefined.low}
+                                        onValueChange={(values) => onUserDefinedChange('low', values.value === '' ? '' : values.floatValue)}
+                                        inputProps={{ style: { textAlign: 'center' } }}
+                                        sx={{ width: 80 }}
+                                    />
+                                    <NumericFormat
+                                        customInput={TextField}
+                                        size="small"
+                                        suffix=" %"
+                                        decimalScale={2}
+                                        label="High"
+                                        disabled={selectedRow !== 'userDefined'}
+                                        value={userDefined.high}
+                                        onValueChange={(values) => onUserDefinedChange('high', values.value === '' ? '' : values.floatValue)}
+                                        inputProps={{ style: { textAlign: 'center' } }}
+                                        sx={{ width: 80 }}
+                                    />
+                                </Box>
+                            </TableCell>
+                            <TableCell>
                                 <NumericFormat
                                     customInput={TextField}
                                     size="small"
                                     suffix=" %"
+                                    decimalScale={2}
                                     disabled={selectedRow !== 'userDefined'}
                                     value={userDefined.pct}
                                     onValueChange={(values) => onUserDefinedChange('pct', values.value === '' ? '' : values.floatValue)}
-                                    inputProps={{ style: { textAlign: 'right' } }}
+                                    inputProps={{ style: { textAlign: 'center' } }}
                                     sx={{ width: 70 }}
                                 />
                             </TableCell>

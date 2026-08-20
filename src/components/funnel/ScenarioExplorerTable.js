@@ -1,5 +1,6 @@
 import { Paper, Typography, Table, TableBody, TableRow, TableCell, TextField, Button, Box } from '@mui/material';
 import TableHeaderRow from './TableHeaderRow';
+import { formatRate } from '../../utils/funnelCalculations';
 
 const STAGE_ROWS = [
     { rowKey: 'D', label: 'Aware', stageKey: 'stage4' },
@@ -8,26 +9,26 @@ const STAGE_ROWS = [
     { rowKey: 'G', label: 'Can access provider', stageKey: 'stage7' },
 ];
 
-// Stage 9, component 2 — editable Scenario Explorer. Conservative/Optimistic
-// vary only Stage 4-7 rates (per agreed scope); the Stage 1-3 base number
-// (row C) is identical across all three columns. Any edited cell recomputes
-// downstream cells in that column and updates the funnel plot live.
+// Stage 9, component 2 — Scenario Explorer. Moderate is still the user's
+// literal point estimate (editable, same as before). Conservative/Optimistic
+// are no longer manually typed — they're the 10th/90th percentile of a
+// 10,000-run Monte Carlo simulation over each stage's Low-High range
+// (entered on the stage inputs above), read-only here.
 const ScenarioExplorerTable = ({ startN, moderatePercents, scenarioInputs, scenario, onCellChange, onReset }) => {
-    const cellValue = (column, stageKey) => {
-        if (column === 'moderate') {
-            return scenarioInputs.moderateOverrides[stageKey] ?? moderatePercents[stageKey] ?? '';
-        }
-        return scenarioInputs[column][stageKey] ?? '';
+    const moderateValue = (stageKey) => scenarioInputs.moderateOverrides[stageKey] ?? moderatePercents[stageKey] ?? '';
+    const simulatedRate = (column, rowKey) => {
+        const rate = scenario[column].rows.find((r) => r.key === rowKey)?.rate;
+        return formatRate(rate) ?? '—';
     };
 
     return (
         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                <Typography variant="h5">Scenario Explorer</Typography>
-                <Button variant="outlined" onClick={onReset}>Reset to defaults</Button>
+                <Typography variant="h5">Monte Carlo Simulation Results</Typography>
+                <Button variant="outlined" onClick={onReset}>Reset Moderate overrides</Button>
             </Box>
             <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1 }}>
-                Table G — Scenario Explorer
+                Table G — Monte Carlo Simulation Results
             </Typography>
             <Table size="small">
                 <TableHeaderRow columns={['Stage', 'Conservative', 'Moderate', 'Optimistic']} />
@@ -41,19 +42,18 @@ const ScenarioExplorerTable = ({ startN, moderatePercents, scenarioInputs, scena
                     {STAGE_ROWS.map(({ rowKey, label, stageKey }) => (
                         <TableRow key={rowKey}>
                             <TableCell>{label}</TableCell>
-                            {['conservative', 'moderate', 'optimistic'].map((column) => (
-                                <TableCell key={column}>
-                                    <TextField
-                                        size="small"
-                                        type="number"
-                                        placeholder={column === 'moderate' ? undefined : '—'}
-                                        value={cellValue(column, stageKey)}
-                                        onChange={(e) => onCellChange(column, stageKey, e.target.value === '' ? '' : Number(e.target.value))}
-                                        sx={{ width: 90 }}
-                                    />
-                                    <Typography variant="caption" color="text.secondary" component="span"> %</Typography>
-                                </TableCell>
-                            ))}
+                            <TableCell>{simulatedRate('conservative', rowKey)}%</TableCell>
+                            <TableCell>
+                                <TextField
+                                    size="small"
+                                    type="number"
+                                    value={moderateValue(stageKey)}
+                                    onChange={(e) => onCellChange(stageKey, e.target.value === '' ? '' : Number(e.target.value))}
+                                    sx={{ width: 90 }}
+                                />
+                                <Typography variant="caption" color="text.secondary" component="span"> %</Typography>
+                            </TableCell>
+                            <TableCell>{simulatedRate('optimistic', rowKey)}%</TableCell>
                         </TableRow>
                     ))}
                     <TableRow>
@@ -65,7 +65,7 @@ const ScenarioExplorerTable = ({ startN, moderatePercents, scenarioInputs, scena
                 </TableBody>
             </Table>
             <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 1 }}>
-                Capacity check displayed separately.
+                Conservative/Optimistic reflect a 10,000-run simulation (10th/90th percentile) over each stage's Low–High range; Moderate is your literal point estimate. Capacity check displayed separately.
             </Typography>
         </Paper>
     );

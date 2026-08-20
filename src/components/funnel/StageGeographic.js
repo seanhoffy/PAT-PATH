@@ -26,7 +26,7 @@ const CONTEXT_ROW_LABELS = {
 
 // Stage 7 — Geographic Accessibility, Conditional on Stages 4-6 ("Who can
 // physically reach a provider?").
-const StageGeographic = ({ value, geographicAccessContext, onContextChange, onChange }) => (
+const StageGeographic = ({ value, low, high, geographicAccessContext, onContextChange, onChange, onRangeChange }) => (
     <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
         <Box display="flex" alignItems="center" sx={{ mb: 1 }}>
             <Typography variant="h5">Geographic Accessibility</Typography>
@@ -56,14 +56,44 @@ const StageGeographic = ({ value, geographicAccessContext, onContextChange, onCh
         <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
             {STAGE7_LABEL}
         </Typography>
-        <NumericFormat
-            customInput={TextField}
-            suffix=" %"
-            value={value}
-            onValueChange={(values) => onChange(values.value === '' ? '' : values.floatValue)}
-            inputProps={{ 'aria-label': STAGE7_LABEL, style: { textAlign: 'right' } }}
-            sx={{ mb: 2, width: 70 }}
-        />
+        <Box display="flex" justifyContent="center" gap={2} sx={{ mb: 0.5 }}>
+            <Box>
+                <Typography variant="caption" color="text.secondary" display="block">Lower Bound</Typography>
+                <NumericFormat
+                    customInput={TextField}
+                    suffix=" %"
+                    decimalScale={2}
+                    value={low}
+                    onValueChange={(values) => onRangeChange('low', values.value === '' ? '' : values.floatValue)}
+                    inputProps={{ 'aria-label': `${STAGE7_LABEL} — lower bound`, style: { textAlign: 'center' } }}
+                    sx={{ width: 70 }}
+                />
+            </Box>
+            <Box>
+                <Typography variant="caption" color="text.secondary" display="block">Base Case</Typography>
+                <NumericFormat
+                    customInput={TextField}
+                    suffix=" %"
+                    decimalScale={2}
+                    value={value}
+                    onValueChange={(values) => onChange(values.value === '' ? '' : values.floatValue)}
+                    inputProps={{ 'aria-label': STAGE7_LABEL, style: { textAlign: 'center' } }}
+                    sx={{ width: 70 }}
+                />
+            </Box>
+            <Box>
+                <Typography variant="caption" color="text.secondary" display="block">Upper Bound</Typography>
+                <NumericFormat
+                    customInput={TextField}
+                    suffix=" %"
+                    decimalScale={2}
+                    value={high}
+                    onValueChange={(values) => onRangeChange('high', values.value === '' ? '' : values.floatValue)}
+                    inputProps={{ 'aria-label': `${STAGE7_LABEL} — upper bound`, style: { textAlign: 'center' } }}
+                    sx={{ width: 70 }}
+                />
+            </Box>
+        </Box>
 
         {geographicAccessContext === 'optedOut' && <Callout>{STAGE7_MEDICAL_TOURISM_FOOTNOTE}</Callout>}
 

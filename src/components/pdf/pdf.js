@@ -1,5 +1,5 @@
 import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
-import { deriveFunnelDisplay, cellValuesFromResults, getStage6Value, stage6TierLabel } from '../../utils/funnelCalculations';
+import { deriveFunnelDisplay, cellValuesFromResults, getStage6Value, stage6TierLabel, formatRate } from '../../utils/funnelCalculations';
 import { STAGE9_METHODOLOGICAL_CAVEAT, STAGE9_OREGON_COMPARATOR_CAPTION } from '../../constants/funnelDefaults';
 
 // Define styles for the PDF
@@ -231,7 +231,7 @@ const FunnelRecapTable = ({ rows }) => (
             <View key={row.key} style={styles.funnelTableRow} wrap={false}>
                 <Text style={styles.funnelTableCell}>{row.stage}</Text>
                 <Text style={styles.funnelTableCell}>{row.type === 'base' ? '—' : row.type}</Text>
-                <Text style={styles.funnelTableCell}>{row.rate !== null && row.rate !== undefined ? `${row.rate}%` : '—'}</Text>
+                <Text style={styles.funnelTableCell}>{formatRate(row.rate) !== null ? `${formatRate(row.rate)}%` : '—'}</Text>
                 <Text style={styles.funnelTableCell}>{Number(row.n).toLocaleString()}</Text>
             </View>
         ))}
@@ -264,9 +264,9 @@ const ScenarioExplorerPdfTable = ({ startN, scenario }) => {
             {stageRows.map(({ label, rowKey }) => (
                 <View key={rowKey} style={styles.funnelTableRow} wrap={false}>
                     <Text style={styles.funnelTableCell}>{label}</Text>
-                    <Text style={styles.funnelTableCell}>{findRow('conservative', rowKey)?.rate ?? '—'}%</Text>
-                    <Text style={styles.funnelTableCell}>{findRow('moderate', rowKey)?.rate ?? '—'}%</Text>
-                    <Text style={styles.funnelTableCell}>{findRow('optimistic', rowKey)?.rate ?? '—'}%</Text>
+                    <Text style={styles.funnelTableCell}>{formatRate(findRow('conservative', rowKey)?.rate) ?? '—'}%</Text>
+                    <Text style={styles.funnelTableCell}>{formatRate(findRow('moderate', rowKey)?.rate) ?? '—'}%</Text>
+                    <Text style={styles.funnelTableCell}>{formatRate(findRow('optimistic', rowKey)?.rate) ?? '—'}%</Text>
                 </View>
             ))}
             <View style={styles.funnelTableRow} wrap={false}>
@@ -275,6 +275,9 @@ const ScenarioExplorerPdfTable = ({ startN, scenario }) => {
                 <Text style={[styles.funnelTableCell, { fontWeight: 'bold' }]}>{Number(scenario.moderate.effectiveDemand).toLocaleString()}</Text>
                 <Text style={[styles.funnelTableCell, { fontWeight: 'bold' }]}>{Number(scenario.optimistic.effectiveDemand).toLocaleString()}</Text>
             </View>
+            <Text style={[styles.label, { marginTop: 4 }]}>
+                80% confidence interval: {Number(scenario.conservative.effectiveDemand).toLocaleString()}–{Number(scenario.optimistic.effectiveDemand).toLocaleString()} clients/yr, from a 10,000-run simulation over each stage's Low-High range.
+            </Text>
         </View>
     );
 };
@@ -464,19 +467,19 @@ const MyDocument = ({ formData, results, modelCreatedOn, calculatedAt, funnelSta
                                 </View>
                                 <View style={styles.inputItem}>
                                     <Text style={styles.label}>Aware (%):</Text>
-                                    <Text style={styles.value}>{funnelState.stage4.value}%</Text>
+                                    <Text style={styles.value}>{formatRate(funnelState.stage4.value) ?? '—'}%</Text>
                                 </View>
                                 <View style={styles.inputItem}>
                                     <Text style={styles.label}>Interested | Aware (%):</Text>
-                                    <Text style={styles.value}>{funnelState.stage5.value}%</Text>
+                                    <Text style={styles.value}>{formatRate(funnelState.stage5.value) ?? '—'}%</Text>
                                 </View>
                                 <View style={styles.inputItem}>
                                     <Text style={styles.label}>Can afford (selected row / %):</Text>
-                                    <Text style={styles.value}>{stage6TierLabel(funnelState.stage6)} / {getStage6Value(funnelState.stage6)}%</Text>
+                                    <Text style={styles.value}>{stage6TierLabel(funnelState.stage6)} / {formatRate(getStage6Value(funnelState.stage6)) ?? '—'}%</Text>
                                 </View>
                                 <View style={styles.inputItem}>
                                     <Text style={styles.label}>Can access provider (%):</Text>
-                                    <Text style={styles.value}>{funnelState.stage7.value}%</Text>
+                                    <Text style={styles.value}>{formatRate(funnelState.stage7.value) ?? '—'}%</Text>
                                 </View>
                                 <View style={styles.inputItem}>
                                     <Text style={styles.label}>Facilitators (headcount) / FTE conversion factor:</Text>
@@ -517,7 +520,7 @@ const MyDocument = ({ formData, results, modelCreatedOn, calculatedAt, funnelSta
                         </View>
 
                         <View style={styles.section} wrap={false}>
-                            <Text style={styles.sectionTitle}>Scenario Explorer (Conservative / Moderate / Optimistic)</Text>
+                            <Text style={styles.sectionTitle}>Monte Carlo Simulation Results (Conservative / Moderate / Optimistic)</Text>
                             <ScenarioExplorerPdfTable startN={funnelDisplay.funnelInputN} scenario={funnelDisplay.scenario} />
                         </View>
 

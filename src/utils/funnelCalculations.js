@@ -2,7 +2,8 @@
 // No React/DOM references so these are reusable across the on-screen components,
 // the PDF export, and (if ever added) tests.
 
-import { STAGE6_TABLE_A_ROWS } from '../constants/funnelDefaults';
+import { STAGE6_TABLE_A_ROWS, STAGE8_SITE_MODE_SITE_BY_SITE } from '../constants/funnelDefaults';
+import { runFunnelSimulation } from './monteCarlo';
 
 /**
  * Percent retained relative to the prior stage's N, rounded to 1 decimal place.
@@ -10,6 +11,17 @@ import { STAGE6_TABLE_A_ROWS } from '../constants/funnelDefaults';
 const pctOfPrior = (n, prior) => {
     if (!prior || prior <= 0) return 0;
     return Math.round((n / prior) * 1000) / 10;
+};
+
+/**
+ * Display rounding for a percentage rate (2 decimal places) — applied at
+ * render time only, never to the internal simulation math, so precision is
+ * unaffected. Simulated rates in particular are raw triangular-distribution
+ * draws (e.g. 42.19104629996875) and must never be shown unrounded.
+ */
+export const formatRate = (rate) => {
+    if (rate === null || rate === undefined || Number.isNaN(Number(rate))) return null;
+    return Math.round(Number(rate) * 100) / 100;
 };
 
 /**
@@ -141,10 +153,31 @@ export const computeStage8Capacity = (stage8) => {
         providerCapacity = fte * clientsPerFTE;
     }
 
-    const sitesFilled = !isBlank(stage8?.sites);
-    const siteCapacity = sitesFilled
-        ? (Number(stage8.sites) || 0) * (Number(stage8.clientsPerSite) || 0)
-        : null;
+    // Site-by-site mode: rows are grouped {count, clientsPerSite} entries
+    // (e.g. "1 site @ 30/yr", "5 sites @ 50/yr avg") rather than one program-
+    // wide average — only rows with both fields filled contribute.
+    const siteMode = stage8?.siteMode === STAGE8_SITE_MODE_SITE_BY_SITE
+        ? STAGE8_SITE_MODE_SITE_BY_SITE
+        : 'program';
+
+    let sitesFilled = false;
+    let siteCapacity = null;
+    let totalSites = null;
+
+    if (siteMode === STAGE8_SITE_MODE_SITE_BY_SITE) {
+        const rows = (stage8?.siteGroups || []).filter((row) => !isBlank(row?.count) && !isBlank(row?.clientsPerSite));
+        sitesFilled = rows.length > 0;
+        if (sitesFilled) {
+            siteCapacity = rows.reduce((sum, row) => sum + (Number(row.count) || 0) * (Number(row.clientsPerSite) || 0), 0);
+            totalSites = rows.reduce((sum, row) => sum + (Number(row.count) || 0), 0);
+        }
+    } else {
+        sitesFilled = !isBlank(stage8?.sites);
+        if (sitesFilled) {
+            siteCapacity = (Number(stage8.sites) || 0) * (Number(stage8.clientsPerSite) || 0);
+            totalSites = Number(stage8.sites) || 0;
+        }
+    }
 
     // Take the minimum of the two arms rather than multiplying constraints,
     // to limit double-counting the workforce/site interaction (a facilitator
@@ -162,7 +195,7 @@ export const computeStage8Capacity = (stage8) => {
         }
     }
 
-    return { fte, blendedHours, clientsPerFTE, providerCapacity, siteCapacity, capacity, bindingArm, providerReady, sitesFilled };
+    return { fte, blendedHours, clientsPerFTE, providerCapacity, siteCapacity, totalSites, capacity, bindingArm, providerReady, sitesFilled, siteMode };
 };
 
 export const capacityExceeded = (finalFunnelN, capacityN) => {
@@ -223,6 +256,149 @@ export const getModeratePercents = (funnelState) => ({
     stage7: funnelState.scenario.moderateOverrides.stage7 ?? funnelState.stage7.value,
 });
 
+// Fixed forever once shipped — changing it would reshuffle every
+// never-migrated legacy model's Conservative/Optimistic on next view.
+const LEGACY_SIMULATION_SEED = 42;
+
+const toRangeTriple = (modeValue, low, high) => {
+    const mode = Number(modeValue) || 0;
+    let numLow = isBlank(low) ? mode : Number(low);
+    let numHigh = isBlank(high) ? mode : Number(high);
+    if (numLow > numHigh) [numLow, numHigh] = [numHigh, numLow];
+    return { low: numLow, mode, high: numHigh };
+};
+
+/**
+ * Single choke point for the Monte Carlo Scenario Explorer's input ranges —
+ * every consumer (live reducer render, PDF export, History page) goes
+ * through this. A missing/blank range degrades to low = high = mode, so that
+ * stage contributes zero variance rather than throwing on a raw,
+ * never-migrated saved object.
+ */
+export const getFunnelSimulationRanges = (funnelState, moderatePercents) => {
+    const stage6 = funnelState.stage6 || {};
+    const stage6RangeSource = stage6.selectedRow === 'userDefined'
+        ? stage6.userDefined
+        : STAGE6_TABLE_A_ROWS.find((r) => r.key === stage6.selectedRow);
+    return {
+        stage4: toRangeTriple(moderatePercents.stage4, funnelState.stage4?.low, funnelState.stage4?.high),
+        stage5: toRangeTriple(moderatePercents.stage5, funnelState.stage5?.low, funnelState.stage5?.high),
+        stage6: toRangeTriple(moderatePercents.stage6, stage6RangeSource?.low ?? stage6RangeSource?.min, stage6RangeSource?.high ?? stage6RangeSource?.max),
+        stage7: toRangeTriple(moderatePercents.stage7, funnelState.stage7?.low, funnelState.stage7?.high),
+    };
+};
+
+export const getFunnelSimulationSeed = (funnelState) =>
+    (isBlank(funnelState?.scenario?.seed) ? LEGACY_SIMULATION_SEED : Number(funnelState.scenario.seed));
+
+/**
+ * Raw, as-entered Low/High bounds for Stages 4-7 (no mode-defaulting, unlike
+ * getFunnelSimulationRanges) — for display in the Inputs Recap, where a blank
+ * bound should show as blank, not silently collapse to the point estimate.
+ */
+export const getStageInputBounds = (funnelState) => {
+    const stage6 = funnelState?.stage6 || {};
+    const stage6RangeSource = stage6.selectedRow === 'userDefined'
+        ? stage6.userDefined
+        : STAGE6_TABLE_A_ROWS.find((r) => r.key === stage6.selectedRow);
+    const boundOrNull = (v) => (isBlank(v) ? null : Number(v));
+    return {
+        stage4: { low: boundOrNull(funnelState?.stage4?.low), high: boundOrNull(funnelState?.stage4?.high) },
+        stage5: { low: boundOrNull(funnelState?.stage5?.low), high: boundOrNull(funnelState?.stage5?.high) },
+        stage6: {
+            low: boundOrNull(stage6RangeSource?.low ?? stage6RangeSource?.min),
+            high: boundOrNull(stage6RangeSource?.high ?? stage6RangeSource?.max),
+        },
+        stage7: { low: boundOrNull(funnelState?.stage7?.low), high: boundOrNull(funnelState?.stage7?.high) },
+    };
+};
+
+// Pearson correlation coefficient between two equal-length numeric arrays.
+const correlation = (xs, ys) => {
+    const n = xs.length;
+    const mx = xs.reduce((s, x) => s + x, 0) / n;
+    const my = ys.reduce((s, y) => s + y, 0) / n;
+    let num = 0;
+    let dx2 = 0;
+    let dy2 = 0;
+    for (let i = 0; i < n; i++) {
+        const dx = xs[i] - mx;
+        const dy = ys[i] - my;
+        num += dx * dy;
+        dx2 += dx * dx;
+        dy2 += dy * dy;
+    }
+    const denom = Math.sqrt(dx2 * dy2);
+    return denom > 0 ? num / denom : 0;
+};
+
+const STAGE_ROW_KEYS = { stage4: 'D', stage5: 'E', stage6: 'F', stage7: 'G' };
+
+/**
+ * Sensitivity ("tornado") analysis. Two things are computed differently and
+ * combined:
+ *  - low/high/swing bar widths: hold the other three stages at their point
+ *    estimate and evaluate only the low/high endpoints of one stage's own
+ *    range (8 buildFunnelRows calls total) — matches the methodology memo's
+ *    own chart exactly (verified against its worked-example figures).
+ *  - pctOfSwing ("share of uncertainty"): a simple swing-width ratio does
+ *    NOT match the memo's reported percentages (verified: linear swing
+ *    normalization gives ~60/16/14/10%, but the memo reports 83/7/6/4% for
+ *    the same ranges). Their figure is a variance decomposition over the
+ *    full simulation — the squared Pearson correlation (R²) between each
+ *    stage's actually-sampled rate and the run's effectiveDemand across all
+ *    `simulationRuns`, normalized so the four shares sum to 100%. Verified
+ *    against the memo's own numbers: this reproduces 82/8/7/3% vs their
+ *    83/7/6/4% — matching within simulation noise.
+ */
+export const computeTornadoSensitivity = (startN, ranges, simulationRuns) => {
+    const stageMeta = [
+        { key: 'stage4', label: 'Aware' },
+        { key: 'stage5', label: 'Interested | Aware' },
+        { key: 'stage6', label: 'Can afford' },
+        { key: 'stage7', label: 'Can access provider' },
+    ];
+    const basePercents = Object.fromEntries(stageMeta.map(({ key }) => [key, ranges[key].mode]));
+    const outcomes = simulationRuns.map((r) => r.effectiveDemand);
+
+    const results = stageMeta.map(({ key, label }) => {
+        const lowN = buildFunnelRows(startN, { ...basePercents, [key]: ranges[key].low }).effectiveDemand;
+        const highN = buildFunnelRows(startN, { ...basePercents, [key]: ranges[key].high }).effectiveDemand;
+
+        const rowKey = STAGE_ROW_KEYS[key];
+        const sampledRates = simulationRuns.map((r) => r.rows.find((row) => row.key === rowKey).rate);
+        const rSquared = correlation(sampledRates, outcomes) ** 2;
+
+        return { key, label, low: Math.min(lowN, highN), high: Math.max(lowN, highN), swing: Math.abs(highN - lowN), rSquared };
+    });
+
+    const totalRSquared = results.reduce((s, r) => s + r.rSquared, 0) || 1;
+    return results
+        .map((r) => ({ ...r, pctOfSwing: Math.round((r.rSquared / totalRSquared) * 10000) / 100 }))
+        .sort((a, b) => b.pctOfSwing - a.pctOfSwing);
+};
+
+/**
+ * Buckets simulated effective-demand outcomes into `bucketCount` equal-width
+ * bins for the distribution histogram.
+ */
+export const buildHistogramBuckets = (sortedRuns, bucketCount = 25) => {
+    const values = sortedRuns.map((r) => r.effectiveDemand);
+    const min = values[0] ?? 0;
+    const max = values[values.length - 1] ?? 0;
+    const width = (max - min) / bucketCount || 1;
+    const buckets = Array.from({ length: bucketCount }, (_, i) => ({
+        rangeStart: min + i * width,
+        rangeEnd: min + (i + 1) * width,
+        count: 0,
+    }));
+    values.forEach((v) => {
+        const idx = Math.min(bucketCount - 1, Math.floor((v - min) / width));
+        buckets[idx].count += 1;
+    });
+    return buckets;
+};
+
 /**
  * Converts the Stage 1-3 base results (the "Potential Demand" 2x2 grid) into
  * the { trialMDD, realMDD, trialTRD, realTRD } shape CC-1's selector expects.
@@ -267,15 +443,37 @@ export const deriveFunnelDisplay = (funnelState, cellValues) => {
     // pctIndividual to compute from) — without this guard the clamp would
     // wrongly zero out that model's displayed demand instead of just falling
     // back to the uncapped figure.
-    const displayedEffectiveDemand = (funnelState.stage8.capacityCapApplied && capacityReady)
+    // capacityN (the site/workforce capacity check) is not itself rounded to
+    // a whole number, unlike effectiveDemand — round the clamped result so a
+    // capacity-bound figure never displays fractional clients.
+    const displayedEffectiveDemand = Math.round((funnelState.stage8.capacityCapApplied && capacityReady)
         ? Math.min(capacityN, effectiveDemand)
-        : effectiveDemand;
+        : effectiveDemand);
 
     const moderatePercents = getModeratePercents(funnelState);
+    const moderate = buildFunnelRows(funnelInputN, moderatePercents);
+
+    // Monte Carlo Scenario Explorer: a pure, seeded function of
+    // (startN, ranges, seed) — reopening a saved model with nothing edited
+    // reproduces byte-identical Conservative/Optimistic automatically, no
+    // stored snapshot needed. A model with no ranges at all (every existing
+    // saved model today) degrades to low === high === mode per stage, so
+    // every simulated run is identical and conservative/optimistic come out
+    // exactly equal to moderate — never null, never a crash.
+    const simulationRanges = getFunnelSimulationRanges(funnelState, moderatePercents);
+    const simulationSeed = getFunnelSimulationSeed(funnelState);
+    const simulation = runFunnelSimulation(funnelInputN, simulationRanges, simulationSeed, 10000, buildFunnelRows);
+    const tornado = computeTornadoSensitivity(funnelInputN, simulationRanges, simulation.sorted);
+    const hasSimulationVariance = ['stage4', 'stage5', 'stage6', 'stage7']
+        .some((key) => simulationRanges[key].low !== simulationRanges[key].high);
+
     const scenario = {
-        conservative: buildFunnelRows(funnelInputN, { ...moderatePercents, ...funnelState.scenario.conservative }),
-        moderate: buildFunnelRows(funnelInputN, moderatePercents),
-        optimistic: buildFunnelRows(funnelInputN, { ...moderatePercents, ...funnelState.scenario.optimistic }),
+        conservative: simulation.conservative,
+        moderate,
+        optimistic: simulation.optimistic,
+        simulationRuns: simulation.sorted,
+        tornado,
+        hasSimulationVariance,
     };
 
     return {

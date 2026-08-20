@@ -151,8 +151,12 @@ export const STAGE6_TABLE_A_ROWS = [
         key: 'individual',
         pricePoint: '$1,000–$3,000 (individual)',
         context: 'Oregon / near-term market',
-        min: null,
-        max: null,
+        // Range sourced from the Monte Carlo methodology memo's own tornado-
+        // chart worked example for this exact row ("Can afford it 12%-45%") —
+        // needs advisor sign-off before treated as authoritative, same as the
+        // Stage 8 site-check feature.
+        min: 12,
+        max: 45,
         default: 20,
         represents: 'Aware-and-interested who could fund an individual session OOP',
         source: '2, 4',
@@ -246,7 +250,7 @@ export const STAGE7_SOURCES = [
 // Section A — Facilitator supply
 export const STAGE8_SECTION_A_HEADING = 'A. Facilitator supply';
 export const STAGE8_FACILITATORS_LABEL = 'Licensed or trained facilitators (headcount)';
-export const STAGE8_FACILITATORS_HELPER = 'Count of credentialed people in your target area. If unknown, estimate from existing ketamine clinics (the most likely early adopters).';
+export const STAGE8_FACILITATORS_HELPER = 'Count of facilitators in your target area. If unknown, estimate from existing ketamine clinics (the most likely early adopters).';
 export const STAGE8_FACILITATORS_FTE_NOTE = 'If you already have an FTE figure, enter it here and set the conversion factor to 1.0.';
 
 export const STAGE8_CONVERSION_FACTOR_LABEL = 'Full Time Equivalent (FTE) Conversion Factor';
@@ -254,7 +258,7 @@ export const STAGE8_CONVERSION_FACTOR_DEFAULT = 0.20;
 export const STAGE8_CONVERSION_FACTOR_MIN = 0;
 export const STAGE8_CONVERSION_FACTOR_MAX = 1;
 export const STAGE8_CONVERSION_FACTOR_STEP = 0.05;
-export const STAGE8_CONVERSION_FACTOR_HELPER = 'Fraction of a full-time practice the average credentialed facilitator devotes to psilocybin therapy. Oregon surveys suggest most facilitators work part-time or contractually, implying values well below 0.5 — but';
+export const STAGE8_CONVERSION_FACTOR_HELPER = 'Fraction of a full-time practice the average facilitator devotes to psilocybin therapy. Oregon surveys suggest most facilitators work part-time or contractually, implying values well below 0.5 — but';
 // Rendered visually distinct (bold/warning color) per spec, so it's kept as
 // its own constant separate from the sentence above.
 export const STAGE8_CONVERSION_FACTOR_WARNING = 'no published estimate exists; this value is uncertain.';
@@ -266,31 +270,65 @@ export const STAGE8_FTE_READOUT_LABEL = 'Implied delivering workforce';
 export const STAGE8_SECTION_B_HEADING = 'B. Delivery model mix';
 export const STAGE8_PCT_INDIVIDUAL_LABEL = 'Percent of clients treated under an individual protocol';
 export const STAGE8_PCT_INDIVIDUAL_PLACEHOLDER = 'Enter 0–100';
-export const STAGE8_PCT_INDIVIDUAL_HELPER = "‘Individual’ means one client at a time in the session room, regardless of how many facilitators are present — most protocols use two. The remainder are treated under a group protocol, where multiple clients share a session. Enter the % of clients in each model for your site. Many sites run only individual or only group sessions, so values at or near 0% and 100% are common and often more realistic than a middle value.";
+export const STAGE8_PCT_INDIVIDUAL_HELPER = "‘Individual’ means one client at a time in the session room, regardless of how many facilitators are present (typically two). The remainder are treated under a group protocol, where multiple clients share sessions. Enter the % of clients served in the individual model. The percent in the group model is simply 100% minus that value. Many sites run only individual or only group sessions, so values at or near 0% and 100% are common.";
 
 export const STAGE8_HOURS_INDIVIDUAL_LABEL = 'Facilitator-hours per client, individual protocol';
 export const STAGE8_HOURS_INDIVIDUAL_DEFAULT = 29.6;
-export const STAGE8_HOURS_INDIVIDUAL_SOURCE_NOTE = 'Default: Sunstone psilocybin/MDD individual protocol (Marseille et al. 2023). Total facilitator hours per client.';
+export const STAGE8_HOURS_INDIVIDUAL_SOURCE_NOTE = 'Default: Sunstone psilocybin/MDD individual protocol (Marseille et al. 2023).';
 
 export const STAGE8_HOURS_GROUP_LABEL = 'Facilitator-hours per client, group protocol';
 export const STAGE8_HOURS_GROUP_DEFAULT = 20.2;
-export const STAGE8_HOURS_GROUP_SOURCE_NOTE = 'Default: Sunstone group-monitoring model. Grayed out when the group share is 0%.';
+export const STAGE8_HOURS_GROUP_SOURCE_NOTE = 'Default: Sunstone group-monitoring model.';
+export const STAGE8_HOURS_GREYED_OUT_NOTE = 'When the group or individual share is 0%, the corresponding box is greyed out.';
 
-export const STAGE8_ADVANCED_DISCLOSURE_LABEL = 'Advanced: annual clinical hours per FTE (default 1,890)';
+export const STAGE8_ADVANCED_DISCLOSURE_LABEL = 'Optional: Annual clinical hours per FTE (default 1,890)';
 export const STAGE8_ANNUAL_HOURS_LABEL = 'Annual clinical hours per FTE';
 export const STAGE8_ANNUAL_HOURS_DEFAULT = 1890;
 export const STAGE8_ANNUAL_HOURS_SOURCE_NOTE = 'Implied by Marseille et al. 2023 (protocol hours × clients per FTE ≈ 1,890); includes a 20% loading for scheduling, charting, and other indirect activities.';
 
 // Section C — Site capacity check (optional)
-export const STAGE8_SECTION_C_HEADING = 'C. Site capacity check (optional)';
-export const STAGE8_SITE_CHECK_DISCLOSURE_LABEL = 'C. Site capacity check (optional) — leave collapsed to run on the workforce estimate alone.';
-export const STAGE8_SITES_LABEL = 'Operational psilocybin service sites in your target area';
-export const STAGE8_SITES_HELPER = 'Count licensed, operating sites only — not planned or licensed-but-closed. If left blank, the stage runs on the workforce estimate alone. Note: this check cannot capture whether existing clinical space could be converted to psilocybin service use, at what cost, or on what timeline.';
+export const STAGE8_SECTION_C_HEADING = 'Operational capacity check';
+export const STAGE8_SITE_CHECK_DISCLOSURE_LABEL = 'Optional: Operational capacity check — leave collapsed to run on the workforce estimate alone.';
 
-export const STAGE8_CLIENTS_PER_SITE_LABEL = 'Annual clients per site';
+export const STAGE8_SITE_CHECK_INTRO = [
+    'Facilitator time is not the only limit on how many clients a program can serve. Physical space and hours of operation can limit site capacity. In addition, clinic operations can be constrained by client recruitment, hiring processes and staff turnover, regulatory and community relations issues, financial considerations, and a wide variety of other factors.',
+    'This section lets you estimate that site-side ceiling. Choose one of two approaches:',
+];
+export const STAGE8_SITE_CHECK_OUTRO = [
+    'Option B is worth the extra effort when your sites differ meaningfully in size, hours, or protocol. If your sites are broadly similar, Option A will give you essentially the same answer with less work.',
+    'Either way, the model calculates total site capacity and compares it with the facilitator capacity estimated earlier. Whichever is lower is the binding constraint, and the model will tell you which one it is.',
+];
+
+export const STAGE8_SITE_MODE_PROGRAM = 'program';
+export const STAGE8_SITE_MODE_SITE_BY_SITE = 'siteBySite';
+
+export const STAGE8_SITE_MODE_OPTIONS = [
+    {
+        key: STAGE8_SITE_MODE_PROGRAM,
+        label: 'A. Program-level estimate.',
+        description: 'Enter the total number of operating sites in your program, then enter the average number of clients one site can serve per year, taking the factors above into account.',
+    },
+    {
+        key: STAGE8_SITE_MODE_SITE_BY_SITE,
+        label: 'B. Site-by-site estimate.',
+        description: 'Enter each site separately, along with the number of clients that site can serve per year.',
+    },
+];
+
+export const STAGE8_SITES_LABEL = 'Total operating sites in your program';
+export const STAGE8_SITES_HELPER = 'Count licensed, operating sites only — not planned or licensed-but-closed. Note: this check cannot capture whether existing clinical space could be converted to psilocybin service use, at what cost, or on what timeline.';
+
+export const STAGE8_CLIENTS_PER_SITE_LABEL = 'Average annual clients per site';
 export const STAGE8_CLIENTS_PER_SITE_DEFAULT = 275;
 export const STAGE8_CLIENTS_PER_SITE_HELPER = "Adjust upward if your area's sites are larger or run longer hours.";
 export const STAGE8_CLIENTS_PER_SITE_SOURCE_NOTE = 'Oregon observed roughly 250–300 clients per operational site per year; a 2–3 room center at realistic occupancy has a ceiling of roughly 500–750.';
+
+export const STAGE8_SITE_GROUP_COUNT_LABEL = 'Number of sites';
+export const STAGE8_SITE_GROUP_COUNT_HELPER = 'Sites sharing this same capacity.';
+export const STAGE8_SITE_GROUP_CLIENTS_LABEL = 'Clients per year, each';
+export const STAGE8_SITE_GROUP_CLIENTS_HELPER = 'Average annual capacity for each of these sites.';
+export const STAGE8_SITE_GROUP_ADD_LABEL = 'Add a site group';
+export const STAGE8_SITE_GROUP_REMOVE_LABEL = 'Remove site group';
 
 export const STAGE8_SITE_INTERACTION_THRESHOLD = 0.25; // arbitrary per spec, adjustable
 export const STAGE8_SITE_INTERACTION_WARNING = 'The site check binds well below the workforce estimate. If this gap is large, your FTE conversion factor (field 2) may be set too high — site scarcity shows up as facilitators without rooms to work in, i.e., a lower delivering fraction.';
@@ -316,7 +354,7 @@ export const STAGE8_WARNING_COPY = "Your calculated demand exceeds plausible loc
 
 // Purely a calibration benchmark; the Oregon figure no longer feeds any
 // calculation (was previously used to set the throughput default).
-export const STAGE8_THROUGHPUT_RATIONALE = "By Q1–Q3 2025, Oregon served 4,577 clients across roughly 377 credentialed facilitators — an annualized rate of about 16 clients per facilitator per year. This figure is no longer used to set any default in this stage; it is retained purely as a calibration benchmark against which your protocol-derived clients-per-FTE figure (above) can be compared. Colorado data, as it accumulates, will provide an additional cross-check, particularly given that state's more permissive delivery model.";
+export const STAGE8_THROUGHPUT_RATIONALE = "By Q1–Q3 2025, Oregon served 4,577 clients across roughly 377 credentialed facilitators — an annualized rate of about 16 clients per facilitator per year. This figure is not used in this stage; it is retained purely as a calibration benchmark against which your protocol-derived clients-per-FTE figure (above) can be compared. Colorado data, as it accumulates, will provide an additional cross-check, particularly given that state's more permissive delivery model.";
 
 export const STAGE8_WORKFORCE_PIPELINE_NOTES = [
     'Only 5% of graduate programs in counseling, social work, nursing, and psychology include psychedelic therapy in required courses (NORC/BrainFutures, 2024).',
@@ -340,6 +378,8 @@ export const STAGE9_METHODOLOGICAL_CAVEAT = "Multiplying six to seven uncertain 
 export const STAGE9_RECAP_HELPER_TEXT = 'To change a value, return to the corresponding stage above.';
 
 export const STAGE9_OREGON_COMPARATOR_CAPTION = "The funnel estimate of ~4,500/yr aligns reasonably with Oregon's observed ~4,000/yr. Oregon's high prices and limited access likely constrain actual demand below what broader availability would produce. As a benchmark, effective demand in most plausible scenarios falls between 0.05% and 0.3% of total adults (~1–4% of the prevalence pool).";
+
+export const STAGE9_MONTE_CARLO_EXPLAINER = "Conservative and Optimistic are not simply the lowest and highest number typed into each stage above, multiplied together. That approach would assume Awareness, Interest, Affordability, and Geographic Access are all simultaneously at their worst (or best) case — a combination that is plausible for any single stage on its own, but unlikely to occur across all four at once. Instead, the model runs a Monte Carlo simulation: 10,000 hypothetical versions of the funnel, each drawing an independently plausible value for every stage from its Low–High range and carrying that combination through the same funnel math used elsewhere in this tool. Conservative and Optimistic are the 10th and 90th percentile of the resulting 10,000 outcomes — in other words, there is an estimated 80% chance the true figure falls between them. The same simulation is run every time and reproduces identically on reload, so results are stable and repeatable, not randomly different each visit.";
 
 // Worked Example A — hypothetical 500,000-adult urban/suburban population.
 // Reference layout for Table 1 (Inputs Recap); reuse labels and Type tags verbatim.

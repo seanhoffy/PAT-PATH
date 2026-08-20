@@ -19,7 +19,7 @@ import { auth } from '../firebase';
 import { fetchSavedModels, deleteSavedModel, fetchUserProfile } from '../utils/firebaseHelpers';
 import { COLORS } from '../constants/colors';
 import { EXCLUSION_CRITERIA_FIELDS, DOUBLE_COUNTING_FIELDS } from '../constants/formFields';
-import { deriveFunnelDisplay, cellValuesFromResults, stage6TierLabel } from '../utils/funnelCalculations';
+import { deriveFunnelDisplay, cellValuesFromResults, stage6TierLabel, getStageInputBounds } from '../utils/funnelCalculations';
 import FunnelRowsTable from '../components/funnel/FunnelRowsTable';
 import {
     AWARENESS_INTEREST_CONTEXTS,
@@ -291,13 +291,13 @@ const HistoryPage = () => {
                                 </Typography>
                             </Grid>
                             <Grid item xs={12} sm={4}>
-                                <Typography variant="body2" color="text.secondary">Scenario Explorer — effective demand</Typography>
+                                <Typography variant="body2" color="text.secondary">Monte Carlo Simulation Results — effective demand</Typography>
                                 <Typography variant="body2" color="text.secondary">Conservative: {Number(funnelDisplay.scenario.conservative.effectiveDemand).toLocaleString()}/yr</Typography>
                                 <Typography variant="body2" color="text.secondary">Moderate: {Number(funnelDisplay.scenario.moderate.effectiveDemand).toLocaleString()}/yr</Typography>
                                 <Typography variant="body2" color="text.secondary">Optimistic: {Number(funnelDisplay.scenario.optimistic.effectiveDemand).toLocaleString()}/yr</Typography>
                             </Grid>
                         </Grid>
-                        <FunnelRowsTable rows={funnelDisplay.funnelRows} />
+                        <FunnelRowsTable rows={funnelDisplay.funnelRows} bounds={getStageInputBounds(model.funnel)} />
                     </>
                 )}
             </Paper>

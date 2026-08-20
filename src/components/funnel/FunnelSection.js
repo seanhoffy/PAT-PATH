@@ -10,11 +10,13 @@ import StageGeographic from './StageGeographic';
 import StageCapacity from './StageCapacity';
 import InputsRecapTable from './InputsRecapTable';
 import ScenarioExplorerTable from './ScenarioExplorerTable';
+import DemandDistributionChart from './DemandDistributionChart';
+import SensitivityTornadoChart from './SensitivityTornadoChart';
 import FunnelPlot from './FunnelPlot';
 import Callout from './Callout';
 import { useFunnelReducer, getModeratePercents } from './useFunnelReducer';
-import { deriveFunnelDisplay, buildFunnelRows, validateFunnelRequiredStages } from '../../utils/funnelCalculations';
-import { STAGE9_METHODOLOGICAL_CAVEAT, STAGE9_OREGON_COMPARATOR_CAPTION } from '../../constants/funnelDefaults';
+import { deriveFunnelDisplay, buildFunnelRows, validateFunnelRequiredStages, getStageInputBounds } from '../../utils/funnelCalculations';
+import { STAGE9_METHODOLOGICAL_CAVEAT, STAGE9_OREGON_COMPARATOR_CAPTION, STAGE9_MONTE_CARLO_EXPLAINER } from '../../constants/funnelDefaults';
 
 // Top-level container for Stages 4-9. Owns the reducer and composes every
 // cross-cutting piece and stage subcomponent. Lifts its whole state upward
@@ -36,8 +38,19 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
     } = deriveFunnelDisplay(state, cellValues);
 
     const funnelReady = validateFunnelRequiredStages(state).isValid;
+    const stageInputBounds = getStageInputBounds(state);
 
     const moderatePercents = getModeratePercents(state);
+
+    // Conservative can't exceed the displayed (possibly capacity-capped)
+    // Effective Demand — the simulated Conservative figure is uncapped, so
+    // once a capacity cap pulls Effective Demand below it, showing the raw
+    // simulated number next to it would read as a lower bound above the
+    // estimate. Scoped to this hero display only — the Scenario Explorer
+    // table below keeps showing the uncapped simulated figures.
+    const displayConservative = state.stage8.capacityCapApplied
+        ? Math.min(scenario.conservative.effectiveDemand, displayedEffectiveDemand)
+        : scenario.conservative.effectiveDemand;
 
     // Memoized on the primitive Moderate-column percents (not on `scenario`,
     // which is a fresh object every render) so the funnel plot only gets a
@@ -94,14 +107,20 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
 
             <StageAwareness
                 value={state.stage4.value}
+                low={state.stage4.low}
+                high={state.stage4.high}
                 awarenessInterestContext={state.contexts.awarenessInterest}
                 onContextChange={(dropdown, value) => dispatch({ type: 'SET_CONTEXT', dropdown, value })}
                 onChange={(value) => dispatch({ type: 'SET_STAGE_VALUE', stage: 'stage4', value })}
+                onRangeChange={(bound, value) => dispatch({ type: 'SET_STAGE_RANGE', stage: 'stage4', bound, value })}
             />
 
             <StageInterest
                 value={state.stage5.value}
+                low={state.stage5.low}
+                high={state.stage5.high}
                 onChange={(value) => dispatch({ type: 'SET_STAGE_VALUE', stage: 'stage5', value })}
+                onRangeChange={(bound, value) => dispatch({ type: 'SET_STAGE_RANGE', stage: 'stage5', bound, value })}
             />
 
             <StageAfford
@@ -113,9 +132,12 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
 
             <StageGeographic
                 value={state.stage7.value}
+                low={state.stage7.low}
+                high={state.stage7.high}
                 geographicAccessContext={state.contexts.geographicAccess}
                 onContextChange={(dropdown, value) => dispatch({ type: 'SET_CONTEXT', dropdown, value })}
                 onChange={(value) => dispatch({ type: 'SET_STAGE_VALUE', stage: 'stage7', value })}
+                onRangeChange={(bound, value) => dispatch({ type: 'SET_STAGE_RANGE', stage: 'stage7', bound, value })}
             />
 
             <StageCapacity
@@ -154,12 +176,30 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
                         <Typography variant="overline" sx={{ letterSpacing: 2, opacity: 0.85 }}>
                             Effective Demand
                         </Typography>
-                        <Typography variant="h2" fontWeight="bold" sx={{ lineHeight: 1.1 }}>
-                            {Number(displayedEffectiveDemand || 0).toLocaleString()}
-                            <Typography component="span" variant="h5" sx={{ ml: 1, opacity: 0.85 }}>
-                                /yr
+                        <Box display="flex" alignItems="center" justifyContent="center" gap={3}>
+                            <Box sx={{ minWidth: 90 }}>
+                                <Typography variant="caption" sx={{ opacity: 0.85, display: 'block' }}>
+                                    Conservative
+                                </Typography>
+                                <Typography variant="h6" fontWeight="bold">
+                                    {Number(displayConservative || 0).toLocaleString()}
+                                </Typography>
+                            </Box>
+                            <Typography variant="h2" fontWeight="bold" sx={{ lineHeight: 1.1 }}>
+                                {Number(displayedEffectiveDemand || 0).toLocaleString()}
+                                <Typography component="span" variant="h5" sx={{ ml: 1, opacity: 0.85 }}>
+                                    /yr
+                                </Typography>
                             </Typography>
-                        </Typography>
+                            <Box sx={{ minWidth: 90 }}>
+                                <Typography variant="caption" sx={{ opacity: 0.85, display: 'block' }}>
+                                    Optimistic
+                                </Typography>
+                                <Typography variant="h6" fontWeight="bold">
+                                    {Number(scenario.optimistic.effectiveDemand || 0).toLocaleString()}
+                                </Typography>
+                            </Box>
+                        </Box>
                         {state.stage8.capacityCapApplied && (
                             <Typography variant="body2" sx={{ mt: 1, opacity: 0.85 }}>
                                 (capacity cap applied)
@@ -167,16 +207,33 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
                         )}
                     </Paper>
 
-                    <InputsRecapTable funnelRows={funnelRows} />
+                    <InputsRecapTable funnelRows={funnelRows} bounds={stageInputBounds} />
+
+                    {!scenario.hasSimulationVariance && (
+                        <Alert severity="info" sx={{ mb: 3 }}>
+                            Conservative and Optimistic currently equal the point estimate — add a Low/High range to any stage above to see a realistic spread.
+                        </Alert>
+                    )}
 
                     <ScenarioExplorerTable
                         startN={funnelInputN}
                         moderatePercents={moderatePercents}
                         scenarioInputs={state.scenario}
                         scenario={scenario}
-                        onCellChange={(column, stage, value) => dispatch({ type: 'SET_SCENARIO_CELL', column, stage, value })}
+                        onCellChange={(stage, value) => dispatch({ type: 'SET_SCENARIO_CELL', stage, value })}
                         onReset={() => dispatch({ type: 'RESET_SCENARIO_EXPLORER' })}
                     />
+
+                    <Callout title="What is a Monte Carlo simulation?">{STAGE9_MONTE_CARLO_EXPLAINER}</Callout>
+
+                    <DemandDistributionChart
+                        simulationRuns={scenario.simulationRuns}
+                        conservative={scenario.conservative}
+                        moderate={scenario.moderate}
+                        optimistic={scenario.optimistic}
+                    />
+
+                    <SensitivityTornadoChart tornado={scenario.tornado} pointEstimate={scenario.moderate.effectiveDemand} />
 
                     <FunnelPlot rows={moderateRows} />
                 </>

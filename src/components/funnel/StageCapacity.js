@@ -1,5 +1,10 @@
 import { useState } from 'react';
-import { Paper, Box, Typography, TextField, Grid, Alert, Button, List, ListItem, Link, Collapse, Divider } from '@mui/material';
+import {
+    Paper, Box, Typography, TextField, Grid, Alert, Button, List, ListItem, Link, Collapse, Divider,
+    Radio, RadioGroup, FormControlLabel, IconButton, Stack,
+} from '@mui/material';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import AddIcon from '@mui/icons-material/Add';
 import ProbabilityTypeTag from './ProbabilityTypeTag';
 import Callout from './Callout';
 import SourcesList from './SourcesList';
@@ -25,16 +30,27 @@ import {
     STAGE8_HOURS_INDIVIDUAL_SOURCE_NOTE,
     STAGE8_HOURS_GROUP_LABEL,
     STAGE8_HOURS_GROUP_SOURCE_NOTE,
+    STAGE8_HOURS_GREYED_OUT_NOTE,
     STAGE8_ADVANCED_DISCLOSURE_LABEL,
     STAGE8_ANNUAL_HOURS_LABEL,
     STAGE8_ANNUAL_HOURS_SOURCE_NOTE,
     STAGE8_SECTION_C_HEADING,
     STAGE8_SITE_CHECK_DISCLOSURE_LABEL,
+    STAGE8_SITE_CHECK_INTRO,
+    STAGE8_SITE_CHECK_OUTRO,
+    STAGE8_SITE_MODE_OPTIONS,
+    STAGE8_SITE_MODE_PROGRAM,
     STAGE8_SITES_LABEL,
     STAGE8_SITES_HELPER,
     STAGE8_CLIENTS_PER_SITE_LABEL,
     STAGE8_CLIENTS_PER_SITE_HELPER,
     STAGE8_CLIENTS_PER_SITE_SOURCE_NOTE,
+    STAGE8_SITE_GROUP_COUNT_LABEL,
+    STAGE8_SITE_GROUP_COUNT_HELPER,
+    STAGE8_SITE_GROUP_CLIENTS_LABEL,
+    STAGE8_SITE_GROUP_CLIENTS_HELPER,
+    STAGE8_SITE_GROUP_ADD_LABEL,
+    STAGE8_SITE_GROUP_REMOVE_LABEL,
     STAGE8_SITE_INTERACTION_THRESHOLD,
     STAGE8_SITE_INTERACTION_WARNING,
     STAGE8_COMPUTED_CAPACITY_HEADING,
@@ -55,6 +71,22 @@ import {
 } from '../../constants/funnelDefaults';
 
 const isBlank = (v) => v === '' || v === null || v === undefined || Number.isNaN(Number(v));
+
+const MARSEILLE_SOURCE_URL = 'https://pubmed.ncbi.nlm.nih.gov/38125286/';
+
+// Links the "Marseille et al. 2023" citation mention within a text constant to the source paper.
+const linkifyMarseille = (text) => {
+    const marker = 'Marseille et al. 2023';
+    const idx = text.indexOf(marker);
+    if (idx === -1) return text;
+    return (
+        <>
+            {text.slice(0, idx)}
+            <Link href={MARSEILLE_SOURCE_URL} target="_blank" rel="noopener noreferrer">{marker}</Link>
+            {text.slice(idx + marker.length)}
+        </>
+    );
+};
 
 const LABEL_SX = { mb: 1, fontWeight: 500, minHeight: '3.4rem', display: 'flex', alignItems: 'flex-end' };
 
@@ -124,6 +156,22 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
     const showInteractionWarning = detail.sitesFilled && detail.providerReady && detail.providerCapacity > 0
         && detail.siteCapacity < detail.providerCapacity * (1 - STAGE8_SITE_INTERACTION_THRESHOLD);
 
+    const siteMode = stage8.siteMode || STAGE8_SITE_MODE_PROGRAM;
+    const siteGroups = stage8.siteGroups && stage8.siteGroups.length > 0
+        ? stage8.siteGroups
+        : [{ id: 1, count: '', clientsPerSite: '' }];
+
+    const handleSiteGroupChange = (id, field, value) => {
+        onFieldChange('siteGroups', siteGroups.map((row) => (row.id === id ? { ...row, [field]: value } : row)));
+    };
+    const handleAddSiteGroup = () => {
+        const nextId = siteGroups.reduce((max, row) => Math.max(max, row.id), 0) + 1;
+        onFieldChange('siteGroups', [...siteGroups, { id: nextId, count: '', clientsPerSite: '' }]);
+    };
+    const handleRemoveSiteGroup = (id) => {
+        onFieldChange('siteGroups', siteGroups.filter((row) => row.id !== id));
+    };
+
     return (
         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
             <Box display="flex" alignItems="center" sx={{ mb: 1 }}>
@@ -148,7 +196,7 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
                         type="number"
                         value={stage8.facilitators}
                         onChange={(e) => onFieldChange('facilitators', e.target.value === '' ? '' : Number(e.target.value))}
-                        inputProps={{ min: 0, step: 1, 'aria-label': STAGE8_FACILITATORS_LABEL }}
+                        inputProps={{ min: 0, step: 1, 'aria-label': STAGE8_FACILITATORS_LABEL, style: { textAlign: 'center' } }}
                         helperText={
                             <>
                                 {STAGE8_FACILITATORS_HELPER}{' '}
@@ -169,6 +217,7 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
                             max: STAGE8_CONVERSION_FACTOR_MAX,
                             step: STAGE8_CONVERSION_FACTOR_STEP,
                             'aria-label': STAGE8_CONVERSION_FACTOR_LABEL,
+                            style: { textAlign: 'center' },
                         }}
                         helperText={
                             <>
@@ -185,9 +234,12 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
 
             <Box sx={{ backgroundColor: 'grey.100', borderRadius: 1, p: 1.5, mb: 3 }}>
                 <Typography variant="body2">
-                    {isBlank(stage8.facilitators)
-                        ? `${STAGE8_FTE_READOUT_LABEL}: —`
-                        : `${STAGE8_FTE_READOUT_LABEL}: ${detail.fte.toFixed(1)} FTE = ${stage8.facilitators} × ${stage8.conversionFactor}`}
+                    {(() => {
+                        const facilitatorsDisplay = isBlank(stage8.facilitators) ? '—' : stage8.facilitators;
+                        const conversionFactorDisplay = isBlank(stage8.conversionFactor) ? '—' : stage8.conversionFactor;
+                        const fteDisplay = (isBlank(stage8.facilitators) || isBlank(stage8.conversionFactor)) ? '—' : detail.fte.toFixed(1);
+                        return `${STAGE8_FTE_READOUT_LABEL}: ${facilitatorsDisplay} facilitators x ${conversionFactorDisplay} average effort = ${fteDisplay} FTE`;
+                    })()}
                 </Typography>
             </Box>
 
@@ -225,8 +277,8 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
                         disabled={pctEntered && pctIndividualNum === 0}
                         value={stage8.hoursIndividual}
                         onChange={(e) => onFieldChange('hoursIndividual', e.target.value === '' ? '' : Number(e.target.value))}
-                        inputProps={{ 'aria-label': STAGE8_HOURS_INDIVIDUAL_LABEL }}
-                        helperText={STAGE8_HOURS_INDIVIDUAL_SOURCE_NOTE}
+                        inputProps={{ 'aria-label': STAGE8_HOURS_INDIVIDUAL_LABEL, style: { textAlign: 'center' } }}
+                        helperText={linkifyMarseille(STAGE8_HOURS_INDIVIDUAL_SOURCE_NOTE)}
                     />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -237,14 +289,17 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
                         disabled={pctEntered && pctIndividualNum === 100}
                         value={stage8.hoursGroup}
                         onChange={(e) => onFieldChange('hoursGroup', e.target.value === '' ? '' : Number(e.target.value))}
-                        inputProps={{ 'aria-label': STAGE8_HOURS_GROUP_LABEL }}
+                        inputProps={{ 'aria-label': STAGE8_HOURS_GROUP_LABEL, style: { textAlign: 'center' } }}
                         helperText={STAGE8_HOURS_GROUP_SOURCE_NOTE}
                     />
                 </Grid>
             </Grid>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                {STAGE8_HOURS_GREYED_OUT_NOTE}
+            </Typography>
 
             <Link component="button" type="button" variant="body2" onClick={() => toggleDisclosure('advanced')} sx={{ display: 'inline-block', mt: 1, mb: 1 }}>
-                {openDisclosures.advanced ? 'Hide advanced' : `▸ ${STAGE8_ADVANCED_DISCLOSURE_LABEL}`}
+                {openDisclosures.advanced ? 'Hide optional section' : `▸ ${STAGE8_ADVANCED_DISCLOSURE_LABEL}`}
             </Link>
             <Collapse in={openDisclosures.advanced}>
                 <Box sx={{ mb: 1 }}>
@@ -253,10 +308,10 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
                         type="number"
                         value={stage8.annualHoursPerFTE}
                         onChange={(e) => onFieldChange('annualHoursPerFTE', e.target.value === '' ? '' : Number(e.target.value))}
-                        inputProps={{ 'aria-label': STAGE8_ANNUAL_HOURS_LABEL }}
+                        inputProps={{ 'aria-label': STAGE8_ANNUAL_HOURS_LABEL, style: { textAlign: 'center' } }}
                         sx={{ width: 200, mb: 1 }}
                     />
-                    <Callout>{STAGE8_ANNUAL_HOURS_SOURCE_NOTE}</Callout>
+                    <Callout>{linkifyMarseille(STAGE8_ANNUAL_HOURS_SOURCE_NOTE)}</Callout>
                 </Box>
             </Collapse>
 
@@ -264,39 +319,117 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
 
             {/* Section A2/C — Site capacity check (optional) */}
             <Link component="button" type="button" variant="body2" onClick={() => toggleDisclosure('siteCheck')} sx={{ display: 'inline-block', mb: 1 }}>
-                {openDisclosures.siteCheck ? 'Hide site capacity check' : `▸ ${STAGE8_SITE_CHECK_DISCLOSURE_LABEL}`}
+                {openDisclosures.siteCheck ? 'Hide operation capacity check' : `▸ ${STAGE8_SITE_CHECK_DISCLOSURE_LABEL}`}
             </Link>
             <Collapse in={openDisclosures.siteCheck}>
                 <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1 }}>{STAGE8_SECTION_C_HEADING}</Typography>
-                <Grid container spacing={3} sx={{ mb: 1 }}>
-                    <Grid item xs={12} sm={6}>
-                        <Typography variant="body2" sx={LABEL_SX}>{STAGE8_SITES_LABEL}</Typography>
-                        <TextField
-                            fullWidth
-                            type="number"
-                            value={stage8.sites}
-                            onChange={(e) => onFieldChange('sites', e.target.value === '' ? '' : Number(e.target.value))}
-                            inputProps={{ min: 0, step: 1, 'aria-label': STAGE8_SITES_LABEL }}
-                            helperText={STAGE8_SITES_HELPER}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <Typography variant="body2" sx={LABEL_SX}>{STAGE8_CLIENTS_PER_SITE_LABEL}</Typography>
-                        <TextField
-                            fullWidth
-                            type="number"
-                            value={stage8.clientsPerSite}
-                            onChange={(e) => onFieldChange('clientsPerSite', e.target.value === '' ? '' : Number(e.target.value))}
-                            inputProps={{ 'aria-label': STAGE8_CLIENTS_PER_SITE_LABEL }}
-                            helperText={`${STAGE8_CLIENTS_PER_SITE_SOURCE_NOTE} ${STAGE8_CLIENTS_PER_SITE_HELPER}`}
-                        />
-                    </Grid>
+
+                {STAGE8_SITE_CHECK_INTRO.map((line) => (
+                    <Typography key={line} variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>{line}</Typography>
+                ))}
+
+                <Grid container spacing={2} sx={{ mb: 1.5 }}>
+                    {STAGE8_SITE_MODE_OPTIONS.map((option) => (
+                        <Grid item xs={12} sm={6} key={option.key}>
+                            <Paper elevation={0} sx={{ p: 2, height: '100%', borderRadius: 1, backgroundColor: 'grey.100', textAlign: 'left' }}>
+                                <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5 }}>
+                                    {option.label}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    {option.description}
+                                </Typography>
+                            </Paper>
+                        </Grid>
+                    ))}
                 </Grid>
 
+                {STAGE8_SITE_CHECK_OUTRO.map((line) => (
+                    <Typography key={line} variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>{line}</Typography>
+                ))}
+
+                <RadioGroup
+                    row
+                    value={siteMode}
+                    onChange={(e) => onFieldChange('siteMode', e.target.value)}
+                    sx={{ mb: 2, justifyContent: 'center' }}
+                >
+                    {STAGE8_SITE_MODE_OPTIONS.map((option) => (
+                        <FormControlLabel key={option.key} value={option.key} control={<Radio />} label={option.label} />
+                    ))}
+                </RadioGroup>
+
+                {siteMode === STAGE8_SITE_MODE_PROGRAM ? (
+                    <Grid container spacing={3} sx={{ mb: 1 }}>
+                        <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={LABEL_SX}>{STAGE8_SITES_LABEL}</Typography>
+                            <TextField
+                                fullWidth
+                                type="number"
+                                value={stage8.sites}
+                                onChange={(e) => onFieldChange('sites', e.target.value === '' ? '' : Number(e.target.value))}
+                                inputProps={{ min: 0, step: 1, 'aria-label': STAGE8_SITES_LABEL, style: { textAlign: 'center' } }}
+                                helperText={STAGE8_SITES_HELPER}
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={LABEL_SX}>{STAGE8_CLIENTS_PER_SITE_LABEL}</Typography>
+                            <TextField
+                                fullWidth
+                                type="number"
+                                value={stage8.clientsPerSite}
+                                onChange={(e) => onFieldChange('clientsPerSite', e.target.value === '' ? '' : Number(e.target.value))}
+                                inputProps={{ 'aria-label': STAGE8_CLIENTS_PER_SITE_LABEL, style: { textAlign: 'center' } }}
+                                helperText={`${STAGE8_CLIENTS_PER_SITE_SOURCE_NOTE} ${STAGE8_CLIENTS_PER_SITE_HELPER}`}
+                            />
+                        </Grid>
+                    </Grid>
+                ) : (
+                    <Box sx={{ mb: 1 }}>
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 1 }}>
+                            <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>{STAGE8_SITE_GROUP_COUNT_HELPER}</Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>{STAGE8_SITE_GROUP_CLIENTS_HELPER}</Typography>
+                            <Box sx={{ width: 40, display: { xs: 'none', sm: 'block' } }} />
+                        </Stack>
+                        {siteGroups.map((row, index) => (
+                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" key={row.id} sx={{ mb: 1.5 }}>
+                                <TextField
+                                    fullWidth
+                                    type="number"
+                                    value={row.count}
+                                    onChange={(e) => handleSiteGroupChange(row.id, 'count', e.target.value === '' ? '' : Number(e.target.value))}
+                                    inputProps={{ min: 0, step: 1, 'aria-label': `${STAGE8_SITE_GROUP_COUNT_LABEL} — row ${index + 1}`, style: { textAlign: 'center' } }}
+                                    sx={{ flex: 1 }}
+                                />
+                                <TextField
+                                    fullWidth
+                                    type="number"
+                                    value={row.clientsPerSite}
+                                    onChange={(e) => handleSiteGroupChange(row.id, 'clientsPerSite', e.target.value === '' ? '' : Number(e.target.value))}
+                                    inputProps={{ min: 0, 'aria-label': `${STAGE8_SITE_GROUP_CLIENTS_LABEL} — row ${index + 1}`, style: { textAlign: 'center' } }}
+                                    sx={{ flex: 1 }}
+                                />
+                                <IconButton
+                                    aria-label={STAGE8_SITE_GROUP_REMOVE_LABEL}
+                                    onClick={() => handleRemoveSiteGroup(row.id)}
+                                    disabled={siteGroups.length === 1}
+                                    sx={{ flexShrink: 0 }}
+                                >
+                                    <DeleteOutlineIcon fontSize="small" />
+                                </IconButton>
+                            </Stack>
+                        ))}
+                        <Button startIcon={<AddIcon />} onClick={handleAddSiteGroup} size="small">
+                            {STAGE8_SITE_GROUP_ADD_LABEL}
+                        </Button>
+                    </Box>
+                )}
+
                 {detail.sitesFilled && (
-                    <Box sx={{ backgroundColor: 'grey.100', borderRadius: 1, p: 1.5, mb: 2 }}>
+                    <Box sx={{ backgroundColor: 'grey.100', borderRadius: 1, p: 1.5, mb: 2, mt: 2 }}>
                         <Typography variant="body2">
-                            {`Site-arm capacity: ${Math.round(detail.siteCapacity).toLocaleString()} = ${stage8.sites} × ${stage8.clientsPerSite}`}
+                            {siteMode === STAGE8_SITE_MODE_PROGRAM
+                                ? `Site-arm capacity: ${Math.round(detail.siteCapacity).toLocaleString()} = ${stage8.sites} × ${stage8.clientsPerSite}`
+                                : `Site-arm capacity: ${Math.round(detail.siteCapacity).toLocaleString()} across ${detail.totalSites.toLocaleString()} sites`}
                             {bindComparison && ` — binds ${bindComparison} the workforce estimate (${Math.round(detail.providerCapacity).toLocaleString()})`}
                         </Typography>
                     </Box>
@@ -341,14 +474,14 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
                 <Alert severity="warning" sx={{ mb: 2 }}>{STAGE8_BLANK_STATE_PROMPT}</Alert>
             )}
 
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{STAGE8_BENCHMARK_NOTE}</Typography>
-            {detail.providerReady && (
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                    {detail.sitesFilled
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                {STAGE8_BENCHMARK_NOTE}
+                {detail.providerReady && (
+                    ' ' + (detail.sitesFilled
                         ? `${STAGE8_CAPACITY_STATEMENT_WITH_SITE_PREFIX} ${Math.round(detail.capacity).toLocaleString()} clients per year. That figure is compared against your Stage 7 demand; if demand is higher, the model will flag it and offer an optional cap.`
-                        : STAGE8_CAPACITY_STATEMENT_NO_SITE}
-                </Typography>
-            )}
+                        : STAGE8_CAPACITY_STATEMENT_NO_SITE)
+                )}
+            </Typography>
 
             {/* Demand-vs-capacity comparison (unchanged from before this revision) */}
             {capacityReady ? (
