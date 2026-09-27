@@ -134,7 +134,9 @@ export const STAGE5_SOURCES = [
 
 // ---------------------------------------------------------------------------
 // Stage 6 — Can Afford, Conditional on Stages 4+5.
-// Table A: user-selectable, feeds the funnel. Table B: informational only.
+// STAGE6_TABLE_A_ROWS renders as Table C: reference/guidance only, shown
+// above Table D (the Individual/Group rows that actually feed the funnel) —
+// not selectable. STAGE6_TABLE_B_ROWS renders as Table E: informational only.
 // ---------------------------------------------------------------------------
 export const STAGE6_TABLE_A_ROWS = [
     {
@@ -174,7 +176,19 @@ export const STAGE6_TABLE_A_ROWS = [
     },
 ];
 export const STAGE6_TABLE_A_DENOMINATOR = '% of the aware-and-interested population who can afford this price point out of pocket.';
-export const STAGE6_DEFAULT_ROW_KEY = 'individual';
+
+// Table D is now two fixed, user-filled rows (Individual / Group) rather than
+// a selectable preset list — STAGE6_TABLE_A_ROWS (Table C) is reference-only
+// content shown as guidance above the input table, not wired into the funnel
+// math.
+export const STAGE6_GUIDANCE_HEADING = 'Affordability Input Reference';
+export const STAGE6_GUIDANCE_HELPER = "For context only — these don't feed the model. Use them to sanity-check the Price, Base Case, and Range you enter above.";
+
+export const STAGE6_SPLIT_LABEL = '% Individual / Group';
+export const STAGE6_SPLIT_HELPER = "‘Individual’ means one client at a time in the session room; ‘Group’ means multiple clients share a session. Enter the % of the aware-and-interested population served under the individual price tier — the Group row's % fills in automatically as the remainder. This split also determines Stage 8's individual/group hours-per-client blend, so it's only entered here.";
+
+export const STAGE6_AFFORDABILITY_ERROR = 'Affordability for Individual is greater than affordability for Group. Individual is the pricier tier, so a higher Base Case % there than Group doesn’t make sense — double-check these two values.';
+export const STAGE6_PRICE_ERROR = 'Price for Group is greater than Price for Individual. Group is meant to be the cheaper tier — double-check these two values.';
 
 export const STAGE6_TABLE_B_ROWS = [
     {
@@ -248,7 +262,7 @@ export const STAGE7_SOURCES = [
 // Stage 8 — Provider Capacity (Capacity check, parallel; not part of funnel math)
 // ---------------------------------------------------------------------------
 // Section A — Facilitator supply
-export const STAGE8_SECTION_A_HEADING = 'A. Facilitator supply';
+export const STAGE8_SECTION_A_HEADING = 'Facilitator supply';
 export const STAGE8_FACILITATORS_LABEL = 'Licensed or trained facilitators (headcount)';
 export const STAGE8_FACILITATORS_HELPER = 'Count of facilitators in your target area. If unknown, estimate from existing ketamine clinics (the most likely early adopters).';
 export const STAGE8_FACILITATORS_FTE_NOTE = 'If you already have an FTE figure, enter it here and set the conversion factor to 1.0.';
@@ -265,12 +279,6 @@ export const STAGE8_CONVERSION_FACTOR_WARNING = 'no published estimate exists; t
 export const STAGE8_CONVERSION_FACTOR_ILLUSTRATIVE_RANGE = 'Illustrative range: 0.10–0.35.';
 
 export const STAGE8_FTE_READOUT_LABEL = 'Implied delivering workforce';
-
-// Section B — Delivery model mix
-export const STAGE8_SECTION_B_HEADING = 'B. Delivery model mix';
-export const STAGE8_PCT_INDIVIDUAL_LABEL = 'Percent of clients treated under an individual protocol';
-export const STAGE8_PCT_INDIVIDUAL_PLACEHOLDER = 'Enter 0–100';
-export const STAGE8_PCT_INDIVIDUAL_HELPER = "‘Individual’ means one client at a time in the session room, regardless of how many facilitators are present (typically two). The remainder are treated under a group protocol, where multiple clients share sessions. Enter the % of clients served in the individual model. The percent in the group model is simply 100% minus that value. Many sites run only individual or only group sessions, so values at or near 0% and 100% are common.";
 
 export const STAGE8_HOURS_INDIVIDUAL_LABEL = 'Facilitator-hours per client, individual protocol';
 export const STAGE8_HOURS_INDIVIDUAL_DEFAULT = 29.6;
@@ -373,13 +381,9 @@ export const STAGE8_SOURCES = [
 // ---------------------------------------------------------------------------
 // Stage 9 — Effective Demand & Results Page
 // ---------------------------------------------------------------------------
-export const STAGE9_METHODOLOGICAL_CAVEAT = "Multiplying six to seven uncertain percentages compounds error: a ±10 pp uncertainty per stage can produce a 5× range in final output. The stages aren't truly independent — adults who can afford $2,000+ tend to be urban, educated, aware, and geographically proximate. Treating stages as independent likely overstates constraints for affluent urban populations and understates them for lower-income rural ones. Interest's conditional framing partially addresses this; residual interdependence remains. Treat any point estimate as approximate and use the Scenario Explorer.";
-
 export const STAGE9_RECAP_HELPER_TEXT = 'To change a value, return to the corresponding stage above.';
 
-export const STAGE9_OREGON_COMPARATOR_CAPTION = "The funnel estimate of ~4,500/yr aligns reasonably with Oregon's observed ~4,000/yr. Oregon's high prices and limited access likely constrain actual demand below what broader availability would produce. As a benchmark, effective demand in most plausible scenarios falls between 0.05% and 0.3% of total adults (~1–4% of the prevalence pool).";
-
-export const STAGE9_MONTE_CARLO_EXPLAINER = "Conservative and Optimistic are not simply the lowest and highest number typed into each stage above, multiplied together. That approach would assume Awareness, Interest, Affordability, and Geographic Access are all simultaneously at their worst (or best) case — a combination that is plausible for any single stage on its own, but unlikely to occur across all four at once. Instead, the model runs a Monte Carlo simulation: 10,000 hypothetical versions of the funnel, each drawing an independently plausible value for every stage from its Low–High range and carrying that combination through the same funnel math used elsewhere in this tool. Conservative and Optimistic are the 10th and 90th percentile of the resulting 10,000 outcomes — in other words, there is an estimated 80% chance the true figure falls between them. The same simulation is run every time and reproduces identically on reload, so results are stable and repeatable, not randomly different each visit.";
+export const STAGE9_MONTE_CARLO_EXPLAINER = "Conservative and Optimistic are not simply the lowest and highest number typed into each stage above, multiplied together. That approach would assume Awareness, Interest, Affordability, and Geographic Access are all simultaneously at their worst (or best) case — a combination that is plausible for any single stage on its own, but unlikely to occur across all four at once. Instead, the model runs a Monte Carlo simulation: 100,000 hypothetical versions of the funnel, each drawing an independently plausible value for every stage from its Low–High range and carrying that combination through the same funnel math used elsewhere in this tool. Conservative and Optimistic are the 10th and 90th percentile of the resulting 100,000 outcomes — in other words, there is an estimated 80% chance the true figure falls between them. The same simulation is run every time and reproduces identically on reload, so results are stable and repeatable, not randomly different each visit.";
 
 // Worked Example A — hypothetical 500,000-adult urban/suburban population.
 // Reference layout for Table 1 (Inputs Recap); reuse labels and Type tags verbatim.

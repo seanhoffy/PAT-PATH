@@ -22,10 +22,6 @@ import {
     STAGE8_CONVERSION_FACTOR_WARNING,
     STAGE8_CONVERSION_FACTOR_ILLUSTRATIVE_RANGE,
     STAGE8_FTE_READOUT_LABEL,
-    STAGE8_SECTION_B_HEADING,
-    STAGE8_PCT_INDIVIDUAL_LABEL,
-    STAGE8_PCT_INDIVIDUAL_PLACEHOLDER,
-    STAGE8_PCT_INDIVIDUAL_HELPER,
     STAGE8_HOURS_INDIVIDUAL_LABEL,
     STAGE8_HOURS_INDIVIDUAL_SOURCE_NOTE,
     STAGE8_HOURS_GROUP_LABEL,
@@ -131,7 +127,7 @@ const MetricCard = ({ label, value, sm, highlight }) => (
 // al. 2023), and an optional site-capacity check — not from an observed
 // market-throughput default, which would double-count the demand suppression
 // already modeled in Stages 4-7.
-const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capacityN, capacityReady, exceedsCapacity, onFieldChange, onApplyCap, onRemoveCap }) => {
+const StageCapacity = ({ stage8, pctIndividual, effectiveDemand, displayedEffectiveDemand, capacityN, capacityReady, exceedsCapacity, onFieldChange, onApplyCap, onRemoveCap }) => {
     const [openDisclosures, setOpenDisclosures] = useState({
         advanced: false,
         siteCheck: false,
@@ -139,8 +135,7 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
     });
     const toggleDisclosure = (key) => setOpenDisclosures((prev) => ({ ...prev, [key]: !prev[key] }));
 
-    const detail = computeStage8Capacity(stage8);
-    const pctIndividual = stage8.pctIndividual;
+    const detail = computeStage8Capacity(stage8, pctIndividual);
     const pctIndividualNum = Number(pctIndividual);
     // pctIndividual === '' would otherwise coerce to 0 via Number() — guard
     // so Fields 4/5 aren't grayed out before the user has entered anything.
@@ -242,31 +237,6 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
                     })()}
                 </Typography>
             </Box>
-
-            {/* Section B — Delivery model mix */}
-            <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1 }}>
-                {STAGE8_SECTION_B_HEADING}
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                {STAGE8_PCT_INDIVIDUAL_LABEL}
-                <Box component="span" sx={{ color: 'error.main', ml: 0.5 }}>*</Box>
-            </Typography>
-            <Box display="flex" alignItems="center" justifyContent="center" sx={{ mt: 1, mb: 1, gap: 2 }}>
-                <TextField
-                    type="number"
-                    placeholder={STAGE8_PCT_INDIVIDUAL_PLACEHOLDER}
-                    value={pctIndividual}
-                    onChange={(e) => onFieldChange('pctIndividual', e.target.value === '' ? '' : Number(e.target.value))}
-                    inputProps={{ min: 0, max: 100, 'aria-label': STAGE8_PCT_INDIVIDUAL_LABEL, style: { textAlign: 'center' } }}
-                    sx={{ width: 160 }}
-                />
-                <Typography variant="body2" color="text.secondary">
-                    {pctEntered ? `${pctIndividualNum}% individual · ${100 - pctIndividualNum}% group` : '— % individual · remainder % group'}
-                </Typography>
-            </Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                {STAGE8_PCT_INDIVIDUAL_HELPER}
-            </Typography>
 
             <Grid container spacing={3} sx={{ mb: 1 }}>
                 <Grid item xs={12} sm={6}>
@@ -525,7 +495,7 @@ const StageCapacity = ({ stage8, effectiveDemand, displayedEffectiveDemand, capa
                 </>
             ) : (
                 <Alert severity="info" sx={{ mb: 2 }}>
-                    Complete the individual/group split above (field 3) to compare this against your Geographic Accessibility funnel-estimated demand.
+                    Complete the % Individual/Group split in the Can Afford section above to compare this against your Geographic Accessibility funnel-estimated demand.
                 </Alert>
             )}
 

@@ -19,7 +19,7 @@ import { auth } from '../firebase';
 import { fetchSavedModels, deleteSavedModel, fetchUserProfile } from '../utils/firebaseHelpers';
 import { COLORS } from '../constants/colors';
 import { EXCLUSION_CRITERIA_FIELDS, DOUBLE_COUNTING_FIELDS } from '../constants/formFields';
-import { deriveFunnelDisplay, cellValuesFromResults, stage6TierLabel, getStageInputBounds } from '../utils/funnelCalculations';
+import { deriveFunnelDisplay, cellValuesFromResults, stage6SummaryLabel, getStageInputBounds, getStage6SplitSummary } from '../utils/funnelCalculations';
 import FunnelRowsTable from '../components/funnel/FunnelRowsTable';
 import {
     AWARENESS_INTEREST_CONTEXTS,
@@ -272,7 +272,7 @@ const HistoryPage = () => {
                                     Funnel input population: {labelFromList(FUNNEL_INPUT_CELLS, model.funnel.funnelInputSelection)}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                    Afford selected tier: {stage6TierLabel(model.funnel.stage6)}
+                                    Afford — Individual/Group: {stage6SummaryLabel(model.funnel.stage6)}
                                 </Typography>
                             </Grid>
                             <Grid item xs={12} sm={4}>
@@ -280,7 +280,7 @@ const HistoryPage = () => {
                                     Facilitators (headcount) / conversion factor: {model.funnel.stage8?.facilitators ?? '—'} / {model.funnel.stage8?.conversionFactor ?? '—'}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
-                                    Individual / group split: {model.funnel.stage8?.pctIndividual === '' || model.funnel.stage8?.pctIndividual == null ? '—' : `${model.funnel.stage8.pctIndividual}%`} individual
+                                    Individual / group split: {model.funnel.stage6?.pctIndividual === '' || model.funnel.stage6?.pctIndividual == null ? '—' : `${model.funnel.stage6.pctIndividual}%`} individual
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
                                     Estimated annual capacity: {Number(funnelDisplay.capacityN).toLocaleString()}/yr
@@ -297,7 +297,7 @@ const HistoryPage = () => {
                                 <Typography variant="body2" color="text.secondary">Optimistic: {Number(funnelDisplay.scenario.optimistic.effectiveDemand).toLocaleString()}/yr</Typography>
                             </Grid>
                         </Grid>
-                        <FunnelRowsTable rows={funnelDisplay.funnelRows} bounds={getStageInputBounds(model.funnel)} />
+                        <FunnelRowsTable rows={funnelDisplay.funnelRows} bounds={getStageInputBounds(model.funnel)} stage6SplitSummary={getStage6SplitSummary(model.funnel.stage6)} />
                     </>
                 )}
             </Paper>

@@ -1,53 +1,36 @@
 import { memo } from 'react';
-import { ResponsiveContainer, FunnelChart, Funnel, Tooltip, LabelList } from 'recharts';
 import { Paper, Typography, Box } from '@mui/material';
 
-// One shade per funnel row (Stage-3 output through Stage G), lightening as
-// the funnel narrows so the taper reads clearly.
-const STAGE_SHADES = ['#c2410c', '#d3591f', '#e37132', '#ef8b4f', '#f5a76e'];
+// Matches the PDF's native bar-chart reconstruction of the funnel (see
+// FunnelBarChart in pdf.js) so the on-screen and exported versions look
+// identical — same labels, same gray trailing track, same solid fill color.
+// Centered (rather than left-aligned) so the tapering bars read as an actual
+// funnel shape.
+const FUNNEL_BAR_COLOR = '#c2410c';
+const FUNNEL_TRACK_COLOR = '#eef1f5';
 
-// Stage 9, component 3 — funnel plot. One tapering segment per funnel stage
+// Stage 9, component 3 — funnel plot. One tapering bar per funnel stage
 // (Stage-3 output through Effective demand), driven by the Moderate column.
-// Updates live on every Moderate-column edit (React re-render is well under
-// the ~200ms requirement since this is plain arithmetic over 5 rows).
 const FunnelPlot = ({ rows }) => {
-    const data = rows.map((row, index) => ({
-        name: row.stage,
-        value: row.n,
-        pctOfPrior: row.pctOfPrior,
-        fill: STAGE_SHADES[index % STAGE_SHADES.length],
-    }));
+    const maxN = Number(rows?.[0]?.n) || 1;
 
     return (
         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h5" sx={{ mb: 2 }}>Funnel Plot</Typography>
-            <Box sx={{ width: '100%', height: 380 }}>
-                <ResponsiveContainer>
-                    <FunnelChart>
-                        <Tooltip
-                            formatter={(value, name, props) => [
-                                `${Number(value).toLocaleString()}${props.payload.pctOfPrior !== null ? ` (${props.payload.pctOfPrior}% of prior stage)` : ''}`,
-                                props.payload.name,
-                            ]}
-                        />
-                        <Funnel dataKey="value" data={data} isAnimationActive>
-                            <LabelList
-                                position="right"
-                                dataKey="name"
-                                stroke="none"
-                                fill="#000000"
-                                offset={20}
-                            />
-                            <LabelList
-                                position="center"
-                                dataKey="value"
-                                stroke="none"
-                                fill="#000000"
-                                formatter={(v) => Number(v).toLocaleString()}
-                            />
-                        </Funnel>
-                    </FunnelChart>
-                </ResponsiveContainer>
+            <Typography variant="h5" sx={{ mb: 2 }}>Funnel Plot (Moderate column)</Typography>
+            <Box>
+                {rows.map((row) => (
+                    <Box key={row.key} sx={{ mb: 1.5 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                            <Typography variant="body2">{row.stage}</Typography>
+                            <Typography variant="body2" fontWeight="bold">
+                                {Number(row.n).toLocaleString()}{row.pctOfPrior !== null ? ` (${row.pctOfPrior}% of prior)` : ''}
+                            </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', height: 10, backgroundColor: FUNNEL_TRACK_COLOR, borderRadius: '2px' }}>
+                            <Box sx={{ width: `${Math.min(100, (Number(row.n) / maxN) * 100)}%`, height: '100%', backgroundColor: FUNNEL_BAR_COLOR, borderRadius: '2px' }} />
+                        </Box>
+                    </Box>
+                ))}
             </Box>
         </Paper>
     );

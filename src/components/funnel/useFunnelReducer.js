@@ -3,20 +3,11 @@ import {
     DEFAULT_FUNNEL_INPUT_CELL,
     DEFAULT_AWARENESS_INTEREST_CONTEXT,
     DEFAULT_GEOGRAPHIC_ACCESS_CONTEXT,
-    STAGE6_TABLE_A_ROWS,
 } from '../../constants/funnelDefaults';
 // Re-exported so existing imports of these two helpers from this module keep
 // working; the canonical definitions live in funnelCalculations.js (shared
 // with the PDF export and History page).
 export { getStage6Value, getModeratePercents } from '../../utils/funnelCalculations';
-
-const buildStage6RowValues = () => {
-    const values = {};
-    STAGE6_TABLE_A_ROWS.forEach((row) => {
-        values[row.key] = row.default;
-    });
-    return values;
-};
 
 export const initialFunnelState = () => ({
     contexts: {
@@ -29,22 +20,25 @@ export const initialFunnelState = () => ({
     // not silently inherit it.
     stage4: { value: '', low: '', high: '' },
     stage5: { value: '', low: '', high: '' },
+    // Table D — two fixed rows (not a selectable preset list). pctIndividual
+    // is the % of the aware-and-interested population served under the
+    // Individual price tier (Group is the remainder) — it also feeds Stage
+    // 8's individual/group hours-per-client blend, so it's only entered here.
     stage6: {
-        selectedRow: null,
-        rowValues: buildStage6RowValues(),
-        userDefined: { price: '', pct: '', source: '', low: '', high: '' },
+        individual: { price: '', low: '', high: '', pct: '', comment: '' },
+        group: { price: '', low: '', high: '', pct: '', comment: '' },
+        pctIndividual: '',
     },
     stage7: { value: '', low: '', high: '' },
     stage8: {
-        facilitators: '',          // Field 1 — headcount, blank default
-        conversionFactor: 0.20,    // Field 2 — pre-filled, fully editable
-        pctIndividual: '',         // Field 3 — required, deliberately blank
-        hoursIndividual: 29.6,     // Field 4 — Sunstone individual default
-        hoursGroup: 20.2,          // Field 5 — Sunstone group-monitoring default
-        annualHoursPerFTE: 1890,   // Field 6 — advanced, collapsed by default
+        facilitators: '',          // headcount, blank default
+        conversionFactor: 0.20,    // pre-filled, fully editable
+        hoursIndividual: 29.6,     // Sunstone individual default
+        hoursGroup: 20.2,          // Sunstone group-monitoring default
+        annualHoursPerFTE: 1890,   // advanced, collapsed by default
         siteMode: 'program',       // Site check approach — 'program' (A) or 'siteBySite' (B)
-        sites: '',                 // Field 7 — Option A, optional site check, blank default
-        clientsPerSite: 275,       // Field 8 — Option A, Oregon observed default
+        sites: '',                 // Option A, optional site check, blank default
+        clientsPerSite: 275,       // Option A, Oregon observed default
         siteGroups: [{ id: 1, count: '', clientsPerSite: '' }], // Option B rows
         capacityCapApplied: false,
     },
@@ -85,26 +79,19 @@ export const funnelReducer = (state, action) => {
             return { ...state, [stage]: { ...state[stage], [bound]: value } };
         }
 
-        case 'SET_STAGE6_ROW':
-            return { ...state, stage6: { ...state.stage6, selectedRow: action.key } };
-
-        case 'SET_STAGE6_ROW_VALUE':
+        case 'SET_STAGE6_ROW_FIELD': {
+            const { row, field, value } = action; // row: 'individual' | 'group'
             return {
                 ...state,
                 stage6: {
                     ...state.stage6,
-                    rowValues: { ...state.stage6.rowValues, [action.key]: action.value },
+                    [row]: { ...state.stage6[row], [field]: value },
                 },
             };
+        }
 
-        case 'SET_STAGE6_USER_DEFINED':
-            return {
-                ...state,
-                stage6: {
-                    ...state.stage6,
-                    userDefined: { ...state.stage6.userDefined, [action.field]: action.value },
-                },
-            };
+        case 'SET_STAGE6_SPLIT':
+            return { ...state, stage6: { ...state.stage6, pctIndividual: action.value } };
 
         case 'SET_STAGE8_FIELD':
             return { ...state, stage8: { ...state.stage8, [action.field]: action.value } };
@@ -148,11 +135,21 @@ export const funnelReducer = (state, action) => {
 // 0.20, hoursIndividual 29.6, etc.) for fields it never had, while its old
 // `facilitators` count and `capacityCapApplied` flag are preserved. Orphaned
 // legacy keys (`throughput`, `multiplier`) simply ride along, unused.
+//
+// Stage 6 gets the same treatment: a pre-refactor saved model's stage6 shape
+// (selectedRow/rowValues/userDefined, no individual/group/pctIndividual) is
+// merged UNDER the new field defaults, so it resumes with blank Individual/
+// Group rows instead of StageAfford crashing on `stage6.individual` being
+// undefined. Its orphaned legacy keys ride along unused, same as stage8's.
 export const useFunnelReducer = (restoredState) => useReducer(
     funnelReducer,
     undefined,
     () => {
         if (!restoredState) return initialFunnelState();
-        return { ...restoredState, stage8: { ...initialFunnelState().stage8, ...restoredState.stage8 } };
+        return {
+            ...restoredState,
+            stage6: { ...initialFunnelState().stage6, ...restoredState.stage6 },
+            stage8: { ...initialFunnelState().stage8, ...restoredState.stage8 },
+        };
     }
 );

@@ -1,6 +1,12 @@
 import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
-import { deriveFunnelDisplay, cellValuesFromResults, getStage6Value, stage6TierLabel, formatRate } from '../../utils/funnelCalculations';
-import { STAGE9_METHODOLOGICAL_CAVEAT, STAGE9_OREGON_COMPARATOR_CAPTION } from '../../constants/funnelDefaults';
+import { deriveFunnelDisplay, cellValuesFromResults, getStage6Value, stage6SummaryLabel, getStage6SplitSummary, formatRate, getStageInputBounds } from '../../utils/funnelCalculations';
+import {
+    AWARENESS_INTEREST_CONTEXTS,
+    GEOGRAPHIC_ACCESS_CONTEXTS,
+    FUNNEL_INPUT_CELLS,
+} from '../../constants/funnelDefaults';
+
+const labelFromList = (list, key) => list.find((item) => item.key === key)?.label || key;
 
 // Define styles for the PDF
 const styles = StyleSheet.create({
@@ -176,28 +182,22 @@ const styles = StyleSheet.create({
         height: 10,
         backgroundColor: '#eef1f5',
         borderRadius: 2,
+        flexDirection: 'row',
+        justifyContent: 'center',
     },
     funnelBarFill: {
         height: 10,
         backgroundColor: '#c2410c',
         borderRadius: 2,
     },
-    calloutBox: {
-        borderLeft: '3px solid #023e74',
-        backgroundColor: '#f7f9fc',
-        padding: 8,
-        marginBottom: 8,
-    },
-    calloutText: {
-        fontSize: 9,
-        color: '#333',
-    },
 });
 
 // Native react-pdf reconstruction of the funnel plot (a chart of
 // proportionally-decreasing horizontal bars), since @react-pdf/renderer
 // cannot render a live Recharts/SVG/canvas element. Bar widths are
-// proportional to each row's N relative to the first row's N.
+// proportional to each row's N relative to the first row's N, and centered
+// in their track (via funnelBarTrack's justifyContent) so the taper reads
+// as an actual funnel shape rather than a left-aligned staircase.
 const FunnelBarChart = ({ rows }) => {
     const maxN = Number(rows?.[0]?.n) || 1;
     return (
@@ -219,31 +219,54 @@ const FunnelBarChart = ({ rows }) => {
     );
 };
 
-const FunnelRecapTable = ({ rows }) => (
-    <View style={styles.funnelTable}>
-        <View style={styles.funnelTableHeaderRow} wrap={false}>
-            <Text style={styles.funnelTableHeaderCell}>Stage</Text>
-            <Text style={styles.funnelTableHeaderCell}>Type</Text>
-            <Text style={styles.funnelTableHeaderCell}>Rate</Text>
-            <Text style={styles.funnelTableHeaderCell}>N</Text>
-        </View>
-        {rows.map((row) => (
-            <View key={row.key} style={styles.funnelTableRow} wrap={false}>
-                <Text style={styles.funnelTableCell}>{row.stage}</Text>
-                <Text style={styles.funnelTableCell}>{row.type === 'base' ? '—' : row.type}</Text>
-                <Text style={styles.funnelTableCell}>{formatRate(row.rate) !== null ? `${formatRate(row.rate)}%` : '—'}</Text>
-                <Text style={styles.funnelTableCell}>{Number(row.n).toLocaleString()}</Text>
+const RECAP_ROW_KEY_TO_STAGE = { D: 'stage4', E: 'stage5', F: 'stage6', G: 'stage7' };
+
+const FunnelRecapTable = ({ rows, bounds, stage6SplitSummary }) => {
+    const boundCell = (rowKey, bound) => {
+        const stageKey = RECAP_ROW_KEY_TO_STAGE[rowKey];
+        const raw = stageKey ? bounds?.[stageKey]?.[bound] : null;
+        const formatted = formatRate(raw);
+        return formatted !== null ? `${formatted}%` : '—';
+    };
+
+    return (
+        <View style={styles.funnelTable}>
+            <View style={styles.funnelTableHeaderRow} wrap={false}>
+                <Text style={styles.funnelTableHeaderCell}>Stage</Text>
+                <Text style={styles.funnelTableHeaderCell}>Type</Text>
+                <Text style={styles.funnelTableHeaderCell}>Lower Bound</Text>
+                <Text style={styles.funnelTableHeaderCell}>Value Entered</Text>
+                <Text style={styles.funnelTableHeaderCell}>Upper Bound</Text>
+                <Text style={styles.funnelTableHeaderCell}>Retained</Text>
             </View>
-        ))}
-    </View>
-);
+            {rows.map((row) => (
+                <View key={row.key}>
+                    <View style={styles.funnelTableRow} wrap={false}>
+                        <Text style={styles.funnelTableCell}>{row.stage}</Text>
+                        <Text style={styles.funnelTableCell}>{row.type === 'base' ? '—' : row.type}</Text>
+                        <Text style={styles.funnelTableCell}>{boundCell(row.key, 'low')}</Text>
+                        <Text style={styles.funnelTableCell}>{formatRate(row.rate) !== null ? `${formatRate(row.rate)}%` : '—'}</Text>
+                        <Text style={styles.funnelTableCell}>{boundCell(row.key, 'high')}</Text>
+                        <Text style={styles.funnelTableCell}>{Number(row.n).toLocaleString()}</Text>
+                    </View>
+                    {row.key === 'F' && stage6SplitSummary && (
+                        <View style={styles.funnelTableRow} wrap={false}>
+                            <Text style={[styles.funnelTableCell, { fontStyle: 'italic' }]}>↳ Individual / Group split</Text>
+                            <Text style={[styles.funnelTableCell, { flex: 5, fontStyle: 'italic' }]}>{stage6SplitSummary}</Text>
+                        </View>
+                    )}
+                </View>
+            ))}
+        </View>
+    );
+};
 
 const ScenarioExplorerPdfTable = ({ startN, scenario }) => {
     const stageRows = [
         { label: 'Aware', rowKey: 'D' },
-        { label: 'Interested | Aware', rowKey: 'E' },
+        { label: 'Interested', rowKey: 'E' },
         { label: 'Can afford', rowKey: 'F' },
-        { label: 'Can access provider', rowKey: 'G' },
+        { label: 'Sufficient Clinic Capacity', rowKey: 'G' },
     ];
     const findRow = (column, rowKey) => scenario[column].rows.find((r) => r.key === rowKey);
 
@@ -256,7 +279,7 @@ const ScenarioExplorerPdfTable = ({ startN, scenario }) => {
                 <Text style={styles.funnelTableHeaderCell}>Optimistic</Text>
             </View>
             <View style={styles.funnelTableRow} wrap={false}>
-                <Text style={styles.funnelTableCell}>Funnel Input</Text>
+                <Text style={styles.funnelTableCell}>Population with MDD</Text>
                 <Text style={styles.funnelTableCell}>{Number(startN).toLocaleString()}</Text>
                 <Text style={styles.funnelTableCell}>{Number(startN).toLocaleString()}</Text>
                 <Text style={styles.funnelTableCell}>{Number(startN).toLocaleString()}</Text>
@@ -276,7 +299,7 @@ const ScenarioExplorerPdfTable = ({ startN, scenario }) => {
                 <Text style={[styles.funnelTableCell, { fontWeight: 'bold' }]}>{Number(scenario.optimistic.effectiveDemand).toLocaleString()}</Text>
             </View>
             <Text style={[styles.label, { marginTop: 4 }]}>
-                80% confidence interval: {Number(scenario.conservative.effectiveDemand).toLocaleString()}–{Number(scenario.optimistic.effectiveDemand).toLocaleString()} clients/yr, from a 10,000-run simulation over each stage's Low-High range.
+                80% confidence interval: {Number(scenario.conservative.effectiveDemand).toLocaleString()}–{Number(scenario.optimistic.effectiveDemand).toLocaleString()} clients/yr, from a 100,000-run simulation over each stage's Low-High range.
             </Text>
         </View>
     );
@@ -295,6 +318,7 @@ const MyDocument = ({ formData, results, modelCreatedOn, calculatedAt, funnelSta
     }
 
     const funnelDisplay = funnelState ? deriveFunnelDisplay(funnelState, cellValuesFromResults(results)) : null;
+    const stageInputBounds = funnelState ? getStageInputBounds(funnelState) : null;
 
     return (
         <Document>
@@ -455,15 +479,15 @@ const MyDocument = ({ formData, results, modelCreatedOn, calculatedAt, funnelSta
                             <View style={styles.inputGrid}>
                                 <View style={styles.inputItem}>
                                     <Text style={styles.label}>Awareness / Interest context:</Text>
-                                    <Text style={styles.value}>{funnelState.contexts.awarenessInterest}</Text>
+                                    <Text style={styles.value}>{labelFromList(AWARENESS_INTEREST_CONTEXTS, funnelState.contexts.awarenessInterest)}</Text>
                                 </View>
                                 <View style={styles.inputItem}>
                                     <Text style={styles.label}>Geographic Accessibility context:</Text>
-                                    <Text style={styles.value}>{funnelState.contexts.geographicAccess}</Text>
+                                    <Text style={styles.value}>{labelFromList(GEOGRAPHIC_ACCESS_CONTEXTS, funnelState.contexts.geographicAccess)}</Text>
                                 </View>
                                 <View style={styles.inputItem}>
                                     <Text style={styles.label}>Funnel input population:</Text>
-                                    <Text style={styles.value}>{funnelState.funnelInputSelection}</Text>
+                                    <Text style={styles.value}>{labelFromList(FUNNEL_INPUT_CELLS, funnelState.funnelInputSelection)}</Text>
                                 </View>
                                 <View style={styles.inputItem}>
                                     <Text style={styles.label}>Aware (%):</Text>
@@ -474,8 +498,8 @@ const MyDocument = ({ formData, results, modelCreatedOn, calculatedAt, funnelSta
                                     <Text style={styles.value}>{formatRate(funnelState.stage5.value) ?? '—'}%</Text>
                                 </View>
                                 <View style={styles.inputItem}>
-                                    <Text style={styles.label}>Can afford (selected row / %):</Text>
-                                    <Text style={styles.value}>{stage6TierLabel(funnelState.stage6)} / {formatRate(getStage6Value(funnelState.stage6)) ?? '—'}%</Text>
+                                    <Text style={styles.label}>Can afford (Individual/Group / blended %):</Text>
+                                    <Text style={styles.value}>{stage6SummaryLabel(funnelState.stage6)} / {formatRate(getStage6Value(funnelState.stage6)) ?? '—'}%</Text>
                                 </View>
                                 <View style={styles.inputItem}>
                                     <Text style={styles.label}>Can access provider (%):</Text>
@@ -490,7 +514,7 @@ const MyDocument = ({ formData, results, modelCreatedOn, calculatedAt, funnelSta
                                 <View style={styles.inputItem}>
                                     <Text style={styles.label}>Individual / group split, hours per client:</Text>
                                     <Text style={styles.value}>
-                                        {funnelState.stage8.pctIndividual === '' || funnelState.stage8.pctIndividual == null ? '—' : `${funnelState.stage8.pctIndividual}%`} individual ({funnelState.stage8.hoursIndividual ?? '—'}h / {funnelState.stage8.hoursGroup ?? '—'}h)
+                                        {funnelState.stage6.pctIndividual === '' || funnelState.stage6.pctIndividual == null ? '—' : `${funnelState.stage6.pctIndividual}%`} individual ({funnelState.stage8.hoursIndividual ?? '—'}h / {funnelState.stage8.hoursGroup ?? '—'}h)
                                     </Text>
                                 </View>
                                 <View style={styles.inputItem}>
@@ -507,12 +531,34 @@ const MyDocument = ({ formData, results, modelCreatedOn, calculatedAt, funnelSta
                                     <Text style={styles.label}>Capacity cap applied:</Text>
                                     <Text style={styles.value}>{funnelState.stage8.capacityCapApplied ? 'Yes' : 'No'}</Text>
                                 </View>
+                                {funnelDisplay.stage8Capacity?.sitesFilled && (
+                                    <>
+                                        <View style={styles.inputItem}>
+                                            <Text style={styles.label}>
+                                                Site capacity check ({funnelDisplay.stage8Capacity.siteMode === 'siteBySite' ? 'site-by-site' : 'program-level'}):
+                                            </Text>
+                                            <Text style={styles.value}>
+                                                {funnelDisplay.stage8Capacity.siteMode === 'siteBySite'
+                                                    ? (funnelState.stage8.siteGroups || [])
+                                                        .filter((g) => g.count !== '' && g.count != null && g.clientsPerSite !== '' && g.clientsPerSite != null)
+                                                        .map((g) => `${g.count} × ${g.clientsPerSite}/yr`)
+                                                        .join(', ')
+                                                    : `${funnelState.stage8.sites} sites × ${funnelState.stage8.clientsPerSite}/yr avg`}
+                                                {' '}= {Math.round(funnelDisplay.stage8Capacity.siteCapacity).toLocaleString()}/yr total
+                                            </Text>
+                                        </View>
+                                        <View style={styles.inputItem}>
+                                            <Text style={styles.label}>Binding constraint:</Text>
+                                            <Text style={styles.value}>{funnelDisplay.stage8Capacity.bindingArm === 'sites' ? 'Site capacity' : 'Workforce (facilitator) capacity'}</Text>
+                                        </View>
+                                    </>
+                                )}
                             </View>
                         </View>
 
                         <View style={styles.section} wrap={false}>
                             <Text style={styles.sectionTitle}>Inputs Recap</Text>
-                            <FunnelRecapTable rows={funnelDisplay.funnelRows} />
+                            <FunnelRecapTable rows={funnelDisplay.funnelRows} bounds={stageInputBounds} stage6SplitSummary={getStage6SplitSummary(funnelState.stage6)} />
                             <Text style={[styles.value, { fontWeight: 'bold' }]}>
                                 Effective demand: {Number(funnelDisplay.displayedEffectiveDemand).toLocaleString()}/yr
                                 {funnelState.stage8.capacityCapApplied ? ' (capacity cap applied)' : ''}
@@ -529,14 +575,6 @@ const MyDocument = ({ formData, results, modelCreatedOn, calculatedAt, funnelSta
                             <FunnelBarChart rows={funnelDisplay.scenario.moderate.rows} />
                         </View>
 
-                        <View style={styles.section} wrap={false}>
-                            <View style={styles.calloutBox}>
-                                <Text style={styles.calloutText}>{STAGE9_METHODOLOGICAL_CAVEAT}</Text>
-                            </View>
-                            <View style={styles.calloutBox}>
-                                <Text style={styles.calloutText}>{STAGE9_OREGON_COMPARATOR_CAPTION}</Text>
-                            </View>
-                        </View>
                     </>
                 )}
             </Page>

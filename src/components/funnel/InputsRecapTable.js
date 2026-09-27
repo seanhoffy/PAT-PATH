@@ -4,15 +4,15 @@ import { STAGE9_RECAP_HELPER_TEXT } from '../../constants/funnelDefaults';
 
 // Stage 9, component 1 — read-only Inputs Recap. Rows are the real funnel
 // chain (Stage 3 output through Effective demand).
-const InputsRecapTable = ({ funnelRows, bounds }) => (
+const InputsRecapTable = ({ funnelRows, bounds, stage6SplitSummary }) => (
     <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
         <Typography variant="h5" sx={{ mb: 2 }}>Inputs Recap</Typography>
 
         <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1 }}>
-            Table F — Funnel Chain Recap
+            Table G — Funnel Chain Recap
         </Typography>
         <Box sx={{ mb: 1 }}>
-            <FunnelRowsTable rows={funnelRows} bounds={bounds} />
+            <FunnelRowsTable rows={funnelRows} bounds={bounds} stage6SplitSummary={stage6SplitSummary} />
         </Box>
         <Typography variant="body2" color="text.secondary">{STAGE9_RECAP_HELPER_TEXT}</Typography>
     </Paper>

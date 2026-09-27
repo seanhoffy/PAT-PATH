@@ -98,7 +98,7 @@ const StageGeographic = ({ value, low, high, geographicAccessContext, onContextC
         {geographicAccessContext === 'optedOut' && <Callout>{STAGE7_MEDICAL_TOURISM_FOOTNOTE}</Callout>}
 
         <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 2, mb: 1 }}>
-            Table E — Geographic Accessibility
+            Table F — Geographic Accessibility
         </Typography>
         <Table size="small">
             <TableHeaderRow columns={['Setting', 'Default', 'Basis', 'Source']} />

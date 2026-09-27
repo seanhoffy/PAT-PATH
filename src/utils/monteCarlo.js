@@ -46,15 +46,26 @@ const nearestRank = (sortedAsc, p) =>
  * from its {low, mode, high} range, and returns the 10th/90th percentile
  * outcomes plus the full sorted run list (for the distribution histogram).
  * `ranges`: { stage4: {low, mode, high}, stage5, stage6, stage7 }.
+ *
+ * stage6 (Can afford) is compound rather than a flat {low,mode,high}:
+ * `{ individual: {low,mode,high}, group: {low,mode,high}, splitWeight }`.
+ * Each run draws Individual's and Group's Base Case % independently from
+ * their own ranges, then blends them by the fixed splitWeight into that
+ * run's single Can-Afford% — the two arms' uncertainty stays genuinely
+ * separate every run, the same way it's combined for the point estimate.
  */
 export const runFunnelSimulation = (startN, ranges, seed, iterations, buildFunnelRows) => {
     const rng = mulberry32(seed);
     const runs = new Array(iterations);
     for (let i = 0; i < iterations; i++) {
+        const stage6Individual = sampleTriangular(ranges.stage6.individual.low, ranges.stage6.individual.mode, ranges.stage6.individual.high, rng);
+        const stage6Group = sampleTriangular(ranges.stage6.group.low, ranges.stage6.group.mode, ranges.stage6.group.high, rng);
+        const stage6 = ranges.stage6.splitWeight * stage6Individual + (1 - ranges.stage6.splitWeight) * stage6Group;
+
         runs[i] = buildFunnelRows(startN, {
             stage4: sampleTriangular(ranges.stage4.low, ranges.stage4.mode, ranges.stage4.high, rng),
             stage5: sampleTriangular(ranges.stage5.low, ranges.stage5.mode, ranges.stage5.high, rng),
-            stage6: sampleTriangular(ranges.stage6.low, ranges.stage6.mode, ranges.stage6.high, rng),
+            stage6,
             stage7: sampleTriangular(ranges.stage7.low, ranges.stage7.mode, ranges.stage7.high, rng),
         });
     }

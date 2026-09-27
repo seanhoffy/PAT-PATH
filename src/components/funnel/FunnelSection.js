@@ -15,8 +15,8 @@ import SensitivityTornadoChart from './SensitivityTornadoChart';
 import FunnelPlot from './FunnelPlot';
 import Callout from './Callout';
 import { useFunnelReducer, getModeratePercents } from './useFunnelReducer';
-import { deriveFunnelDisplay, buildFunnelRows, validateFunnelRequiredStages, getStageInputBounds } from '../../utils/funnelCalculations';
-import { STAGE9_METHODOLOGICAL_CAVEAT, STAGE9_OREGON_COMPARATOR_CAPTION, STAGE9_MONTE_CARLO_EXPLAINER } from '../../constants/funnelDefaults';
+import { deriveFunnelCore, buildFunnelScenario, buildFunnelRows, validateFunnelRequiredStages, getStageInputBounds, getStage6SplitSummary } from '../../utils/funnelCalculations';
+import { STAGE9_MONTE_CARLO_EXPLAINER } from '../../constants/funnelDefaults';
 
 // Top-level container for Stages 4-9. Owns the reducer and composes every
 // cross-cutting piece and stage subcomponent. Lifts its whole state upward
@@ -34,8 +34,19 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
         capacityReady,
         exceedsCapacity,
         stage8Capacity,
-        scenario,
-    } = deriveFunnelDisplay(state, cellValues);
+    } = deriveFunnelCore(state, cellValues);
+
+    // The Monte Carlo simulation (100,000 iterations) is the expensive part
+    // of Stage 9 — memoized on just the pieces that feed it, so editing a
+    // Stage 8 capacity field (or anything else) doesn't rerun it. Each of
+    // stage4-7/scenario keeps a stable object reference across unrelated
+    // dispatches (the reducer only replaces the slice it actually touches),
+    // so reference equality here is sufficient — no need to list every field.
+    const scenario = useMemo(
+        () => buildFunnelScenario(funnelInputN, state),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [funnelInputN, state.stage4, state.stage5, state.stage6, state.stage7, state.scenario]
+    );
 
     const funnelReady = validateFunnelRequiredStages(state).isValid;
     const stageInputBounds = getStageInputBounds(state);
@@ -125,9 +136,8 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
 
             <StageAfford
                 stage6={state.stage6}
-                onSelectRow={(key) => dispatch({ type: 'SET_STAGE6_ROW', key })}
-                onRowValueChange={(key, value) => dispatch({ type: 'SET_STAGE6_ROW_VALUE', key, value })}
-                onUserDefinedChange={(field, value) => dispatch({ type: 'SET_STAGE6_USER_DEFINED', field, value })}
+                onRowFieldChange={(row, field, value) => dispatch({ type: 'SET_STAGE6_ROW_FIELD', row, field, value })}
+                onSplitChange={(value) => dispatch({ type: 'SET_STAGE6_SPLIT', value })}
             />
 
             <StageGeographic
@@ -142,6 +152,7 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
 
             <StageCapacity
                 stage8={state.stage8}
+                pctIndividual={state.stage6.pctIndividual}
                 effectiveDemand={effectiveDemand}
                 displayedEffectiveDemand={displayedEffectiveDemand}
                 capacityN={capacityN}
@@ -158,8 +169,6 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 “Your realistic annual utilization estimate.”
             </Typography>
-            <Callout title="Methodological caveat">{STAGE9_METHODOLOGICAL_CAVEAT}</Callout>
-
             {funnelReady ? (
                 <>
                     <Paper
@@ -207,7 +216,7 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
                         )}
                     </Paper>
 
-                    <InputsRecapTable funnelRows={funnelRows} bounds={stageInputBounds} />
+                    <InputsRecapTable funnelRows={funnelRows} bounds={stageInputBounds} stage6SplitSummary={getStage6SplitSummary(state.stage6)} />
 
                     {!scenario.hasSimulationVariance && (
                         <Alert severity="info" sx={{ mb: 3 }}>
@@ -242,8 +251,6 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
                     Complete Awareness, Interest, Afford, and Geographic Accessibility above to see your funnel and effective-demand estimate.
                 </Alert>
             )}
-
-            <Callout title="Oregon comparator">{STAGE9_OREGON_COMPARATOR_CAPTION}</Callout>
         </Box>
     );
 };

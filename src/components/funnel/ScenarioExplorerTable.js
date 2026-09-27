@@ -6,13 +6,13 @@ const STAGE_ROWS = [
     { rowKey: 'D', label: 'Aware', stageKey: 'stage4' },
     { rowKey: 'E', label: 'Interest Given Aware', stageKey: 'stage5' },
     { rowKey: 'F', label: 'Can afford', stageKey: 'stage6' },
-    { rowKey: 'G', label: 'Can access provider', stageKey: 'stage7' },
+    { rowKey: 'G', label: 'Sufficient Clinic Capacity', stageKey: 'stage7' },
 ];
 
 // Stage 9, component 2 — Scenario Explorer. Moderate is still the user's
 // literal point estimate (editable, same as before). Conservative/Optimistic
 // are no longer manually typed — they're the 10th/90th percentile of a
-// 10,000-run Monte Carlo simulation over each stage's Low-High range
+// 100,000-run Monte Carlo simulation over each stage's Low-High range
 // (entered on the stage inputs above), read-only here.
 const ScenarioExplorerTable = ({ startN, moderatePercents, scenarioInputs, scenario, onCellChange, onReset }) => {
     const moderateValue = (stageKey) => scenarioInputs.moderateOverrides[stageKey] ?? moderatePercents[stageKey] ?? '';
@@ -28,13 +28,13 @@ const ScenarioExplorerTable = ({ startN, moderatePercents, scenarioInputs, scena
                 <Button variant="outlined" onClick={onReset}>Reset Moderate overrides</Button>
             </Box>
             <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1 }}>
-                Table G — Monte Carlo Simulation Results
+                Table H — Monte Carlo Simulation Results
             </Typography>
             <Table size="small">
                 <TableHeaderRow columns={['Stage', 'Conservative', 'Moderate', 'Optimistic']} />
                 <TableBody>
                     <TableRow>
-                        <TableCell>Funnel Input</TableCell>
+                        <TableCell>Population with MDD</TableCell>
                         <TableCell>{Number(startN).toLocaleString()}</TableCell>
                         <TableCell>{Number(startN).toLocaleString()}</TableCell>
                         <TableCell>{Number(startN).toLocaleString()}</TableCell>
@@ -65,7 +65,7 @@ const ScenarioExplorerTable = ({ startN, moderatePercents, scenarioInputs, scena
                 </TableBody>
             </Table>
             <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 1 }}>
-                Conservative/Optimistic reflect a 10,000-run simulation (10th/90th percentile) over each stage's Low–High range; Moderate is your literal point estimate. Capacity check displayed separately.
+                Conservative/Optimistic reflect a 100,000-run simulation (10th/90th percentile) over each stage's Low–High range; Moderate is your literal point estimate. Capacity check displayed separately.
             </Typography>
         </Paper>
     );

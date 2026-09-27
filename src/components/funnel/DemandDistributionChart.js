@@ -13,7 +13,7 @@ const bucketLabelForValue = (buckets, value) => {
     return match ? bucketLabel(match) : bucketLabel(buckets[buckets.length - 1]);
 };
 
-// Scenario Explorer distribution chart — histogram of all 10,000 simulated
+// Scenario Explorer distribution chart — histogram of all 100,000 simulated
 // Effective Demand outcomes, with the Conservative/Moderate/Optimistic
 // figures marked. Shows the shape the Monte Carlo simulation actually
 // produced, in contrast to the two old columns which sat far outside
@@ -24,14 +24,14 @@ const DemandDistributionChart = ({ simulationRuns, conservative, moderate, optim
 
     return (
         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h5" sx={{ mb: 2 }}>Demand Distribution (10,000 Simulated Markets)</Typography>
+            <Typography variant="h5" sx={{ mb: 2 }}>Demand Distribution (100,000 Simulations)</Typography>
             <Box sx={{ width: '100%', height: 380 }}>
                 <ResponsiveContainer>
                     <BarChart data={data} margin={{ bottom: 40 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="label" angle={-45} textAnchor="end" interval={2} height={60} tick={{ fontSize: 11 }} />
                         <YAxis allowDecimals={false} />
-                        <Tooltip formatter={(value) => [`${value} of 10,000 runs`, 'Count']} />
+                        <Tooltip formatter={(value) => [`${value} of 100,000 runs`, 'Count']} />
                         <Bar dataKey="count" fill={COLORS.primary} />
                         <ReferenceLine
                             x={bucketLabelForValue(buckets, conservative.effectiveDemand)}
@@ -53,9 +53,6 @@ const DemandDistributionChart = ({ simulationRuns, conservative, moderate, optim
                     </BarChart>
                 </ResponsiveContainer>
             </Box>
-            <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 1 }}>
-                Each of the 10,000 simulated markets produced one Effective Demand figure — this is where they landed. Conservative/Optimistic are the 10th/90th percentile of these outcomes, not an invented worst/best case.
-            </Typography>
         </Paper>
     );
 };

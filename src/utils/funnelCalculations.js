@@ -2,8 +2,10 @@
 // No React/DOM references so these are reusable across the on-screen components,
 // the PDF export, and (if ever added) tests.
 
-import { STAGE6_TABLE_A_ROWS, STAGE8_SITE_MODE_SITE_BY_SITE } from '../constants/funnelDefaults';
+import { STAGE8_SITE_MODE_SITE_BY_SITE } from '../constants/funnelDefaults';
 import { runFunnelSimulation } from './monteCarlo';
+
+const isBlank = (v) => v === '' || v === null || v === undefined || Number.isNaN(Number(v));
 
 /**
  * Percent retained relative to the prior stage's N, rounded to 1 decimal place.
@@ -25,17 +27,44 @@ export const formatRate = (rate) => {
 };
 
 /**
- * Human-readable label for Stage 6's currently-selected tier, including the
- * "User-defined" catch-all row (which has no entry in STAGE6_TABLE_A_ROWS).
- * Shared by the History page and the PDF export so a custom entry's actual
- * price point is surfaced instead of the raw "userDefined" key.
+ * One-line summary of Stage 6's Individual/Group split and price tiers.
+ * Shared by the History page and the PDF export. Degrades to per-arm-only
+ * text if the split hasn't been entered yet, rather than crashing on blanks.
  */
-export const stage6TierLabel = (stage6) => {
+export const stage6SummaryLabel = (stage6) => {
     if (!stage6) return '—';
-    if (stage6.selectedRow === 'userDefined') {
-        return `Custom — ${stage6.userDefined?.price || '—'}`;
+    const { individual, group, pctIndividual } = stage6;
+    const armLabel = (armName, row, pct) => {
+        const priceText = !isBlank(row?.price) ? `$${Number(row.price).toLocaleString()}` : '—';
+        const baseText = formatRate(row?.pct) !== null ? `${formatRate(row.pct)}%` : '—';
+        const pctText = pct === null ? '—' : `${pct}%`;
+        return `${pctText} ${armName} @ ${priceText} (Base Case ${baseText})`;
+    };
+    if (isBlank(pctIndividual)) {
+        return `Individual @ ${formatRate(individual?.pct) ?? '—'}% / Group @ ${formatRate(group?.pct) ?? '—'}%`;
     }
-    return STAGE6_TABLE_A_ROWS.find((r) => r.key === stage6.selectedRow)?.pricePoint || stage6.selectedRow;
+    const indivSplit = Number(pctIndividual);
+    return `${armLabel('individual', individual, indivSplit)} · ${armLabel('group', group, 100 - indivSplit)}`;
+};
+
+/**
+ * Formats Stage 6's Individual/Group breakdown for the Inputs Recap table's
+ * extra informational row (added underneath the blended "Can afford" row).
+ * Returns null when there isn't enough entered to describe, so the caller
+ * can simply omit the row rather than showing a line of dashes.
+ */
+export const getStage6SplitSummary = (stage6) => {
+    const { individual, group, pctIndividual } = stage6 || {};
+    if (isBlank(pctIndividual) || isBlank(individual?.pct) || isBlank(group?.pct)) return null;
+
+    const indivSplit = Number(pctIndividual);
+    const groupSplit = 100 - indivSplit;
+    const rangeText = (row) => (formatRate(row?.low) !== null && formatRate(row?.high) !== null
+        ? ` (${formatRate(row.low)}–${formatRate(row.high)}%)`
+        : '');
+
+    return `${indivSplit}% individual @ Base Case ${formatRate(individual.pct)}%${rangeText(individual)} · `
+        + `${groupSplit}% group @ Base Case ${formatRate(group.pct)}%${rangeText(group)}`;
 };
 
 /**
@@ -70,7 +99,7 @@ export const buildFunnelRows = (startN, percents) => {
     const rows = [
         {
             key: 'C',
-            stage: 'Funnel Input',
+            stage: 'Population with MDD',
             type: 'base',
             rate: null,
             n: Math.round(base),
@@ -86,7 +115,7 @@ export const buildFunnelRows = (startN, percents) => {
         },
         {
             key: 'E',
-            stage: 'Interested | Aware',
+            stage: 'Interested',
             type: 'conditional',
             rate: percents.stage5,
             n: chain.E,
@@ -102,7 +131,7 @@ export const buildFunnelRows = (startN, percents) => {
         },
         {
             key: 'G',
-            stage: 'Can access provider',
+            stage: 'Sufficient Clinic Capacity',
             type: 'conditional',
             rate: percents.stage7,
             n: chain.G,
@@ -120,30 +149,32 @@ export const buildFunnelRows = (startN, percents) => {
  */
 export const buildScenarioColumn = (startN, percents) => buildFunnelRows(startN, percents);
 
-const isBlank = (v) => v === '' || v === null || v === undefined || Number.isNaN(Number(v));
-
 /**
  * Stage 8 — capacity check. Independent of the funnel chain; never multiplies
  * into it. All blending happens in the hours domain (clients-per-FTE is a
  * reciprocal quantity — averaging it directly across the individual/group
  * split would be mathematically wrong; see Marseille et al. 2023 sourcing
  * notes). Internal math is kept at full precision; callers round for display.
+ *
+ * `pctIndividual` is sourced from Stage 6's % Individual/Group split (it's
+ * only entered there, not in stage8 itself) — passed in explicitly so this
+ * function doesn't need to know which stage owns the field.
  */
-export const computeStage8Capacity = (stage8) => {
+export const computeStage8Capacity = (stage8, pctIndividual) => {
     const headcount = Number(stage8?.facilitators) || 0;
     const conversionFactor = Number(stage8?.conversionFactor) || 0;
     const fte = headcount * conversionFactor;
 
-    // Field 3 is deliberately undefaulted — while blank, no implicit split
-    // (not 50%, not a stale prior value) is substituted; the provider arm
-    // simply does not compute.
-    const providerReady = !isBlank(stage8?.pctIndividual);
+    // Deliberately undefaulted — while blank, no implicit split (not 50%,
+    // not a stale prior value) is substituted; the provider arm simply does
+    // not compute.
+    const providerReady = !isBlank(pctIndividual);
     let blendedHours = null;
     let clientsPerFTE = null;
     let providerCapacity = null;
 
     if (providerReady) {
-        const pct = Number(stage8.pctIndividual) / 100;
+        const pct = Number(pctIndividual) / 100;
         const hoursIndividual = Number(stage8.hoursIndividual) || 0;
         const hoursGroup = Number(stage8.hoursGroup) || 0;
         blendedHours = pct * hoursIndividual + (1 - pct) * hoursGroup;
@@ -210,15 +241,13 @@ export const capacityExceeded = (finalFunnelN, capacityN) => {
  */
 export const validateFunnelRequiredStages = (funnelState) => {
     const stage6 = funnelState?.stage6;
-    const stage6Value = stage6?.selectedRow === 'userDefined'
-        ? stage6.userDefined?.pct
-        : stage6?.rowValues?.[stage6?.selectedRow];
 
     if (
         isBlank(funnelState?.stage4?.value)
         || isBlank(funnelState?.stage5?.value)
-        || !stage6?.selectedRow
-        || isBlank(stage6Value)
+        || isBlank(stage6?.individual?.pct)
+        || isBlank(stage6?.group?.pct)
+        || isBlank(stage6?.pctIndividual)
         || isBlank(funnelState?.stage7?.value)
     ) {
         return { isValid: false, message: 'Please complete Awareness, Interest, Afford, and Geographic Accessibility before saving or downloading.' };
@@ -228,21 +257,23 @@ export const validateFunnelRequiredStages = (funnelState) => {
 
 /**
  * Whether Stage 8 has enough input to compute a capacity figure. The sole
- * gate is Field 3 (percent individual) — headcount/conversion factor being
- * blank still yields a valid (zero) FTE and capacity, not an "incomplete"
- * state.
+ * gate is the % Individual/Group split (entered in Stage 6) — headcount/
+ * conversion factor being blank still yields a valid (zero) FTE and
+ * capacity, not an "incomplete" state.
  */
-export const isStage8Complete = (stage8) => !isBlank(stage8?.pctIndividual);
+export const isStage8Complete = (pctIndividual) => !isBlank(pctIndividual);
 
 /**
- * Resolves Stage 6's currently-selected row to its effective % (the real
- * funnel input for Stage 6).
+ * Resolves Stage 6's Individual and Group Base Case %'s into one effective %
+ * (the real funnel input for Stage 6) via a weighted average using the %
+ * Individual/Group split. A blank split degrades to 0% individual (i.e. the
+ * Group % alone) rather than crashing on a never-migrated saved object.
  */
 export const getStage6Value = (stage6) => {
-    if (stage6.selectedRow === 'userDefined') {
-        return Number(stage6.userDefined.pct) || 0;
-    }
-    return Number(stage6.rowValues[stage6.selectedRow]) || 0;
+    const splitPct = isBlank(stage6?.pctIndividual) ? 0 : Number(stage6.pctIndividual);
+    const individualPct = Number(stage6?.individual?.pct) || 0;
+    const groupPct = Number(stage6?.group?.pct) || 0;
+    return (splitPct / 100) * individualPct + ((100 - splitPct) / 100) * groupPct;
 };
 
 /**
@@ -274,16 +305,40 @@ const toRangeTriple = (modeValue, low, high) => {
  * through this. A missing/blank range degrades to low = high = mode, so that
  * stage contributes zero variance rather than throwing on a raw,
  * never-migrated saved object.
+ *
+ * Stage 6 is compound rather than a flat {low,mode,high} like the other
+ * three stages: Individual and Group each keep their own range, sampled
+ * independently every run and blended by the fixed % Individual/Group split
+ * (see runFunnelSimulation) — that's what "weighted-average the final %
+ * output of Can afford" means applied per simulated run, not just to the
+ * point estimate.
  */
 export const getFunnelSimulationRanges = (funnelState, moderatePercents) => {
     const stage6 = funnelState.stage6 || {};
-    const stage6RangeSource = stage6.selectedRow === 'userDefined'
-        ? stage6.userDefined
-        : STAGE6_TABLE_A_ROWS.find((r) => r.key === stage6.selectedRow);
+    const stage6Override = funnelState.scenario?.moderateOverrides?.stage6;
+    const splitWeight = (isBlank(stage6.pctIndividual) ? 0 : Number(stage6.pctIndividual)) / 100;
+
+    // A direct Moderate-column override for Can afford is a single flat %,
+    // not an Individual/Group breakdown — there's no principled way to
+    // redistribute it across the two arms, so it's treated as a fixed value
+    // (zero variance) for the simulation, same as pinning any other stage to
+    // one number with no range.
+    const stage6Ranges = !isBlank(stage6Override)
+        ? {
+            individual: toRangeTriple(stage6Override, stage6Override, stage6Override),
+            group: toRangeTriple(stage6Override, stage6Override, stage6Override),
+            splitWeight,
+        }
+        : {
+            individual: toRangeTriple(stage6.individual?.pct, stage6.individual?.low, stage6.individual?.high),
+            group: toRangeTriple(stage6.group?.pct, stage6.group?.low, stage6.group?.high),
+            splitWeight,
+        };
+
     return {
         stage4: toRangeTriple(moderatePercents.stage4, funnelState.stage4?.low, funnelState.stage4?.high),
         stage5: toRangeTriple(moderatePercents.stage5, funnelState.stage5?.low, funnelState.stage5?.high),
-        stage6: toRangeTriple(moderatePercents.stage6, stage6RangeSource?.low ?? stage6RangeSource?.min, stage6RangeSource?.high ?? stage6RangeSource?.max),
+        stage6: stage6Ranges,
         stage7: toRangeTriple(moderatePercents.stage7, funnelState.stage7?.low, funnelState.stage7?.high),
     };
 };
@@ -295,20 +350,27 @@ export const getFunnelSimulationSeed = (funnelState) =>
  * Raw, as-entered Low/High bounds for Stages 4-7 (no mode-defaulting, unlike
  * getFunnelSimulationRanges) — for display in the Inputs Recap, where a blank
  * bound should show as blank, not silently collapse to the point estimate.
+ *
+ * Stage 6's bound is the Individual/Group arms' own Low/High blended by the
+ * % Individual/Group split — the same blend used for the tornado chart's
+ * Can-afford bar — so the single "Can afford" row still shows one coherent
+ * Lower/Upper Bound pair. A row with no explicit Low/High falls back to its
+ * own Base Case % (degenerate bound), matching toRangeTriple's behavior.
  */
 export const getStageInputBounds = (funnelState) => {
     const stage6 = funnelState?.stage6 || {};
-    const stage6RangeSource = stage6.selectedRow === 'userDefined'
-        ? stage6.userDefined
-        : STAGE6_TABLE_A_ROWS.find((r) => r.key === stage6.selectedRow);
     const boundOrNull = (v) => (isBlank(v) ? null : Number(v));
+    const splitPct = isBlank(stage6.pctIndividual) ? null : Number(stage6.pctIndividual);
+    const blendBound = (bound) => {
+        const indivVal = stage6.individual?.[bound] ?? stage6.individual?.pct;
+        const groupVal = stage6.group?.[bound] ?? stage6.group?.pct;
+        if (splitPct === null || isBlank(indivVal) || isBlank(groupVal)) return null;
+        return (splitPct / 100) * Number(indivVal) + ((100 - splitPct) / 100) * Number(groupVal);
+    };
     return {
         stage4: { low: boundOrNull(funnelState?.stage4?.low), high: boundOrNull(funnelState?.stage4?.high) },
         stage5: { low: boundOrNull(funnelState?.stage5?.low), high: boundOrNull(funnelState?.stage5?.high) },
-        stage6: {
-            low: boundOrNull(stage6RangeSource?.low ?? stage6RangeSource?.min),
-            high: boundOrNull(stage6RangeSource?.high ?? stage6RangeSource?.max),
-        },
+        stage6: { low: blendBound('low'), high: blendBound('high') },
         stage7: { low: boundOrNull(funnelState?.stage7?.low), high: boundOrNull(funnelState?.stage7?.high) },
     };
 };
@@ -350,20 +412,34 @@ const STAGE_ROW_KEYS = { stage4: 'D', stage5: 'E', stage6: 'F', stage7: 'G' };
  *    `simulationRuns`, normalized so the four shares sum to 100%. Verified
  *    against the memo's own numbers: this reproduces 82/8/7/3% vs their
  *    83/7/6/4% — matching within simulation noise.
+ *
+ * Stage 6's `ranges.stage6` is compound (Individual + Group arms, see
+ * getFunnelSimulationRanges) rather than a flat {low,mode,high} like the
+ * other three — collapsed here to one equivalent triple by blending each
+ * arm's own low/mode/high with the same split weight used everywhere else,
+ * so Can afford still reads as a single bar (matching the Scenario Explorer
+ * and Funnel Plot, which also only ever show it as one line item).
  */
 export const computeTornadoSensitivity = (startN, ranges, simulationRuns) => {
     const stageMeta = [
         { key: 'stage4', label: 'Aware' },
-        { key: 'stage5', label: 'Interested | Aware' },
+        { key: 'stage5', label: 'Interested' },
         { key: 'stage6', label: 'Can afford' },
-        { key: 'stage7', label: 'Can access provider' },
+        { key: 'stage7', label: 'Sufficient Clinic Capacity' },
     ];
-    const basePercents = Object.fromEntries(stageMeta.map(({ key }) => [key, ranges[key].mode]));
+    const stage6Blend = (field) => ranges.stage6.splitWeight * ranges.stage6.individual[field]
+        + (1 - ranges.stage6.splitWeight) * ranges.stage6.group[field];
+    const effectiveRanges = {
+        ...ranges,
+        stage6: { low: stage6Blend('low'), mode: stage6Blend('mode'), high: stage6Blend('high') },
+    };
+
+    const basePercents = Object.fromEntries(stageMeta.map(({ key }) => [key, effectiveRanges[key].mode]));
     const outcomes = simulationRuns.map((r) => r.effectiveDemand);
 
     const results = stageMeta.map(({ key, label }) => {
-        const lowN = buildFunnelRows(startN, { ...basePercents, [key]: ranges[key].low }).effectiveDemand;
-        const highN = buildFunnelRows(startN, { ...basePercents, [key]: ranges[key].high }).effectiveDemand;
+        const lowN = buildFunnelRows(startN, { ...basePercents, [key]: effectiveRanges[key].low }).effectiveDemand;
+        const highN = buildFunnelRows(startN, { ...basePercents, [key]: effectiveRanges[key].high }).effectiveDemand;
 
         const rowKey = STAGE_ROW_KEYS[key];
         const sampledRates = simulationRuns.map((r) => r.rows.find((row) => row.key === rowKey).rate);
@@ -413,12 +489,13 @@ export const cellValuesFromResults = (results) => ({
 });
 
 /**
- * Given a raw funnel reducer state and the Stage-3 2x2 cell values, derive
- * every display-ready figure (funnel rows, effective demand, capacity check,
- * scenario columns). Shared by the live app (FunnelSection), the PDF export,
- * and the History page so this computation lives in exactly one place.
+ * The cheap half of Stage 9's display derivation: the real funnel chain
+ * (Stage 3 output through Effective Demand) and the Stage 8 capacity check.
+ * Split out from deriveFunnelDisplay so the live app (FunnelSection) can
+ * recompute this on every render without also re-running the expensive
+ * Monte Carlo simulation below.
  */
-export const deriveFunnelDisplay = (funnelState, cellValues) => {
+export const deriveFunnelCore = (funnelState, cellValues) => {
     if (!funnelState) return null;
 
     const funnelInputN = Number(cellValues?.[funnelState.funnelInputSelection]) || 0;
@@ -431,7 +508,7 @@ export const deriveFunnelDisplay = (funnelState, cellValues) => {
     };
     const { rows: funnelRows, effectiveDemand } = buildFunnelRows(funnelInputN, livePercents);
 
-    const stage8Capacity = computeStage8Capacity(funnelState.stage8);
+    const stage8Capacity = computeStage8Capacity(funnelState.stage8, funnelState.stage6?.pctIndividual);
     const capacityReady = stage8Capacity.providerReady;
     const capacityN = stage8Capacity.capacity ?? 0;
     const exceedsCapacity = capacityReady && capacityExceeded(effectiveDemand, capacityN);
@@ -450,6 +527,26 @@ export const deriveFunnelDisplay = (funnelState, cellValues) => {
         ? Math.min(capacityN, effectiveDemand)
         : effectiveDemand);
 
+    return {
+        funnelInputN,
+        funnelRows,
+        effectiveDemand,
+        displayedEffectiveDemand,
+        capacityN,
+        capacityReady,
+        exceedsCapacity,
+        stage8Capacity,
+    };
+};
+
+/**
+ * The expensive half: the Monte Carlo Scenario Explorer (100,000-iteration
+ * simulation + tornado sensitivity). Depends only on funnelInputN and
+ * Stages 4-7 / the scenario overrides — never on Stage 8 — so callers that
+ * re-render on every keystroke (FunnelSection) can memoize this separately
+ * and skip it entirely when, say, a Stage 8 capacity field changes.
+ */
+export const buildFunnelScenario = (funnelInputN, funnelState) => {
     const moderatePercents = getModeratePercents(funnelState);
     const moderate = buildFunnelRows(funnelInputN, moderatePercents);
 
@@ -462,12 +559,16 @@ export const deriveFunnelDisplay = (funnelState, cellValues) => {
     // exactly equal to moderate — never null, never a crash.
     const simulationRanges = getFunnelSimulationRanges(funnelState, moderatePercents);
     const simulationSeed = getFunnelSimulationSeed(funnelState);
-    const simulation = runFunnelSimulation(funnelInputN, simulationRanges, simulationSeed, 10000, buildFunnelRows);
+    const simulation = runFunnelSimulation(funnelInputN, simulationRanges, simulationSeed, 100000, buildFunnelRows);
     const tornado = computeTornadoSensitivity(funnelInputN, simulationRanges, simulation.sorted);
-    const hasSimulationVariance = ['stage4', 'stage5', 'stage6', 'stage7']
-        .some((key) => simulationRanges[key].low !== simulationRanges[key].high);
+    // stage6 is compound (Individual + Group arms), not a flat {low,high}
+    // like the other three — check both arms for variance.
+    const hasSimulationVariance = ['stage4', 'stage5', 'stage7']
+        .some((key) => simulationRanges[key].low !== simulationRanges[key].high)
+        || simulationRanges.stage6.individual.low !== simulationRanges.stage6.individual.high
+        || simulationRanges.stage6.group.low !== simulationRanges.stage6.group.high;
 
-    const scenario = {
+    return {
         conservative: simulation.conservative,
         moderate,
         optimistic: simulation.optimistic,
@@ -475,16 +576,19 @@ export const deriveFunnelDisplay = (funnelState, cellValues) => {
         tornado,
         hasSimulationVariance,
     };
+};
 
-    return {
-        funnelInputN,
-        funnelRows,
-        effectiveDemand,
-        displayedEffectiveDemand,
-        capacityN,
-        capacityReady,
-        exceedsCapacity,
-        stage8Capacity,
-        scenario,
-    };
+/**
+ * Given a raw funnel reducer state and the Stage-3 2x2 cell values, derive
+ * every display-ready figure (funnel rows, effective demand, capacity check,
+ * scenario columns). Shared by the PDF export and the History page — one-shot
+ * consumers that don't need deriveFunnelCore/buildFunnelScenario split apart.
+ * The live app (FunnelSection) calls those two directly instead, so it can
+ * memoize the simulation separately from the cheap per-render math.
+ */
+export const deriveFunnelDisplay = (funnelState, cellValues) => {
+    const core = deriveFunnelCore(funnelState, cellValues);
+    if (!core) return null;
+    const scenario = buildFunnelScenario(core.funnelInputN, funnelState);
+    return { ...core, scenario };
 };
