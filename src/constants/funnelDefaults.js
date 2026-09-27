@@ -182,7 +182,7 @@ export const STAGE6_TABLE_A_DENOMINATOR = '% of the aware-and-interested populat
 // content shown as guidance above the input table, not wired into the funnel
 // math.
 export const STAGE6_GUIDANCE_HEADING = 'Affordability Input Reference';
-export const STAGE6_GUIDANCE_HELPER = "For context only — these don't feed the model. Use them to sanity-check the Price, Base Case, and Range you enter above.";
+export const STAGE6_GUIDANCE_HELPER = "For context only — these don't feed the model. Use them to sanity-check the Price, Base Case, and Range you enter below.";
 
 export const STAGE6_SPLIT_LABEL = '% Individual / Group';
 export const STAGE6_SPLIT_HELPER = "‘Individual’ means one client at a time in the session room; ‘Group’ means multiple clients share a session. Enter the % of the aware-and-interested population served under the individual price tier — the Group row's % fills in automatically as the remainder. This split also determines Stage 8's individual/group hours-per-client blend, so it's only entered here.";
