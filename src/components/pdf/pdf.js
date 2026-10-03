@@ -235,7 +235,7 @@ const FunnelRecapTable = ({ rows, bounds, stage6SplitSummary }) => {
                 <Text style={styles.funnelTableHeaderCell}>Stage</Text>
                 <Text style={styles.funnelTableHeaderCell}>Type</Text>
                 <Text style={styles.funnelTableHeaderCell}>Lower Bound</Text>
-                <Text style={styles.funnelTableHeaderCell}>Value Entered</Text>
+                <Text style={styles.funnelTableHeaderCell}>Base Case</Text>
                 <Text style={styles.funnelTableHeaderCell}>Upper Bound</Text>
                 <Text style={styles.funnelTableHeaderCell}>Retained</Text>
             </View>

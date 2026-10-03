@@ -26,7 +26,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import { FORM_DEFAULTS } from '../constants/formDefaults';
 import { EXCLUSION_CRITERIA_FIELDS } from '../constants/formFields';
 import { INFO_DIALOGS } from '../constants/infoDialogs';
-import { COLORS } from '../constants/colors';
+import { COLORS, requiredFieldSx } from '../constants/colors';
 import { CALCULATION_CONSTANTS } from '../constants/calculations';
 import { calculateAllResults, formatResultsForModel, scrollToBottom } from '../utils/calculations';
 import { isStringField, validateFormData } from '../utils/formValidation';
@@ -367,6 +367,9 @@ const InputsForm = () => {
                 <Typography variant="body1" sx={{ color: '#023e74', lineHeight: 1.7, fontSize: '1.15rem', mt: 2 }}>
                     As with any model, the accuracy of the results depends on the quality of your inputs.
                 </Typography>
+                <Typography variant="body1" sx={{ color: '#023e74', lineHeight: 1.7, fontSize: '1.15rem', mt: 2 }}>
+                    All required fields are light blue.
+                </Typography>
             </Paper>
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: -2.5, mb: 0.5, gap: 2 }}>
                 <Button
@@ -420,9 +423,6 @@ const InputsForm = () => {
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                             Tell us about this model scenario
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
-                            * = required
-                        </Typography>
                         <Grid container spacing={3} alignItems="center" sx={{ mb: -2.2 }}>
                             <Grid item xs={3}>
                                 <TextField
@@ -432,6 +432,7 @@ const InputsForm = () => {
                                     name="modelTitle"
                                     value={formData.modelTitle}
                                     required
+                                    sx={requiredFieldSx(!formData.modelTitle || formData.modelTitle.trim() === '')}
                                     onChange={handleInputChange}></TextField>
                             </Grid>
                             <Grid item xs={3}>
@@ -442,6 +443,7 @@ const InputsForm = () => {
                                     name="geographicArea"
                                     value={formData.geographicArea}
                                     required
+                                    sx={requiredFieldSx(!formData.geographicArea || formData.geographicArea.trim() === '')}
                                     onChange={handleInputChange}></TextField>
                             </Grid>
                             <Grid item xs={3}>
@@ -453,6 +455,7 @@ const InputsForm = () => {
                                         name="motivation"
                                         value={formData.motivation}
                                         required
+                                        sx={requiredFieldSx(!formData.motivation || formData.motivation.trim() === '')}
                                         onChange={handleInputChange}></TextField>
                                 </Tooltip>
                             </Grid>
@@ -468,9 +471,6 @@ const InputsForm = () => {
                         </Grid>
                         <Spacer height={20} />
                         {/* <SourceInputList /> */}
-                        {/* <Typography variant='body2' sx={{ textAlign: 'left', mt: 1 }}>
-                            *required
-                        </Typography> */}
                     </Paper>
 
                     {/* Prevalence Section */}
@@ -495,6 +495,7 @@ const InputsForm = () => {
                                     thousandSeparator=","
                                     value={formData.MDD ?? ''}
                                     required
+                                    sx={requiredFieldSx(formData.MDD === null || formData.MDD === undefined)}
                                     placeholder="Enter number"
                                     //onChange={handleInputChange}
                                     onValueChange={(values) => {
@@ -524,6 +525,7 @@ const InputsForm = () => {
                                     value={formData.TRD_P ?? ''}
                                     onChange={handleInputChange}
                                     required
+                                    sx={requiredFieldSx(formData.TRD_P === null || formData.TRD_P === undefined)}
                                     placeholder="Enter percentage"
                                     variant="outlined"
                                     InputProps={{
@@ -573,6 +575,7 @@ const InputsForm = () => {
                                         name={key}
                                         type="number"
                                         required
+                                        sx={requiredFieldSx(formData[key] === null || formData[key] === undefined)}
                                         placeholder="Enter percentage"
                                         InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
                                         value={formData[key] ?? ''}

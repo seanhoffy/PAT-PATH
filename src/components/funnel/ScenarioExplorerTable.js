@@ -1,6 +1,7 @@
-import { Paper, Typography, Table, TableBody, TableRow, TableCell, TextField, Button, Box } from '@mui/material';
+import { Paper, Typography, Table, TableBody, TableRow, TableCell, TextField, Button, Box, Alert } from '@mui/material';
 import TableHeaderRow from './TableHeaderRow';
-import { formatRate } from '../../utils/funnelCalculations';
+import { formatRate, isOverHundred } from '../../utils/funnelCalculations';
+import { PERCENT_OVER_100_ERROR } from '../../constants/funnelDefaults';
 
 const STAGE_ROWS = [
     { rowKey: 'D', label: 'Aware', stageKey: 'stage4' },
@@ -20,6 +21,7 @@ const ScenarioExplorerTable = ({ startN, moderatePercents, scenarioInputs, scena
         const rate = scenario[column].rows.find((r) => r.key === rowKey)?.rate;
         return formatRate(rate) ?? '—';
     };
+    const hasPercentOver100 = STAGE_ROWS.some(({ stageKey }) => isOverHundred(moderateValue(stageKey)));
 
     return (
         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
@@ -28,7 +30,7 @@ const ScenarioExplorerTable = ({ startN, moderatePercents, scenarioInputs, scena
                 <Button variant="outlined" onClick={onReset}>Reset Moderate overrides</Button>
             </Box>
             <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1 }}>
-                Table H — Monte Carlo Simulation Results
+                Table G — Monte Carlo Simulation Results
             </Typography>
             <Table size="small">
                 <TableHeaderRow columns={['Stage', 'Conservative', 'Moderate', 'Optimistic']} />
@@ -64,6 +66,9 @@ const ScenarioExplorerTable = ({ startN, moderatePercents, scenarioInputs, scena
                     </TableRow>
                 </TableBody>
             </Table>
+            {hasPercentOver100 && (
+                <Alert severity="error" sx={{ mt: 2 }}>{PERCENT_OVER_100_ERROR}</Alert>
+            )}
             <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 1 }}>
                 Conservative/Optimistic reflect a 100,000-run simulation (10th/90th percentile) over each stage's Low–High range; Moderate is your literal point estimate. Capacity check displayed separately.
             </Typography>

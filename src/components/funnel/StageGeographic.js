@@ -1,9 +1,12 @@
-import { Paper, Box, Typography, TextField, Table, TableBody, TableRow, TableCell, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Paper, Box, Typography, TextField, Table, TableBody, TableRow, TableCell, FormControl, InputLabel, Select, MenuItem, Alert } from '@mui/material';
 import { NumericFormat } from 'react-number-format';
 import ProbabilityTypeTag from './ProbabilityTypeTag';
 import Callout from './Callout';
 import TableHeaderRow from './TableHeaderRow';
 import SourcesList from './SourcesList';
+import FunnelPlot from './FunnelPlot';
+import { isOverHundred, isOutOfBounds } from '../../utils/funnelCalculations';
+import { requiredFieldSx } from '../../constants/colors';
 import {
     STAGE7_LABEL,
     STAGE7_CONTEXT_DEFAULTS,
@@ -14,6 +17,8 @@ import {
     GEOGRAPHIC_ACCESS_CONTEXTS,
     GEOGRAPHIC_ACCESS_CONTEXT_HELPER_TEXT,
     PROBABILITY_TYPES,
+    PERCENT_OVER_100_ERROR,
+    BOUNDS_ORDER_ERROR,
 } from '../../constants/funnelDefaults';
 
 const CONTEXT_ROW_LABELS = {
@@ -26,13 +31,16 @@ const CONTEXT_ROW_LABELS = {
 
 // Stage 7 — Geographic Accessibility, Conditional on Stages 4-6 ("Who can
 // physically reach a provider?").
-const StageGeographic = ({ value, low, high, geographicAccessContext, onContextChange, onChange, onRangeChange }) => (
-    <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+const StageGeographic = ({ value, low, high, geographicAccessContext, onContextChange, onChange, onRangeChange, previewRows }) => {
+    const hasPercentOver100 = [value, low, high].some(isOverHundred);
+    const baseOutOfBounds = isOutOfBounds(low, value, high);
+    return (
+        <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
         <Box display="flex" alignItems="center" sx={{ mb: 1 }}>
             <Typography variant="h5">Geographic Accessibility</Typography>
             <ProbabilityTypeTag type={PROBABILITY_TYPES.CONDITIONAL} priorStages="Awareness, Interest, Afford" />
         </Box>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        <Typography variant="subtitle1" fontWeight="bold" color="text.secondary" sx={{ mb: 2 }}>
             “Who can physically reach a provider?”
         </Typography>
 
@@ -52,6 +60,27 @@ const StageGeographic = ({ value, low, high, geographicAccessContext, onContextC
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             {GEOGRAPHIC_ACCESS_CONTEXT_HELPER_TEXT}
         </Typography>
+
+        {geographicAccessContext === 'optedOut' && <Callout>{STAGE7_MEDICAL_TOURISM_FOOTNOTE}</Callout>}
+
+        <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 2, mb: 1 }}>
+            Table E — Geographic Accessibility
+        </Typography>
+        <Table size="small">
+            <TableHeaderRow columns={['Setting', 'Default', 'Basis', 'Source']} />
+            <TableBody>
+                {Object.entries(STAGE7_CONTEXT_DEFAULTS).map(([key, row]) => (
+                    <TableRow key={key} selected={key === geographicAccessContext}>
+                        <TableCell>{CONTEXT_ROW_LABELS[key]}{key === DEFAULT_GEOGRAPHIC_ACCESS_CONTEXT ? ' (default)' : ''}</TableCell>
+                        <TableCell>{row.range}</TableCell>
+                        <TableCell>{row.basis}</TableCell>
+                        <TableCell>{row.source || '—'}</TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+
+        <Callout title="Veterans / specific populations">{STAGE7_VETERANS_NOTE}</Callout>
 
         <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
             {STAGE7_LABEL}
@@ -78,7 +107,7 @@ const StageGeographic = ({ value, low, high, geographicAccessContext, onContextC
                     value={value}
                     onValueChange={(values) => onChange(values.value === '' ? '' : values.floatValue)}
                     inputProps={{ 'aria-label': STAGE7_LABEL, style: { textAlign: 'center' } }}
-                    sx={{ width: 70 }}
+                    sx={{ width: 70, ...requiredFieldSx(value === '' || value === null || value === undefined) }}
                 />
             </Box>
             <Box>
@@ -94,30 +123,18 @@ const StageGeographic = ({ value, low, high, geographicAccessContext, onContextC
                 />
             </Box>
         </Box>
+        {hasPercentOver100 && (
+            <Alert severity="error" sx={{ mb: 2 }}>{PERCENT_OVER_100_ERROR}</Alert>
+        )}
+        {baseOutOfBounds && (
+            <Alert severity="error" sx={{ mb: 2 }}>{BOUNDS_ORDER_ERROR}</Alert>
+        )}
 
-        {geographicAccessContext === 'optedOut' && <Callout>{STAGE7_MEDICAL_TOURISM_FOOTNOTE}</Callout>}
-
-        <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 2, mb: 1 }}>
-            Table F — Geographic Accessibility
-        </Typography>
-        <Table size="small">
-            <TableHeaderRow columns={['Setting', 'Default', 'Basis', 'Source']} />
-            <TableBody>
-                {Object.entries(STAGE7_CONTEXT_DEFAULTS).map(([key, row]) => (
-                    <TableRow key={key} selected={key === geographicAccessContext}>
-                        <TableCell>{CONTEXT_ROW_LABELS[key]}{key === DEFAULT_GEOGRAPHIC_ACCESS_CONTEXT ? ' (default)' : ''}</TableCell>
-                        <TableCell>{row.range}</TableCell>
-                        <TableCell>{row.basis}</TableCell>
-                        <TableCell>{row.source || '—'}</TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-
-        <Callout title="Veterans / specific populations">{STAGE7_VETERANS_NOTE}</Callout>
+        {previewRows?.length > 1 && <FunnelPlot rows={previewRows} title="Results so far" />}
 
         <SourcesList sources={STAGE7_SOURCES} />
     </Paper>
-);
+    );
+};
 
 export default StageGeographic;

@@ -62,7 +62,7 @@ export const STAGE4_REFERENCE_ROW = {
     source: '—',
 };
 
-export const STAGE4_HELPER_TEXT = "Default: 47% of adults are aware of psychedelic therapy as a mental health treatment option. Source: UC Berkeley BCSP National Survey, 2023, n=1,500. Demographic gap: 29% of African-American respondents reported recent awareness vs. 47% overall. Please see the table below with other figures which may be more relevant to your setting.";
+export const STAGE4_HELPER_TEXT = "47% of adults are aware of psychedelic therapy as a mental health treatment option. Source: UC Berkeley BCSP National Survey, 2023, n=1,500. Demographic gap: 29% of African-American respondents reported recent awareness vs. 47% overall. Please see the table above with other figures which may be more relevant to your setting.";
 export const STAGE4_ADJUSTMENT_CAPTION = "Reduce to 25–35% for conservative or rural areas; increase to 55–65% for progressive urban areas with active psychedelic policy discourse (e.g., Oregon, Colorado metro).";
 
 export const STAGE4_SOURCES = [
@@ -136,7 +136,7 @@ export const STAGE5_SOURCES = [
 // Stage 6 — Can Afford, Conditional on Stages 4+5.
 // STAGE6_TABLE_A_ROWS renders as Table C: reference/guidance only, shown
 // above Table D (the Individual/Group rows that actually feed the funnel) —
-// not selectable. STAGE6_TABLE_B_ROWS renders as Table E: informational only.
+// not selectable.
 // ---------------------------------------------------------------------------
 export const STAGE6_TABLE_A_ROWS = [
     {
@@ -165,6 +165,23 @@ export const STAGE6_TABLE_A_ROWS = [
         isDefault: true,
     },
     {
+        key: 'noInsuranceDefault',
+        pricePoint: '$2,000 (individual)',
+        context: 'No insurance, national income-stratified',
+        // No numeric range is cited in source 1 itself — only the 20% point
+        // estimate, with a qualitative note that it "may be conservative"
+        // and should be "adjusted upward" in markets with lower session
+        // costs. This range is an estimate built from that directional cue
+        // (skewed upward, not centered), not an empirically sourced bound —
+        // needs advisor sign-off before treated as authoritative, same as
+        // the "individual" row above.
+        min: 15,
+        max: 30,
+        default: 20,
+        represents: 'Aware-and-interested who clear the income threshold for a $2,000 OOP session with no insurance',
+        source: 1,
+    },
+    {
         key: 'fda',
         pricePoint: '$5,300–$8,250 (FDA Rx)',
         context: 'Post-approval, no coverage',
@@ -175,51 +192,21 @@ export const STAGE6_TABLE_A_ROWS = [
         source: 6,
     },
 ];
-export const STAGE6_TABLE_A_DENOMINATOR = '% of the aware-and-interested population who can afford this price point out of pocket.';
 
 // Table D is now two fixed, user-filled rows (Individual / Group) rather than
 // a selectable preset list — STAGE6_TABLE_A_ROWS (Table C) is reference-only
 // content shown as guidance above the input table, not wired into the funnel
 // math.
-export const STAGE6_GUIDANCE_HEADING = 'Affordability Input Reference';
-export const STAGE6_GUIDANCE_HELPER = "For context only — these don't feed the model. Use them to sanity-check the Price, Base Case, and Range you enter below.";
+export const STAGE6_GUIDANCE_HEADING = 'Affordability Estimates From Studies';
+export const STAGE6_GUIDANCE_HELPER = "“These are published estimates to inform the values you use below.”";
 
-export const STAGE6_SPLIT_LABEL = '% Individual / Group';
-export const STAGE6_SPLIT_HELPER = "‘Individual’ means one client at a time in the session room; ‘Group’ means multiple clients share a session. Enter the % of the aware-and-interested population served under the individual price tier — the Group row's % fills in automatically as the remainder. This split also determines Stage 8's individual/group hours-per-client blend, so it's only entered here.";
+export const STAGE6_SPLIT_LABEL = '% of Clients: Individual vs. Group';
+export const STAGE6_SPLIT_HELPER = "This is the % of clients — not the % of sessions — treated under the individual price tier. 'Individual' means one client at a time in the session room; 'Group' means multiple clients share a session. The Group row's % fills in automatically as the remainder. This split also determines Stage 8's individual/group hours-per-client blend, so it's only entered here.";
 
 export const STAGE6_AFFORDABILITY_ERROR = 'Affordability for Individual is greater than affordability for Group. Individual is the pricier tier, so a higher Base Case % there than Group doesn’t make sense — double-check these two values.';
 export const STAGE6_PRICE_ERROR = 'Price for Group is greater than Price for Individual. Group is meant to be the cheaper tier — double-check these two values.';
 
-export const STAGE6_TABLE_B_ROWS = [
-    {
-        pathway: 'Employer Third Party Administrator (Enthea)',
-        context: 'Employer-funded benefit',
-        min: 35,
-        max: 45,
-        represents: 'Eligible employees whose employer would buy this benefit',
-        source: 5,
-        footnote: "Enthea's ~$35/employee/year derives from its Ketamine Assisted Therapy book of business — the only empirical Third Party Administrator data point currently available. Psilocybin Assisted Therapy’s different effectiveness, durability of benefit, and treatment regimen could push the per-employee cost up or down (likely down). Treat 35–45% as a lower-bound anchor with substantial range, not a forecast.",
-    },
-    {
-        pathway: 'Subsidized / sliding-scale',
-        context: 'Foundation / equity programs',
-        min: 30,
-        max: 40,
-        represents: 'Income-qualified enrollees reached by grant programs',
-        source: 8,
-    },
-    {
-        pathway: 'Major insurer coverage',
-        context: 'Post-approval, parity enforced',
-        min: 55,
-        max: 65,
-        represents: 'Insured population with coverage',
-        source: 7,
-    },
-];
-
-export const STAGE6_HEADER_RATIONALE = "Default: We assume no insurance covers this service. 20% can afford a $2,000 individual session with no insurance. The default is derived from NIMH/NHIS income-stratified data — the share of U.S. adults with depression whose household income clears a threshold sufficient for a $2,000 out-of-pocket session. Using stated income distributions rather than Oregon client demographics sidesteps the selection bias from revealed-preference data drawn from a population already filtered by geographic access. Users in markets with lower session costs or more diverse delivery formats may find 20% conservative and should adjust upward (see Table A row 1).";
-export const STAGE6_COLORADO_CAVEAT = "Oregon provides the best available revealed-preference data on psilocybin affordability. Colorado's more permissive model may yield different access patterns as it matures; we will incorporate Colorado data as it accumulates.";
+export const STAGE6_COLORADO_CAVEAT = "Oregon provides the best available revealed-preference data on psilocybin affordability. We will add information from Colorado's regulated psychedelic program as it becomes available.";
 
 export const STAGE6_SOURCES = [
     'NIMH / NHIS income-stratified data on adults with depression (citation pending).',
@@ -345,7 +332,7 @@ export const STAGE8_SITE_INTERACTION_WARNING = 'The site check binds well below 
 export const STAGE8_COMPUTED_CAPACITY_HEADING = 'Computed capacity';
 export const STAGE8_METRIC_BLENDED_HOURS_LABEL = 'Blended hours per client';
 export const STAGE8_METRIC_CLIENTS_PER_FTE_LABEL = 'Clients per FTE per year';
-export const STAGE8_METRIC_WORKFORCE_LABEL = 'Workforce estimate';
+export const STAGE8_METRIC_WORKFORCE_LABEL = 'FTE equivalent x client per FTE';
 export const STAGE8_METRIC_SITE_CHECK_LABEL = 'Capacity (after site check)';
 export const STAGE8_BLANK_STATE_PROMPT = 'Enter the individual/group split (field 3) to compute capacity';
 
@@ -435,3 +422,9 @@ export const PROBABILITY_TYPES = {
     CONDITIONAL: 'conditional',
     CAPACITY: 'capacity',
 };
+
+// ---------------------------------------------------------------------------
+// Shared input validation (every % field across Stages 4-9)
+// ---------------------------------------------------------------------------
+export const PERCENT_OVER_100_ERROR = 'One or more percentage values above cannot exceed 100%.';
+export const BOUNDS_ORDER_ERROR = 'Base Case must fall between the Lower Bound and Upper Bound.';

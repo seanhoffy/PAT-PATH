@@ -45,6 +45,41 @@ export const appTheme = createTheme({
                         fontSize: '1.1rem',
                         fontWeight: 600,
                     },
+                    // The red "*" MUI auto-appends for `required` fields is
+                    // retired app-wide in favor of the light-blue empty-field
+                    // tint (see COLORS.requiredEmpty) — `required` itself stays
+                    // on each field for aria-required, just not shown visually.
+                    '& .MuiFormLabel-asterisk': {
+                        display: 'none',
+                    },
+                },
+            },
+        },
+        MuiTableCell: {
+            styleOverrides: {
+                // Vertical gridlines between columns (MUI tables only draw
+                // horizontal row dividers by default) — applies to every
+                // table app-wide, header rows included, for a consistent
+                // grid look. Last cell in a row skips it so rows don't end
+                // in a stray line against the table's own outer edge.
+                root: {
+                    borderRight: '1px solid rgba(224, 224, 224, 0.5)',
+                    '&:last-child': {
+                        borderRight: 'none',
+                    },
+                },
+            },
+        },
+        MuiTableBody: {
+            styleOverrides: {
+                // The table's own bottom edge (its last row's border) is the
+                // same faint divider as every other row by default — darkened
+                // here, app-wide, so each table reads as visually "closed"
+                // rather than trailing off.
+                root: {
+                    '& tr:last-child > td': {
+                        borderBottom: '2px solid rgba(0, 0, 0, 0.4)',
+                    },
                 },
             },
         },

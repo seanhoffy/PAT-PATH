@@ -32,8 +32,8 @@ const FunnelRowsTable = ({ rows, bounds, stage6SplitSummary }) => {
     return (
         <Table size="small">
             <TableHeaderRow columns={bounds
-                ? ['Stage', 'Probability type', 'Lower Bound', 'Value entered', 'Upper Bound', 'People with MDD Retained']
-                : ['Stage', 'Probability type', 'Value entered', 'People with MDD Retained']} />
+                ? ['Stage', 'Probability type', 'Lower Bound', 'Base Case', 'Upper Bound', 'People with MDD Retained']
+                : ['Stage', 'Probability type', 'Base Case', 'People with MDD Retained']} />
             <TableBody>
                 {rows.map((row) => (
                     <Fragment key={row.key}>

@@ -119,7 +119,7 @@ const MetricCard = ({ label, value, sm, highlight }) => (
 );
 
 // Stage 8 — Provider Capacity ("Are there enough therapists?"). A parallel
-// sanity check: its output is never multiplied into the funnel chain and is
+// capacity check: its output is never multiplied into the funnel chain and is
 // never one of the Stage 9 funnel-plot bars (rows A-G only).
 //
 // FTE-based revision: capacity is derived from headcount × conversion factor
@@ -173,7 +173,7 @@ const StageCapacity = ({ stage8, pctIndividual, effectiveDemand, displayedEffect
                 <Typography variant="h5">Provider Capacity</Typography>
                 <ProbabilityTypeTag type={PROBABILITY_TYPES.CAPACITY} />
             </Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography variant="subtitle1" fontWeight="bold" color="text.secondary" sx={{ mb: 2 }}>
                 “Are there enough therapists?”
             </Typography>
 

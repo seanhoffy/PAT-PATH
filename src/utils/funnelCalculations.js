@@ -8,6 +8,21 @@ import { runFunnelSimulation } from './monteCarlo';
 const isBlank = (v) => v === '' || v === null || v === undefined || Number.isNaN(Number(v));
 
 /**
+ * True for any entered (non-blank) value over 100 — shared by every % field
+ * across Stages 4-9 so "can't exceed 100%" validation reads identically
+ * everywhere instead of each stage re-deriving its own check.
+ */
+export const isOverHundred = (v) => !isBlank(v) && Number(v) > 100;
+
+/**
+ * True when a Base Case falls outside its own Lower/Upper Bound — shared by
+ * every Low/Base/High triple across Stages 4-9. Only fires once all three
+ * are entered (a partially-filled range isn't a violation yet).
+ */
+export const isOutOfBounds = (low, base, high) => !isBlank(low) && !isBlank(base) && !isBlank(high)
+    && (Number(base) < Number(low) || Number(base) > Number(high));
+
+/**
  * Percent retained relative to the prior stage's N, rounded to 1 decimal place.
  */
 const pctOfPrior = (n, prior) => {
@@ -235,7 +250,7 @@ export const capacityExceeded = (finalFunnelN, capacityN) => {
 
 /**
  * Stages 4-7 are required for the funnel chain to mean anything; Stage 8
- * (capacity) is an independent, optional sanity check. Used to gate the
+ * (capacity) is an independent, optional capacity check. Used to gate the
  * on-screen funnel display and to block saving/downloading an incomplete
  * model.
  */
@@ -274,6 +289,40 @@ export const getStage6Value = (stage6) => {
     const individualPct = Number(stage6?.individual?.pct) || 0;
     const groupPct = Number(stage6?.group?.pct) || 0;
     return (splitPct / 100) * individualPct + ((100 - splitPct) / 100) * groupPct;
+};
+
+const FUNNEL_STAGE_ORDER = ['stage4', 'stage5', 'stage6', 'stage7'];
+
+// Stage 6 counts as "filled" only once all three of its own required pieces
+// (both rows' Base Case and the split) are entered — matches
+// validateFunnelRequiredStages, not just getStage6Value's lenient 0-default.
+const isStageFilled = (funnelState, key) => {
+    if (key === 'stage6') {
+        const stage6 = funnelState?.stage6 || {};
+        return !isBlank(stage6.individual?.pct) && !isBlank(stage6.group?.pct) && !isBlank(stage6.pctIndividual);
+    }
+    return !isBlank(funnelState?.[key]?.value);
+};
+
+/**
+ * Funnel bar-chart rows for "however far the user has actually filled in,
+ * up through `upToKey`" — Population plus one bar per stage in order,
+ * stopping at the first stage (within that cap) that isn't fully entered
+ * yet. Powers the live "Results so far" preview shown under each of Stages
+ * 4-7; unlike buildFunnelRows, a blank stage omits its bar entirely rather
+ * than silently treating it as 0%.
+ */
+export const buildPartialFunnelRows = (startN, funnelState, upToKey) => {
+    const cutoff = FUNNEL_STAGE_ORDER.indexOf(upToKey);
+    const percents = {};
+    for (let i = 0; i <= cutoff; i++) {
+        const key = FUNNEL_STAGE_ORDER[i];
+        if (!isStageFilled(funnelState, key)) break;
+        percents[key] = key === 'stage6' ? getStage6Value(funnelState.stage6) : Number(funnelState[key].value);
+    }
+    const filledCount = Object.keys(percents).length;
+    const { rows } = buildFunnelRows(startN, percents);
+    return rows.slice(0, 1 + filledCount);
 };
 
 /**

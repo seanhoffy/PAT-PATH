@@ -9,7 +9,7 @@ const InputsRecapTable = ({ funnelRows, bounds, stage6SplitSummary }) => (
         <Typography variant="h5" sx={{ mb: 2 }}>Inputs Recap</Typography>
 
         <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1 }}>
-            Table G — Funnel Chain Recap
+            Table F — Funnel Chain Recap
         </Typography>
         <Box sx={{ mb: 1 }}>
             <FunnelRowsTable rows={funnelRows} bounds={bounds} stage6SplitSummary={stage6SplitSummary} />

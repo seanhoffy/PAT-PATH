@@ -15,7 +15,7 @@ import SensitivityTornadoChart from './SensitivityTornadoChart';
 import FunnelPlot from './FunnelPlot';
 import Callout from './Callout';
 import { useFunnelReducer, getModeratePercents } from './useFunnelReducer';
-import { deriveFunnelCore, buildFunnelScenario, buildFunnelRows, validateFunnelRequiredStages, getStageInputBounds, getStage6SplitSummary } from '../../utils/funnelCalculations';
+import { deriveFunnelCore, buildFunnelScenario, buildFunnelRows, buildPartialFunnelRows, validateFunnelRequiredStages, getStageInputBounds, getStage6SplitSummary } from '../../utils/funnelCalculations';
 import { STAGE9_MONTE_CARLO_EXPLAINER } from '../../constants/funnelDefaults';
 
 // Top-level container for Stages 4-9. Owns the reducer and composes every
@@ -50,6 +50,14 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
 
     const funnelReady = validateFunnelRequiredStages(state).isValid;
     const stageInputBounds = getStageInputBounds(state);
+
+    // Live "Results so far" preview under each of Stages 4-7 — each bounded
+    // to its own stage (never shows a later stage's bar even if that one's
+    // already filled in too), per buildPartialFunnelRows.
+    const stage4PreviewRows = buildPartialFunnelRows(funnelInputN, state, 'stage4');
+    const stage5PreviewRows = buildPartialFunnelRows(funnelInputN, state, 'stage5');
+    const stage6PreviewRows = buildPartialFunnelRows(funnelInputN, state, 'stage6');
+    const stage7PreviewRows = buildPartialFunnelRows(funnelInputN, state, 'stage7');
 
     const moderatePercents = getModeratePercents(state);
 
@@ -107,7 +115,7 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
 
             <Callout>
                 You will need to provide plausible estimates for these values in your location.
-                Reference info and typical ranges are provided if needed.
+                Reference info and typical ranges are provided if needed. All required fields are light blue.
             </Callout>
 
             <FunnelInputSelector
@@ -124,6 +132,7 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
                 onContextChange={(dropdown, value) => dispatch({ type: 'SET_CONTEXT', dropdown, value })}
                 onChange={(value) => dispatch({ type: 'SET_STAGE_VALUE', stage: 'stage4', value })}
                 onRangeChange={(bound, value) => dispatch({ type: 'SET_STAGE_RANGE', stage: 'stage4', bound, value })}
+                previewRows={stage4PreviewRows}
             />
 
             <StageInterest
@@ -132,12 +141,14 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
                 high={state.stage5.high}
                 onChange={(value) => dispatch({ type: 'SET_STAGE_VALUE', stage: 'stage5', value })}
                 onRangeChange={(bound, value) => dispatch({ type: 'SET_STAGE_RANGE', stage: 'stage5', bound, value })}
+                previewRows={stage5PreviewRows}
             />
 
             <StageAfford
                 stage6={state.stage6}
                 onRowFieldChange={(row, field, value) => dispatch({ type: 'SET_STAGE6_ROW_FIELD', row, field, value })}
                 onSplitChange={(value) => dispatch({ type: 'SET_STAGE6_SPLIT', value })}
+                previewRows={stage6PreviewRows}
             />
 
             <StageGeographic
@@ -148,6 +159,7 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
                 onContextChange={(dropdown, value) => dispatch({ type: 'SET_CONTEXT', dropdown, value })}
                 onChange={(value) => dispatch({ type: 'SET_STAGE_VALUE', stage: 'stage7', value })}
                 onRangeChange={(bound, value) => dispatch({ type: 'SET_STAGE_RANGE', stage: 'stage7', bound, value })}
+                previewRows={stage7PreviewRows}
             />
 
             <StageCapacity
@@ -166,7 +178,7 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
             <Typography variant="h5" sx={{ mt: 4 }}>
                 Effective Demand
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography variant="subtitle1" fontWeight="bold" color="text.secondary" sx={{ mb: 2 }}>
                 “Your realistic annual utilization estimate.”
             </Typography>
             {funnelReady ? (
@@ -248,7 +260,7 @@ const FunnelSection = ({ cellValues, onFunnelStateChange, initialState }) => {
                 </>
             ) : (
                 <Alert severity="info" sx={{ mb: 3 }}>
-                    Complete Awareness, Interest, Afford, and Geographic Accessibility above to see your funnel and effective-demand estimate.
+                    Final Results requires completing all required data entry.
                 </Alert>
             )}
         </Box>

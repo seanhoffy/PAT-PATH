@@ -1,9 +1,12 @@
-import { Paper, Box, Typography, TextField, Table, TableBody, TableRow, TableCell, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Paper, Box, Typography, TextField, Table, TableBody, TableRow, TableCell, FormControl, InputLabel, Select, MenuItem, Alert } from '@mui/material';
 import { NumericFormat } from 'react-number-format';
 import ProbabilityTypeTag from './ProbabilityTypeTag';
 import Callout from './Callout';
 import TableHeaderRow from './TableHeaderRow';
 import SourcesList from './SourcesList';
+import FunnelPlot from './FunnelPlot';
+import { isOverHundred, isOutOfBounds } from '../../utils/funnelCalculations';
+import { requiredFieldSx } from '../../constants/colors';
 import {
     STAGE4_LABEL,
     STAGE4_CONTEXT_DEFAULTS,
@@ -15,6 +18,8 @@ import {
     AWARENESS_INTEREST_CONTEXTS,
     AWARENESS_INTEREST_CONTEXT_HELPER_TEXT,
     PROBABILITY_TYPES,
+    PERCENT_OVER_100_ERROR,
+    BOUNDS_ORDER_ERROR,
 } from '../../constants/funnelDefaults';
 
 const CONTEXT_ROW_LABELS = {
@@ -24,8 +29,10 @@ const CONTEXT_ROW_LABELS = {
 };
 
 // Stage 4 — Awareness ("Who knows this therapy exists?"). Independent.
-const StageAwareness = ({ value, low, high, awarenessInterestContext, onContextChange, onChange, onRangeChange }) => {
+const StageAwareness = ({ value, low, high, awarenessInterestContext, onContextChange, onChange, onRangeChange, previewRows }) => {
     const showAdjustmentCaption = awarenessInterestContext !== DEFAULT_AWARENESS_INTEREST_CONTEXT;
+    const hasPercentOver100 = [value, low, high].some(isOverHundred);
+    const baseOutOfBounds = isOutOfBounds(low, value, high);
 
     return (
         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
@@ -33,7 +40,7 @@ const StageAwareness = ({ value, low, high, awarenessInterestContext, onContextC
                 <Typography variant="h5">Awareness</Typography>
                 <ProbabilityTypeTag type={PROBABILITY_TYPES.INDEPENDENT} />
             </Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography variant="subtitle1" fontWeight="bold" color="text.secondary" sx={{ mb: 2 }}>
                 “Who knows this therapy exists?”
             </Typography>
 
@@ -53,6 +60,32 @@ const StageAwareness = ({ value, low, high, awarenessInterestContext, onContextC
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 {AWARENESS_INTEREST_CONTEXT_HELPER_TEXT}
             </Typography>
+
+            <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 2, mb: 1 }}>
+                Table A — Context-Driven Awareness Estimates
+            </Typography>
+            <Table size="small">
+                <TableHeaderRow columns={['Context', 'Aware', 'Rationale anchor', 'Source']} />
+                <TableBody>
+                    {Object.entries(STAGE4_CONTEXT_DEFAULTS).map(([key, row]) => (
+                        <TableRow key={key} selected={key === awarenessInterestContext}>
+                            <TableCell>{CONTEXT_ROW_LABELS[key]}{key === DEFAULT_AWARENESS_INTEREST_CONTEXT ? ' (default)' : ''}</TableCell>
+                            <TableCell>{row.range}</TableCell>
+                            <TableCell>{row.rationale}</TableCell>
+                            <TableCell>{row.source || '—'}</TableCell>
+                        </TableRow>
+                    ))}
+                    <TableRow>
+                        <TableCell>{STAGE4_REFERENCE_ROW.label}</TableCell>
+                        <TableCell>{STAGE4_REFERENCE_ROW.range}</TableCell>
+                        <TableCell>{STAGE4_REFERENCE_ROW.rationale}</TableCell>
+                        <TableCell>{STAGE4_REFERENCE_ROW.source || '—'}</TableCell>
+                    </TableRow>
+                </TableBody>
+            </Table>
+
+            <Callout>{STAGE4_HELPER_TEXT}</Callout>
+            {showAdjustmentCaption && <Callout>{STAGE4_ADJUSTMENT_CAPTION}</Callout>}
 
             <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
                 {STAGE4_LABEL}
@@ -79,7 +112,7 @@ const StageAwareness = ({ value, low, high, awarenessInterestContext, onContextC
                         value={value}
                         onValueChange={(values) => onChange(values.value === '' ? '' : values.floatValue)}
                         inputProps={{ 'aria-label': STAGE4_LABEL, style: { textAlign: 'center' } }}
-                        sx={{ width: 70 }}
+                        sx={{ width: 70, ...requiredFieldSx(value === '' || value === null || value === undefined) }}
                     />
                 </Box>
                 <Box>
@@ -95,32 +128,14 @@ const StageAwareness = ({ value, low, high, awarenessInterestContext, onContextC
                     />
                 </Box>
             </Box>
+            {hasPercentOver100 && (
+                <Alert severity="error" sx={{ mb: 2 }}>{PERCENT_OVER_100_ERROR}</Alert>
+            )}
+            {baseOutOfBounds && (
+                <Alert severity="error" sx={{ mb: 2 }}>{BOUNDS_ORDER_ERROR}</Alert>
+            )}
 
-            <Callout>{STAGE4_HELPER_TEXT}</Callout>
-            {showAdjustmentCaption && <Callout>{STAGE4_ADJUSTMENT_CAPTION}</Callout>}
-
-            <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 2, mb: 1 }}>
-                Table A — Context-Driven Awareness Estimates
-            </Typography>
-            <Table size="small">
-                <TableHeaderRow columns={['Context', 'Aware', 'Rationale anchor', 'Source']} />
-                <TableBody>
-                    {Object.entries(STAGE4_CONTEXT_DEFAULTS).map(([key, row]) => (
-                        <TableRow key={key} selected={key === awarenessInterestContext}>
-                            <TableCell>{CONTEXT_ROW_LABELS[key]}{key === DEFAULT_AWARENESS_INTEREST_CONTEXT ? ' (default)' : ''}</TableCell>
-                            <TableCell>{row.range}</TableCell>
-                            <TableCell>{row.rationale}</TableCell>
-                            <TableCell>{row.source || '—'}</TableCell>
-                        </TableRow>
-                    ))}
-                    <TableRow>
-                        <TableCell>{STAGE4_REFERENCE_ROW.label}</TableCell>
-                        <TableCell>{STAGE4_REFERENCE_ROW.range}</TableCell>
-                        <TableCell>{STAGE4_REFERENCE_ROW.rationale}</TableCell>
-                        <TableCell>{STAGE4_REFERENCE_ROW.source || '—'}</TableCell>
-                    </TableRow>
-                </TableBody>
-            </Table>
+            {previewRows?.length > 1 && <FunnelPlot rows={previewRows} title="Results so far" />}
 
             <SourcesList sources={STAGE4_SOURCES} />
         </Paper>

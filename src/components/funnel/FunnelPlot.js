@@ -11,12 +11,14 @@ const FUNNEL_TRACK_COLOR = '#eef1f5';
 
 // Stage 9, component 3 — funnel plot. One tapering bar per funnel stage
 // (Stage-3 output through Effective demand), driven by the Moderate column.
-const FunnelPlot = ({ rows }) => {
+// Reused as the live "Results so far" preview under each of Stages 4-7
+// (see buildPartialFunnelRows) with a shorter `rows` list and its own title.
+const FunnelPlot = ({ rows, title = 'Funnel Plot (Moderate column)' }) => {
     const maxN = Number(rows?.[0]?.n) || 1;
 
     return (
         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h5" sx={{ mb: 2 }}>Funnel Plot (Moderate column)</Typography>
+            <Typography variant="h5" sx={{ mb: 2 }}>{title}</Typography>
             <Box>
                 {rows.map((row) => (
                     <Box key={row.key} sx={{ mb: 1.5 }}>
